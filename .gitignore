@@ -6,3 +6,6 @@ node_modules/
 handoffs/
 extension/dist-test/
 .baton/
+.wrangler/
+.wrangler.deploy.json
+.baton-relay.json

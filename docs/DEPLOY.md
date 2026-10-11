@@ -12,7 +12,13 @@ The browser extension and local agents do **not** need this.
 Sign in with Cloudflare (free account). The button forks the repo, creates the `BATON_KV` storage namespace from
 `wrangler.jsonc`, and deploys `worker/index.ts`. You get a URL like `https://baton-relay.<you>.workers.dev`.
 
-**Or from a terminal (Node 18+):**
+**Or one command** (with `CLOUDFLARE_API_TOKEN` set, created from the "Edit Cloudflare Workers" template):
+
+```bash
+npm run deploy:relay      # creates/reuses BATON_KV, deploys, sets a secret MCP path, smoke-tests, prints the URLs
+```
+
+**Or step by step from a terminal (Node 18+):**
 
 ```bash
 git clone https://github.com/nimb-ou/App && cd App

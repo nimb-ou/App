@@ -45,7 +45,8 @@
     "build": "node scripts/build.mjs && node scripts/build-extension.mjs",
     "examples": "node scripts/build-examples.ts",
     "build:extension:test": "node scripts/build-extension.mjs --test",
-    "test:e2e": "node scripts/build-extension.mjs --test && node tests-e2e/extension.e2e.mjs"
+    "test:e2e": "node scripts/build-extension.mjs --test && node tests-e2e/extension.e2e.mjs",
+    "deploy:relay": "node scripts/deploy-relay.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
