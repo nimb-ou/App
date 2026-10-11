@@ -21,6 +21,7 @@ export type SourceKind =
   | 'claude-code'
   | 'openai-messages'
   | 'baton-relay'
+  | 'pasted-text'
   | 'unknown';
 
 export interface ToolInfo {

@@ -1,7 +1,9 @@
 // Node host for the portable relay handler (src/relay/handler.ts), backed by the file store.
 // Env: PORT, BATON_STORE, BATON_PUBLIC_URL, BATON_RELAY_TOKEN, BATON_MCP_SECRET, BATON_TTL_DAYS, BATON_MAX_BYTES.
 
+import { readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage } from 'node:http';
+import type { BatonBundle } from '../core/schema.ts';
 import { VERSION } from '../core/schema.ts';
 import { createRelayHandler } from './handler.ts';
 import { RelayStore } from './store.ts';
@@ -35,6 +37,7 @@ export function createRelayServer(o: RelayServerOptions = {}) {
     mcpSecret: o.mcpSecret ?? process.env.BATON_MCP_SECRET,
     rateLimitPerMinute: o.rateLimitPerMinute,
     log: o.log,
+    demo: loadDemo(),
   });
   const mcpPath = (o.mcpSecret ?? process.env.BATON_MCP_SECRET) ? `/mcp/${o.mcpSecret ?? process.env.BATON_MCP_SECRET}` : '/mcp';
   const server = createServer(async (req, res) => {
@@ -66,4 +69,16 @@ export function startRelay(o: RelayServerOptions = {}): Promise<{ url: string; c
       resolve({ url, close: () => new Promise((r) => server.close(() => r())) });
     });
   });
+}
+
+/** The repo's real example bundle, when running from a checkout (not shipped in the npm package). */
+function loadDemo(): BatonBundle | undefined {
+  for (const rel of ['../../examples/cricket-stumping/bundle.json', '../examples/cricket-stumping/bundle.json']) {
+    try {
+      return JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as BatonBundle;
+    } catch {
+      // try the next layout (source tree vs dist/ bundle)
+    }
+  }
+  return undefined;
 }

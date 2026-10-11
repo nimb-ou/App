@@ -5,12 +5,17 @@ If anything fails, click **Copy debug report** in the Baton panel and send it ba
 
 ## Fastest test: the bookmark (1 minute, no install)
 
-1. Open <https://baton-relay.nimitjain-248.workers.dev>, show the bookmarks bar (Ctrl/Cmd+Shift+B), and drag **⚡ Baton** onto it.
+1. Open <https://baton-relay.nimitjain-248.workers.dev>, show the bookmarks bar (Ctrl/⌘+Shift+B), and drag the orange **Baton** button onto it.
 2. Open a chat in ChatGPT (`chatgpt.com/c/…`), Claude (`claude.ai/chat/…`) or Gemini, and click the bookmark.
-3. A new tab opens on a Baton Link. Click **Continue in Claude** (or ChatGPT / Gemini) and check that the new AI restates the work.
+3. A dark panel appears top right: **Continue this chat in…** Its status line should say what it found
+   (for example "Full conversation, including tool outputs"). Click **Claude**.
+4. A new tab opens on Claude with the handoff prompt filled in. Send it and check that Claude restates the work.
+5. Try **Gemini** too: you get a page with **Copy & open Gemini**. Paste into Gemini.
+6. On your phone, open the same site, select all in the ChatGPT or Gemini app, copy, and paste into the box.
 
-If the new tab shows an error, send the message it shows. Already tested for real: a ChatGPT share page and a signed-out Gemini chat.
-Not yet tested: signed-in `chatgpt.com/c/…` and `claude.ai/chat/…`. Those two are what your run proves.
+Already tested for real: a ChatGPT share page and a signed-out Gemini chat (journal 09).
+Your run proves the rest: signed-in `chatgpt.com/c/…` and `claude.ai/chat/…`, and whether your ChatGPT and Claude open the link.
+If something fails, the panel or the new tab shows the exact error. Send that.
 
 ## 0. Install the extension (2 minutes)
 

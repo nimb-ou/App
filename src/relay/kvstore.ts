@@ -78,7 +78,7 @@ export class AsyncRelayStore {
     return r;
   }
 
-  async create(init: { title?: string; from: string; bundle?: BatonBundle; sealed?: SealedPayload }): Promise<RelayRecord> {
+  async create(init: { title?: string; from: string; bundle?: BatonBundle; sealed?: SealedPayload; owner?: string }): Promise<RelayRecord> {
     const now = new Date();
     let code = newCode();
     while (await this.kv.get(this.key(code))) code = newCode();
@@ -91,6 +91,7 @@ export class AsyncRelayStore {
       from: [init.from],
       bundle: init.bundle,
       sealed: init.sealed,
+      owner: init.owner,
       checkpoints: [],
     });
   }
@@ -106,6 +107,10 @@ export class AsyncRelayStore {
       return undefined;
     }
     return r;
+  }
+
+  async remove(code: string): Promise<void> {
+    await this.kv.delete(this.key(normaliseCode(code)));
   }
 
   async addCheckpoint(code: string, c: Omit<Checkpoint, 'seq' | 'at'>): Promise<RelayRecord> {

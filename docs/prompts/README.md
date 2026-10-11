@@ -13,6 +13,7 @@ prompt itself is the source of truth.
 | 005 | 2026-10-11 | `build it so that i can use it in real and test on my claude and chatgpt and gemini` | Harden the extension and relay for the real sites; write a test script for the owner. |
 | 006 | 2026-10-11 | `commit eberything. like demo now. run it` → `i do not want anything mock, all reeal` | Deploy for real (Cloudflare). Never present a scripted client as a real AI. Rule saved in `CLAUDE.md`. |
 | 007 | 2026-10-11 | see [007-make-it-easier.md](007-make-it-easier.md) | **Reframe 3:** remove setup. No extension, no connector: one bookmark and one link any AI can read. |
+| 008 | 2026-10-11 | see [008-make-it-a-product.md](008-make-it-a-product.md) | Make Baton a real product: brand identity, website, UX, and much easier to use. |
 
 Inputs from other systems are stored under [`../../fixtures/`](../../fixtures/), and the decoded
 transcript of the shared ChatGPT conversation is under [`../../examples/cricket-stumping/`](../../examples/cricket-stumping/).

@@ -51,6 +51,7 @@ export interface RelayRecord {
   bundle?: BatonBundle; // captured bundle (extension, CLI)
   checkpoints: Checkpoint[];
   sealed?: SealedPayload; // end-to-end encrypted bundle (server cannot read)
+  owner?: string; // SHA-256 (hex) of the creator's delete key; the key itself lives only in the creator's cookie
 }
 
 type Draft = Omit<BatonEvent, 'seq' | 'hash'>;

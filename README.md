@@ -33,15 +33,22 @@ What in-page capture gets compared with a share link of the same ChatGPT chat (f
 **Setup for each AI: [`docs/EMBED.md`](docs/EMBED.md).** Architecture: [ADR-002](docs/decisions/ADR-002-capture-from-within.md).
 What each capture position can see: [research 07](docs/research/07-capture-surfaces.md).
 
-## The easy way: one bookmark, one link (nothing to install)
+## Use it: **<https://baton-relay.nimitjain-248.workers.dev>**
 
-1. Open **<https://baton-relay.nimitjain-248.workers.dev>** and drag the **⚡ Baton** button to your bookmarks bar.
-2. On any ChatGPT, Claude or Gemini chat, click it. Baton reads the chat **with your own signed-in browser** and opens a
-   **Baton Link** like `…/h/BTN-0NSQ-64G6-3VKJ`.
-3. Tap **Continue in Claude / ChatGPT / Gemini**, or paste the link into any AI that can browse and say "continue this".
+![Baton](docs/brand/screens/home-hero.jpg)
 
-The same link is a page for you and plain text for the AI. It works for the receiving AI with no connector, extension or account setup.
-How the bookmark picks its transport per site, and the real test results: [journal 08](docs/journal/2026-10-11-08-baton-link.md).
+1. Drag the orange **Baton** button to your bookmarks bar (once).
+2. On any ChatGPT, Claude or Gemini chat, click it and pick **Claude**, **ChatGPT**, **Gemini** or **Just give me a link**.
+3. The AI you picked opens with the handoff ready. It reads where you left off and carries on.
+
+On a phone, use the paste box on the same page (select all in your AI app → copy → paste). Links are unguessable,
+expire in 7 days, and can be deleted from the browser that made them. See the [live demo](https://baton-relay.nimitjain-248.workers.dev/demo).
+
+| The chooser, on a real ChatGPT page | The handoff page |
+|---|---|
+| ![chooser](docs/brand/screens/chooser-on-chatgpt.png) | ![handoff](docs/brand/screens/handoff-mobile.jpg) |
+
+Brand and design system: [docs/brand/BRAND.md](docs/brand/BRAND.md). Build log: [journal 08](docs/journal/2026-10-11-08-baton-link.md), [journal 09](docs/journal/2026-10-11-09-product-and-brand.md).
 
 ## Deeper capture: extension and connectors
 

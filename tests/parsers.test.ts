@@ -161,3 +161,30 @@ describe('generic message logs', () => {
     assert.throws(() => parseAny('just some text', 'notes.txt'), /Unsupported input/);
   });
 });
+
+describe('pasted chat text (real select-all copies)', async () => {
+  const { splitPastedChat, parsePastedChat } = await import('../src/parsers/pasted.ts');
+  const { readFileSync } = await import('node:fs');
+  const fx = (n: string) => readFileSync(new URL(`../fixtures/pasted/${n}`, import.meta.url), 'utf8');
+  it('splits a ChatGPT page copy on "You said:" / "ChatGPT said:" and drops the page chrome', () => {
+    const turns = splitPastedChat(fx('chatgpt-share-select-all.txt'));
+    assert.equal(turns.filter((t) => t.role === 'user').length, 3);
+    assert.match(turns[0].text, /^Model and plan full research paper level/);
+    assert.ok(!turns.some((t) => /This is a copy of a shared ChatGPT chat|can make mistakes|^Sources$/m.test(t.text)));
+    assert.equal(parsePastedChat(fx('chatgpt-share-select-all.txt')).source.tool, 'ChatGPT (pasted)');
+  });
+  it('handles Gemini\'s duplicated "You said <prompt>" line and footer', () => {
+    const turns = splitPastedChat(fx('gemini-select-all.txt'));
+    assert.deepEqual(turns.map((t) => t.role), ['user', 'assistant']);
+    assert.equal(turns[0].text, 'Give me three bullet points on how to practise wicketkeeping stumpings.');
+    assert.match(turns[1].text, /^Here are three key ways/);
+    assert.match(turns[1].text, /spinners versus fast bowlers\?$/);
+  });
+  it('falls back to User:/Assistant: labels, then to one block', () => {
+    assert.deepEqual(splitPastedChat('User: hi\nAssistant: hello\nUser: plan\nAssistant: ok').map((t) => t.text), ['hi', 'hello', 'plan', 'ok']);
+    assert.equal(splitPastedChat('You said it would rain. It did.').length, 0);
+    const one = parsePastedChat('just notes\nno labels');
+    assert.equal(one.events.length, 1);
+    assert.equal(one.loss?.[0].category, 'unlabelled-paste');
+  });
+});

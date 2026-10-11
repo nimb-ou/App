@@ -3,6 +3,9 @@
 
 import { createRelayHandler } from '../src/relay/handler.ts';
 import { AsyncRelayStore, type KV } from '../src/relay/kvstore.ts';
+import type { BatonBundle } from '../src/core/schema.ts';
+// The permanent /demo handoff: the real ChatGPT share chat this project started from (examples/cricket-stumping).
+import demo from '../examples/cricket-stumping/bundle.json';
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>;
@@ -60,6 +63,7 @@ export default {
       publicUrl: env.BATON_PUBLIC_URL || undefined,
       token: env.BATON_RELAY_TOKEN || undefined,
       mcpSecret: env.BATON_MCP_SECRET || undefined,
+      demo: demo as unknown as BatonBundle,
     });
     return handler(req);
   },

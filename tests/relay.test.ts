@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
@@ -186,8 +186,9 @@ describe('Bookmarklet capture (form POST and JSON ingest)', () => {
     assert.ok(src.startsWith('javascript:'));
     const code = decodeURIComponent(src.slice('javascript:'.length));
     assert.doesNotThrow(() => new Function(code));
-    const hosts = new Set([...code.matchAll(/https?:\/\/[a-z0-9.-]+/gi)].map((m) => m[0]));
+    const hosts = new Set([...code.matchAll(/https?:\/\/[a-z0-9.-]+/gi)].map((m) => m[0]).filter((h) => h !== 'http://www.w3.org')); // SVG namespace, not a request
     assert.deepEqual([...hosts], [base]);
+    assert.match(code, /Nothing is sent until you choose/);
     assert.match(code, /cloneNode\(true\)/, 'reads clones, never edits the live page');
   });
 
@@ -196,12 +197,14 @@ describe('Bookmarklet capture (form POST and JSON ingest)', () => {
     const r = await handle(new Request(`${base}/api/ingest-form`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ d: JSON.stringify(capture) }).toString() }));
     assert.equal(r.status, 303);
     const loc = r.headers.get('location')!;
-    assert.match(loc, /^https:\/\/relay\.example\/h\/BTN-/);
+    assert.match(loc, /^https:\/\/relay\.example\/h\/BTN-[0-9A-Z-]+\?new=1$/);
     const html = await (await handle(new Request(loc))).text();
     assert.match(html, /Stumping sim/);
-    assert.doesNotMatch(html, /<h1>[^<]*Google Gemini/);
-    assert.match(html, /Continue in Claude/);
-    const md = await (await handle(new Request(`${loc}.md`))).text();
+    assert.doesNotMatch(html, /<h1[^>]*>[^<]*Google Gemini/);
+    assert.match(html, /data-dest="claude" href="https:\/\/claude\.ai\/new\?q=/);
+    assert.match(html, /Your handoff link is ready/);
+    const page = loc.replace('?new=1', '');
+    const md = await (await handle(new Request(`${page}.md`))).text();
     assert.match(md, /Build a stumping simulator/);
     assert.match(md, /Gemini \(captured in your browser\)/);
   });
@@ -216,5 +219,77 @@ describe('Bookmarklet capture (form POST and JSON ingest)', () => {
     assert.match(await bad.text(), /Claude answered 403/);
     const tokenHandle = createRelayHandler({ store: new AsyncRelayStore(new MemoryKV()), token: 't' });
     assert.equal((await tokenHandle(new Request(`${base}/api/ingest-form`, { method: 'POST', body: 'd=%7B%7D' }))).status, 401);
+  });
+});
+
+describe('Baton site: one-click destinations, paste, delete, pages', () => {
+  const base = 'https://relay.example';
+  const make = () => createRelayHandler({ store: new AsyncRelayStore(new MemoryKV(), { ttlDays: 7 }), publicUrl: base });
+  const capture = { url: 'https://gemini.google.com/app/abc', title: 'Trip plan - Google Gemini', messages: [{ role: 'user', content: 'Plan 3 days in Lisbon' }, { role: 'assistant', content: 'Day 1: Alfama' }] };
+  const form = (d: unknown) => new Request(`${base}/api/ingest-form`, { method: 'POST', body: new URLSearchParams({ d: JSON.stringify(d) }).toString() });
+
+  it('choosing Claude or ChatGPT redirects straight into that AI with the prompt filled in', async () => {
+    const handle = make();
+    const claude = await handle(form({ ...capture, to: 'claude' }));
+    assert.equal(claude.status, 303);
+    const loc = claude.headers.get('location')!;
+    assert.match(loc, /^https:\/\/claude\.ai\/new\?q=/);
+    assert.match(decodeURIComponent(loc), /https:\/\/relay\.example\/h\/BTN-[0-9A-Z-]{14}/);
+    assert.match((await handle(form({ ...capture, to: 'chatgpt' }))).headers.get('location')!, /^https:\/\/chatgpt\.com\/\?q=/);
+    assert.match((await handle(form({ ...capture, to: 'gemini' }))).headers.get('location')!, /\/h\/BTN-[0-9A-Z-]+\?to=gemini$/);
+  });
+
+  it('only the creating browser can delete a handoff', async () => {
+    const handle = make();
+    const r = await handle(form(capture));
+    const cookie = r.headers.get('set-cookie')!;
+    assert.match(cookie, /^bo_[0-9A-Z]{15}=[0-9a-f]{32}; Max-Age=\d+; Path=\/; Secure; HttpOnly; SameSite=Lax$/);
+    const page = r.headers.get('location')!.replace('?new=1', '');
+    const code = page.split('/h/')[1];
+    const pair = cookie.split(';')[0];
+    assert.match(await (await handle(new Request(page, { headers: { cookie: pair } }))).text(), /Delete it now/);
+    assert.doesNotMatch(await (await handle(new Request(page))).text(), /Delete it now/);
+    assert.equal((await handle(new Request(`${base}/h/${code}/delete`, { method: 'POST', headers: { cookie: `${pair.split('=')[0]}=${'0'.repeat(32)}` } }))).status, 403);
+    const del = await handle(new Request(`${base}/h/${code}/delete`, { method: 'POST', headers: { cookie: pair } }));
+    assert.equal(del.status, 303);
+    assert.equal((await handle(new Request(page))).status, 404);
+    const api = await (await handle(form(capture))).headers.get('location')!;
+    const rec = (await (await handle(new Request(`${base}/api/handoffs/${api.split('/h/')[1].replace('?new=1', '')}`))).json()) as Record<string, unknown>;
+    assert.ok(!('owner' in rec), 'the owner hash is never exposed');
+  });
+
+  it('paste API turns copied chat text into a handoff', async () => {
+    const handle = make();
+    const text = readFileSync(new URL('../fixtures/pasted/gemini-select-all.txt', import.meta.url), 'utf8');
+    const r = await handle(new Request(`${base}/api/paste`, { method: 'POST', body: JSON.stringify({ text, to: 'link' }) }));
+    assert.equal(r.status, 201);
+    const j = (await r.json()) as { url: string; next: string };
+    assert.equal(j.next, `${j.url}?new=1`);
+    const md = await (await handle(new Request(`${j.url}.md`))).text();
+    assert.match(md, /Gemini \(pasted\)/);
+    assert.match(md, /three bullet points on how to practise wicketkeeping/);
+    const bad = await handle(new Request(`${base}/api/paste`, { method: 'POST', body: JSON.stringify({ text: '   ' }) }));
+    assert.equal(bad.status, 400);
+  });
+
+  it('serves the home page, privacy, demo, icons and branded 404s', async () => {
+    const [r] = convert(JSON.stringify([{ role: 'user', content: 'demo prompt' }, { role: 'assistant', content: 'demo reply' }]), 'x.json', { now: '2026-01-01T00:00:00Z' });
+    const handle = createRelayHandler({ store: new AsyncRelayStore(new MemoryKV()), publicUrl: base, demo: r.bundle });
+    const home = await handle(new Request(`${base}/`));
+    assert.equal(home.status, 200);
+    assert.match(home.headers.get('content-security-policy')!, /default-src 'none'/);
+    const html = await home.text();
+    assert.match(html, /Move any AI chat to/);
+    assert.match(html, /class="bm only-fine" href="javascript:/);
+    assert.match(html, /id="pf"/);
+    assert.match(await (await handle(new Request(`${base}/privacy`))).text(), /What happens to your chat/);
+    assert.match(await (await handle(new Request(`${base}/demo`))).text(), /demo prompt/);
+    assert.match(await (await handle(new Request(`${base}/demo.md`))).text(), /# Baton handoff/);
+    assert.equal((await handle(new Request(`${base}/favicon.svg`))).headers.get('content-type'), 'image/svg+xml');
+    const png = new Uint8Array(await (await handle(new Request(`${base}/og.png`))).arrayBuffer());
+    assert.deepEqual([...png.slice(1, 4)], [0x50, 0x4e, 0x47]);
+    const nf = await handle(new Request(`${base}/h/BTN-0000-0000-0000`));
+    assert.equal(nf.status, 404);
+    assert.match(await nf.text(), /This link has expired/);
   });
 });
