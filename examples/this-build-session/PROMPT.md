@@ -10,9 +10,10 @@ MY PROMPTS SO FAR (verbatim, in order):
 4. Now this is the exact problem. how to properly transfer the chat or plan along with the prompt and resoning and all outputs vey easily. maybe a skill or as md files or html or zip or whatever. As a skill? app? plugin? something else? some other product build using this idea, or this idea as an enabler. Ways of monitising, creative ways of it ; free to user. or same problem in some business application and make as a layer ans product. like idk salesforce, oracle, layer, saaas, or webapp whatever, softwoare. complete deep research and final build end to end. All reasoning, prompts, outpputs, must be properly documented tme to time and saved locally, everything. including files etc. or on github.
 
 WHERE THE ASSISTANT LEFT OFF (last reply):
-Now testing the real install path, exactly as a user would run it: `npx` straight from GitHub.
+65 of 65 tests pass. Rebuilding the bundled CLI, then running the final self-export with the term list.
 
 FILES FROM THE PREVIOUS SESSION (status):
+- _abs/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt [recovered]
 - .claude-plugin/marketplace.json [stale]
 - .claude-plugin/plugin.json [recovered]
 - .github/workflows/ci.yml [recovered]

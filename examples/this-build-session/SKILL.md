@@ -20,5 +20,5 @@ Everything needed to resume is next to this file.
 
 ## Integrity
 
-`bundle.json` is the canonical record. Hash-chain root: `782e7e280b2e78d11e5b8047c500f0ab85913a7d4a731a3460fff364c35649dc`.
+`bundle.json` is the canonical record. Hash-chain root: `66d9b0eefaf7312b87f6b0892c5b7960aebe881d0f6ea487387caa274b74234d`.
 If `baton` is installed, run `baton verify .` to check nothing was altered.

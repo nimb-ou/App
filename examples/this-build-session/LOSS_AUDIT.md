@@ -7,15 +7,16 @@ everything Baton reconstructed, and everything Baton removed on purpose (private
 |---|---|---|---|
 | HIGH | files-lost | 5 | 5 file(s) were created or linked but their contents are not in the source: docs/outputs/cli-cricket.txt, docs/outputs/plugin-validate.txt, docs/outputs/test-run.txt, docs/outputs/typecheck.txt, fixtures/chatgpt-share-cricket-stumping.html.gz. |
 | WARN | files-stale | 11 | 11 file(s) were recovered exactly as last written, but later code changed them in ways that cannot be replayed statically: .claude-plugin/marketplace.json, .gitignore, package.json, scripts/build.mjs, src/cli.ts, src/core/redact.ts, src/node/io.ts, src/recover/artifacts.ts, …. |
-| info | files-recovered | 49 | 49 file(s) were reconstructed byte-for-byte from the code that created them. |
-| info | reasoning-depth | 71 | Thinking blocks are stored as signatures only (no plaintext) in this log, so reasoning cannot be transferred. Decisions are captured in the visible messages and tool calls. |
+| info | files-recovered | 50 | 50 file(s) were reconstructed byte-for-byte from the code that created them. |
+| info | reasoning-depth | 74 | Thinking blocks are stored as signatures only (no plaintext) in this log, so reasoning cannot be transferred. Decisions are captured in the visible messages and tool calls. |
 | info | private-context | 2 | 2 private context item(s) (system prompts, memory, custom instructions, harness metadata) were excluded. Use --include-hidden to keep them. |
-| info | baton-redactions | 31 | Baton redacted 31 secret/PII match(es) before export (anthropic_key: 3, github_token: 3, aws_access_key: 3, bearer: 3, password_assign: 3, email: 6, card: 4, phone: 4, private_key: 1, openai_key: 1). Use --no-redact to disable. |
+| info | baton-redactions | 36 | Baton redacted 36 secret/PII match(es) before export (custom: 5, anthropic_key: 3, github_token: 3, aws_access_key: 3, bearer: 3, password_assign: 3, email: 6, card: 4, phone: 4, private_key: 1, openai_key: 1). Use --no-redact to disable. |
 
 ## Files
 
 | Status | Path | Size | Versions | Notes |
 |---|---|---|---|---|
+| recovered | `_abs/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt` | 17 B | 1 |  |
 | stale | `.claude-plugin/marketplace.json` | 247 B | 1 | rewritten by Python open(…, "w") |
 | recovered | `.claude-plugin/plugin.json` | 570 B | 1 |  |
 | recovered | `.github/workflows/ci.yml` | 605 B | 1 |  |
@@ -74,7 +75,7 @@ everything Baton reconstructed, and everything Baton removed on purpose (private
 | recovered | `src/render/mdlite.ts` | 4.6 KB | 1 |  |
 | recovered | `src/render/turns.ts` | 4.9 KB | 1 |  |
 | recovered | `src/sinks/index.ts` | 10.0 KB | 1 |  |
-| recovered | `tests/core.test.ts` | 5.6 KB | 1 |  |
+| recovered | `tests/core.test.ts` | 6.0 KB | 2 |  |
 | recovered | `tests/parsers.test.ts` | 10.1 KB | 1 |  |
 | recovered | `tests/recover.test.ts` | 5.5 KB | 1 |  |
 | recovered | `tests/surfaces.test.ts` | 7.6 KB | 1 |  |
@@ -89,12 +90,12 @@ everything Baton reconstructed, and everything Baton removed on purpose (private
 
 ## Integrity
 
-Hash chain root (SHA-256 over 440 events + 65 artifact digests): `782e7e280b2e78d11e5b8047c500f0ab85913a7d4a731a3460fff364c35649dc`
+Hash chain root (SHA-256 over 456 events + 66 artifact digests): `66d9b0eefaf7312b87f6b0892c5b7960aebe881d0f6ea487387caa274b74234d`
 
 Run `baton verify <bundle-dir>` to recompute it. Any edit to an event or a recovered file changes the root.
 
 ## Stats
 
-- Prompts: 4 · assistant messages: 27 · reasoning blocks: 95
-- Tool calls: 157 · tool results: 156 · items the source redacted: 71
-- Wall-clock span: 40m 55s
+- Prompts: 4 · assistant messages: 29 · reasoning blocks: 99
+- Tool calls: 162 · tool results: 161 · items the source redacted: 74
+- Wall-clock span: 41m 41s

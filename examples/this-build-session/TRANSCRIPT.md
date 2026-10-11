@@ -1,6 +1,6 @@
 # Transcript: https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388. Build this. End 
 
-*Claude Code (claude-opus-5-5) · session log · 4 prompts · 440 events · exported by Baton 0.1.0*
+*Claude Code (claude-opus-5-5) · session log · 4 prompts · 456 events · exported by Baton 0.1.0*
 
 Reasoning, tool calls and tool outputs are folded into `<details>` blocks. Placeholders mark content the source did not include. See `LOSS_AUDIT.md`.
 
@@ -4311,7 +4311,7 @@ The live fetch confirms deterministic output, matching the saved root hash, and 
 <details><summary>Tool call: <code>Bash</code> · Bash: Inspect redaction contexts and stale/lost files</summary>
 
 ```bash
-cd /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/cli-out/self && grep -n -o ".\{80\}REDACTED:[A-Z]*.\{40\}" TRANSCRIPT.md | head; grep -n "^| stale\|^| lost" HANDOFF.md; grep -c "nimitjain" TRANSCRIPT.md bundle.json
+cd /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/cli-out/self && grep -n -o ".\{80\}REDACTED:[A-Z]*.\{40\}" TRANSCRIPT.md | head; grep -n "^| stale\|^| lost" HANDOFF.md; grep -c "[REDACTED:TERM1]" TRANSCRIPT.md bundle.json
 ```
 
 </details>
@@ -6133,7 +6133,205 @@ File created successfully at: /home/user/App/docs/journal/2026-10-11-04-dogfood-
 <details><summary>Tool call: <code>Bash</code> · Bash: Export this session as a bundle and scan for sensitive data</summary>
 
 ```bash
-rm -rf examples/this-build-session && node src/bin.ts session latest -o examples/this-build-session && du -sh examples/this-build-session && ls examples/this-build-session && echo "--- email/secret scan:" && grep -rhoE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" examples/this-build-session | sort | uniq -c | sort -rn | head; grep -rlc "nimitjain" examples/this-build-session; grep -rhoE "(sk-ant-|ghp_|github_pat_|AKIA)[A-Za-z0-9_-]{8,}" examples/this-build-session | head -3; grep -c "system-reminder" examples/this-build-session/bundle.json
+rm -rf examples/this-build-session && node src/bin.ts session latest -o examples/this-build-session && du -sh examples/this-build-session && ls examples/this-build-session && echo "--- email/secret scan:" && grep -rhoE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" examples/this-build-session | sort | uniq -c | sort -rn | head; grep -rlc "[REDACTED:TERM1]" examples/this-build-session; grep -rhoE "(sk-ant-|ghp_|github_pat_|AKIA)[A-Za-z0-9_-]{8,}" examples/this-build-session | head -3; grep -c "system-reminder" examples/this-build-session/bundle.json
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+✓ https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388. Build this. End 
+  source   Claude Code (claude-code)
+  content  4 prompts · 27 replies · 95 reasoning · 157 tool calls
+  files    49 recovered · 11 stale · 5 lost
+  loss     5 files-lost (see LOSS_AUDIT.md)
+  redacted 31 secret/PII match(es)
+  root     782e7e280b2e78d11e5b8047c500f0ab85913a7d4a731a3460fff364c35649dc
+  → examples/this-build-session/HANDOFF.md  (start here)
+2.8M	examples/this-build-session
+AGENTS.md
+HANDOFF.md
+LOSS_AUDIT.md
+PROMPT.md
+SKILL.md
+TRANSCRIPT.md
+bundle.json
+files
+index.html
+--- email/secret scan:
+     42 noreply@anthropic.com
+      1 nnoreply@anthropic.com
+examples/this-build-session/index.html
+examples/this-build-session/TRANSCRIPT.md
+examples/this-build-session/bundle.json
+9
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 17:51 UTC
+
+The scan found your email address in the export. Checking where it comes from before anything is committed.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Locate email occurrences and redaction counts</summary>
+
+```bash
+grep -o ".\{150\}[REDACTED:TERM1].\{80\}" examples/this-build-session/TRANSCRIPT.md | head -5; echo; grep -o "REDACTED:[A-Z ]*" examples/this-build-session/TRANSCRIPT.md | sort | uniq -c
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+cret scan:" && grep -rhoE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" examples/this-build-session | sort | uniq -c | sort -rn | head; grep -rlc "[REDACTED:TERM1]" examples/this-build-session; grep -rhoE "(sk-ant-|ghp_|github_pat_|AKIA)[A-Za-
+
+      4 REDACTED:
+      3 REDACTED:ANTHROPIC KEY
+      3 REDACTED:AWS KEY
+      3 REDACTED:BEARER TOKEN
+      6 REDACTED:CARD
+      3 REDACTED:EMAIL
+      3 REDACTED:GITHUB TOKEN
+      3 REDACTED:PASSWORD
+     10 REDACTED:PHONE
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+That match was just my own grep command, not the actual email address—the harness context strips it out. I'll add a `--redact-file` option for custom-term redaction (useful for client names/codenames too) and apply it to the final export.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Add custom-term redaction to core and CLI with a test</summary>
+
+```bash
+python3 - <<'EOF'
+import re
+def sub(p, old, new):
+    s=open(p).read(); assert old in s, (p, old[:60]); open(p,'w').write(s.replace(old,new,1))
+# Redactor: custom literal terms
+sub('src/core/redact.ts', """  constructor(enabled = true, rules: RedactionRule[] = DEFAULT_RULES) {
+    this.enabled = enabled;
+    this.rules = rules;
+  }""", """  constructor(enabled = true, rules: RedactionRule[] = DEFAULT_RULES, terms: string[] = []) {
+    this.enabled = enabled;
+    // User-supplied literal terms (names, client codenames…) run first, case-insensitively.
+    const custom = terms
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 3)
+      .map((t, i): RedactionRule => ({ id: 'custom', label: `TERM${i + 1}`, re: new RegExp(t.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'), 'gi') }));
+    this.rules = [...custom, ...rules];
+  }""")
+sub('src/core/schema.ts', """  redact?: boolean; // default true""", """  redact?: boolean; // default true
+  redactTerms?: string[]; // extra literal terms to redact (case-insensitive)""")
+sub('src/core/build.ts', """  const redactor = new Redactor(redact);""", """  const redactor = new Redactor(redact, undefined, options.redactTerms ?? []);""")
+# CLI flags
+sub('src/cli.ts', """  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now']);""", """  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file']);""")
+sub('src/cli.ts', """    redact: a.flags['no-redact'] !== true,
+    includeHidden""", """    redact: a.flags['no-redact'] !== true,
+    redactTerms: [...(str(a.flags.redact) ?? '').split(','), ...(str(a.flags['redact-file']) ? readFileSync(str(a.flags['redact-file'])!, 'utf8').split('\\n') : [])].filter((t) => t.trim()),
+    includeHidden""")
+sub('src/cli.ts', """import { cpSync, existsSync, mkdirSync } from 'node:fs';""", """import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';""")
+sub('src/cli.ts', """  --no-redact              keep emails, keys and tokens (default: redact)""", """  --redact <a,b>           also redact these terms (names, client codenames…)
+  --redact-file <path>     … or terms listed one per line in a file
+  --no-redact              keep emails, keys and tokens (default: redact)""")
+EOF
+grep -n "replace(/\[" src/core/redact.ts; cat >> tests/core.test.ts <<'EOF'
+
+describe('custom redaction terms', () => {
+  it('redacts literal terms case-insensitively and escapes regex characters', () => {
+    const r = new Redactor(true, undefined, ['Acme Corp', 'proj.x(1)', 'ab']);
+    assert.equal(r.apply('acme corp ships proj.x(1) and projAx(1)'), '[REDACTED:TERM1] ships [REDACTED:TERM2] and projAx(1)');
+    assert.equal(r.counts.custom, 2);
+  });
+});
+EOF
+npm test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; npx tsc --noEmit && echo TSC-OK
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+43:      .map((t, i): RedactionRule => ({ id: 'custom', label: `TERM${i + 1}`, re: new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi') }));
+ℹ tests 65
+ℹ pass 65
+ℹ fail 0
+TSC-OK
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 17:52 UTC
+
+65 of 65 tests pass. Rebuilding the bundled CLI, then running the final self-export with the term list.
+
+<details><summary>Tool call: <code>Write</code> · Write: /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt</summary>
+
+```json
+/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt  (10 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Rebuild bundles, refresh test output, commit</summary>
+
+```bash
+npm run build 2>&1 | tail -1 && npm test > docs/outputs/test-run.txt 2>&1; tail -8 docs/outputs/test-run.txt | head -3; git add -A && git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -q -m "feat(redact): custom literal terms via --redact / --redact-file; journal 04
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HU3UboJxfLgugTuRfMGMHe" && echo committed
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+dist/baton.mjs 127 KB · web/dist/baton.html 817 KB
+ℹ tests 65
+ℹ suites 19
+ℹ pass 65
+committed
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Export session with custom redaction and re-scan</summary>
+
+```bash
+rm -rf examples/this-build-session && node src/bin.ts session latest -o examples/this-build-session --redact-file /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt | tail -6 && T=$(cat /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt) && echo "term hits: $(grep -rl "$T" examples/this-build-session | wc -l)" && echo "emails:" && grep -rhoE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" examples/this-build-session | sort -u && node src/bin.ts verify examples/this-build-session && sed -n '/## 2\. How the ask/,/## 3\./p' examples/this-build-session/HANDOFF.md | cut -c1-200
 ```
 
 </details>

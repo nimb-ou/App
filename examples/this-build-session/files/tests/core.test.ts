@@ -115,3 +115,11 @@ describe('mdlite (viewer safety)', () => {
     assert.match(html, /<details><summary>Tool call: <code>Bash<\/code><\/summary>/);
   });
 });
+
+describe('custom redaction terms', () => {
+  it('redacts literal terms case-insensitively and escapes regex characters', () => {
+    const r = new Redactor(true, undefined, ['Acme Corp', 'proj.x(1)', 'ab']);
+    assert.equal(r.apply('acme corp ships proj.x(1) and projAx(1)'), '[REDACTED:TERM1] ships [REDACTED:TERM2] and projAx(1)');
+    assert.equal(r.counts.custom, 2);
+  });
+});
