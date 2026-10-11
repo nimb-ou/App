@@ -3,8 +3,8 @@ title: Baton — carry the work forward
 emoji: 🏏
 colorFrom: green
 colorTo: yellow
-sdk: static
-app_file: index.html
+sdk: docker
+app_port: 7860
 pinned: false
 ---
 
@@ -14,9 +14,9 @@ pinned: false
 
 ## Try the browser app
 
-The static app lives in [`web/index.html`](web/index.html) and is shown from the root `index.html`. It parses files locally in your browser and creates a ZIP on your device; it does not upload the conversation. Supported inputs are ChatGPT share-page HTML, ChatGPT `conversations.json`, Claude export JSON, Claude Code JSONL, Markdown, and text. A direct share URL can be fetched by the CLI; browsers generally prevent a static page from fetching another site's share page.
+The app lives in [`web/index.html`](web/index.html) and is shown from the root `index.html`. It parses files locally in your browser and creates a ZIP on your device. Supported inputs are public ChatGPT share links, ChatGPT share-page HTML, ChatGPT `conversations.json`, Claude export JSON, Claude Code JSONL, Markdown, and text. When you paste a public ChatGPT share link, the Space fetches that public page and returns it to your browser for parsing; it does not retain the page or conversation. File imports stay in your browser.
 
-For a local preview, serve the repository root with any static file server and open `/web/`.
+For a local preview with share-link support, run `python3 server.py` from the repository root and open `http://localhost:7860/`.
 
 ## Use the CLI
 
@@ -46,7 +46,7 @@ To run the MCP server over stdio, configure your MCP client to launch `node /abs
 
 ## Trust and limits
 
-- Parsing and recovery operate on the file you choose. The browser app has no upload endpoint.
+- Parsing, recovery, and ZIP creation operate in your browser. Pasted public ChatGPT links are fetched by the Space's narrowly scoped endpoint; it accepts only `https://chatgpt.com/share/...` links, suppresses request-path logging, and does not retain fetched pages.
 - ChatGPT public-share HTML uses an undocumented internal stream format. Baton keeps the original source so a future parser can re-read it.
 - Public shares can redact tool outputs and omit generated files. Baton reports these gaps; it cannot recover data the source does not contain.
 - Visible reasoning summaries are preserved. Hidden chain-of-thought is not exposed or reconstructed.
