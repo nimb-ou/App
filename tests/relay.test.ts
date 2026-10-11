@@ -148,6 +148,9 @@ describe('portable fetch handler (Workers/Deno path) over an in-memory KV', () =
     assert.equal(view.status, 200);
     assert.match(await view.text(), /kv works/);
     assert.equal((await handle(new Request('https://relay.example/healthz'))).status, 200);
+    const secretHandle = createRelayHandler({ store: new AsyncRelayStore(new MemoryKV()), mcpSecret: 's3cr3t-path' });
+    assert.ok(!(await (await secretHandle(new Request('https://r.example/'))).text()).includes('s3cr3t-path'), 'home page hides the secret');
+    assert.equal((await secretHandle(new Request('https://r.example/mcp', { method: 'POST', body: '{}' }))).status, 404);
     assert.equal((await handle(new Request('https://relay.example/h/BTN-0000-0000-0000'))).status, 404);
   });
 });

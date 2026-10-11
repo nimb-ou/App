@@ -69,6 +69,7 @@ describe('redaction', () => {
     ['sk-proj-abcdefghijklmnopqrstuvwxyz0123', /OPENAI KEY/],
     ['ghp_abcdefghijklmnopqrstuvwxyz0123456789', /GITHUB TOKEN/],
     ['AKIAIOSFODNN7EXAMPLE', /AWS KEY/],
+    ['cfat_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdef', /CLOUDFLARE TOKEN/],
     ['jane.doe@acme.io', /EMAIL/],
     ['4111 1111 1111 1111', /CARD/],
     ['+1 415-555-1234', /PHONE/],

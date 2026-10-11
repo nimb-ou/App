@@ -14,6 +14,7 @@ export const DEFAULT_RULES: RedactionRule[] = [
   { id: 'github_token', label: 'GITHUB TOKEN', re: /\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})/g },
   { id: 'aws_access_key', label: 'AWS KEY', re: /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g },
   { id: 'google_api_key', label: 'GOOGLE KEY', re: /\bAIza[0-9A-Za-z_-]{35}\b/g },
+  { id: 'cloudflare_token', label: 'CLOUDFLARE TOKEN', re: /\bcf(?:at|ut|k)_[A-Za-z0-9_-]{30,}/g },
   { id: 'slack_token', label: 'SLACK TOKEN', re: /\bxox[abprs]-[A-Za-z0-9-]{10,}/g },
   { id: 'stripe_key', label: 'STRIPE KEY', re: /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{20,}/g },
   { id: 'jwt', label: 'JWT', re: /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g },

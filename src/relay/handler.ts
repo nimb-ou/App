@@ -133,7 +133,8 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
         return res(200, String(files['index.html']), 'text/html; charset=utf-8', { 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", 'referrer-policy': 'no-referrer' });
       }
 
-      if (url.pathname === '/' && req.method === 'GET') return res(200, page('Baton relay', landing(base, mcpPath)), 'text/html; charset=utf-8');
+      // Never reveal a secret MCP path on the public home page.
+      if (url.pathname === '/' && req.method === 'GET') return res(200, page('Baton relay', landing(base, o.mcpSecret ? '/mcp/<your secret>' : mcpPath)), 'text/html; charset=utf-8');
       return json(404, { error: 'Not found' });
     } catch (err) {
       return json(400, { error: err instanceof Error ? err.message : String(err) });
