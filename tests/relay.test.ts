@@ -154,3 +154,67 @@ describe('portable fetch handler (Workers/Deno path) over an in-memory KV', () =
     assert.equal((await handle(new Request('https://relay.example/h/BTN-0000-0000-0000'))).status, 404);
   });
 });
+
+describe('Baton Link share-URL parsing', () => {
+  it('accepts every way a share link can be prefixed', async () => {
+    const { shareIdFrom } = await import('../src/relay/handler.ts');
+    const id = '6acbc222-2500-83ee-b38c-dcfe2b46e388';
+    for (const p of [`/https://chatgpt.com/share/${id}`, `/https:/chatgpt.com/share/${id}`, `/chatgpt.com/share/${id}`, `/share/${id}`, `/https://chat.openai.com/share/${id}`, `/https%3A%2F%2Fchatgpt.com%2Fshare%2F${id}`]) {
+      assert.deepEqual(shareIdFrom(p), { id, mode: '' }, p);
+    }
+    assert.deepEqual(shareIdFrom(`/share/${id}.md`), { id, mode: '.md' });
+    assert.deepEqual(shareIdFrom(`/share/${id}/full`), { id, mode: '/full' });
+    assert.equal(shareIdFrom('/https://evil.example/share/x'), undefined);
+  });
+  it('builds an AI brief with instructions and inline files', async () => {
+    const { aiBrief } = await import('../src/relay/linkpage.ts');
+    const [r] = convert(JSON.stringify([{ role: 'user', content: 'make a.txt' }, { role: 'assistant', content: 'done' }]), 'x.json', { now: '2026-01-01T00:00:00Z' });
+    const md = aiBrief(r.bundle, r.files);
+    assert.match(md, /^# Baton handoff: /);
+    assert.match(md, /To the AI reading this/);
+  });
+});
+
+describe('Bookmarklet capture (form POST and JSON ingest)', () => {
+  const base = 'https://relay.example';
+  const make = () => createRelayHandler({ store: new AsyncRelayStore(new MemoryKV(), { ttlDays: 1 }), publicUrl: base });
+  const capture = { url: 'https://gemini.google.com/app/abc', title: 'Stumping sim - Google Gemini', messages: [{ role: 'user', content: 'Build a stumping simulator' }, { role: 'assistant', content: 'Here is the plan:\n\n1. Physics' }] };
+
+  it('the bookmarklet is valid JavaScript and only talks to this relay', async () => {
+    const { bookmarkletSource } = await import('../src/relay/ingest.ts');
+    const src = bookmarkletSource(base);
+    assert.ok(src.startsWith('javascript:'));
+    const code = decodeURIComponent(src.slice('javascript:'.length));
+    assert.doesNotThrow(() => new Function(code));
+    const hosts = new Set([...code.matchAll(/https?:\/\/[a-z0-9.-]+/gi)].map((m) => m[0]));
+    assert.deepEqual([...hosts], [base]);
+    assert.match(code, /cloneNode\(true\)/, 'reads clones, never edits the live page');
+  });
+
+  it('form POST stores the chat and redirects to the Baton Link', async () => {
+    const handle = make();
+    const r = await handle(new Request(`${base}/api/ingest-form`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ d: JSON.stringify(capture) }).toString() }));
+    assert.equal(r.status, 303);
+    const loc = r.headers.get('location')!;
+    assert.match(loc, /^https:\/\/relay\.example\/h\/BTN-/);
+    const html = await (await handle(new Request(loc))).text();
+    assert.match(html, /Stumping sim/);
+    assert.doesNotMatch(html, /<h1>[^<]*Google Gemini/);
+    assert.match(html, /Continue in Claude/);
+    const md = await (await handle(new Request(`${loc}.md`))).text();
+    assert.match(md, /Build a stumping simulator/);
+    assert.match(md, /Gemini \(captured in your browser\)/);
+  });
+
+  it('JSON ingest accepts a raw capture; errors are readable', async () => {
+    const handle = make();
+    const ok = await handle(new Request(`${base}/api/ingest`, { method: 'POST', body: JSON.stringify(capture) }));
+    assert.equal(ok.status, 201);
+    assert.match(((await ok.json()) as { url: string }).url, /\/h\/BTN-/);
+    const bad = await handle(new Request(`${base}/api/ingest-form`, { method: 'POST', body: new URLSearchParams({ d: JSON.stringify({ url: 'https://claude.ai/chat/x', error: 'Claude answered 403' }) }).toString() }));
+    assert.equal(bad.status, 400);
+    assert.match(await bad.text(), /Claude answered 403/);
+    const tokenHandle = createRelayHandler({ store: new AsyncRelayStore(new MemoryKV()), token: 't' });
+    assert.equal((await tokenHandle(new Request(`${base}/api/ingest-form`, { method: 'POST', body: 'd=%7B%7D' }))).status, 401);
+  });
+});

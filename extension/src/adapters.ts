@@ -154,7 +154,7 @@ export const claude: Adapter = {
 function textOf(el: Element, prefer?: string): string {
   const inner = prefer ? el.querySelector(prefer) : null;
   const clone = (inner ?? el).cloneNode(true) as HTMLElement;
-  clone.querySelectorAll('button, svg, [aria-hidden="true"], .sr-only').forEach((n) => n.remove());
+  clone.querySelectorAll('button, svg, [aria-hidden="true"], .sr-only, .cdk-visually-hidden, .visually-hidden').forEach((n) => n.remove());
   clone.querySelectorAll('pre').forEach((pre) => {
     const code = pre.textContent ?? '';
     pre.replaceWith(Object.assign(el.ownerDocument.createElement('div'), { textContent: `\n\`\`\`\n${code.replace(/\n$/, '')}\n\`\`\`\n` }));

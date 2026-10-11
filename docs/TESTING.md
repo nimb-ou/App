@@ -3,6 +3,15 @@
 About 20 minutes. Use a **desktop** Chrome, Edge, Brave or Arc. Mobile browsers cannot load extensions.
 If anything fails, click **Copy debug report** in the Baton panel and send it back. It contains no conversation text.
 
+## Fastest test: the bookmark (1 minute, no install)
+
+1. Open <https://baton-relay.nimitjain-248.workers.dev>, show the bookmarks bar (Ctrl/Cmd+Shift+B), and drag **⚡ Baton** onto it.
+2. Open a chat in ChatGPT (`chatgpt.com/c/…`), Claude (`claude.ai/chat/…`) or Gemini, and click the bookmark.
+3. A new tab opens on a Baton Link. Click **Continue in Claude** (or ChatGPT / Gemini) and check that the new AI restates the work.
+
+If the new tab shows an error, send the message it shows. Already tested for real: a ChatGPT share page and a signed-out Gemini chat.
+Not yet tested: signed-in `chatgpt.com/c/…` and `claude.ai/chat/…`. Those two are what your run proves.
+
 ## 0. Install the extension (2 minutes)
 
 1. Download [`extension/baton-extension.zip`](https://github.com/nimb-ou/App/raw/claude/laughing-davinci-c048d8/extension/baton-extension.zip) and unzip it.

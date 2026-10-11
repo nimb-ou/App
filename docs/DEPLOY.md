@@ -52,7 +52,7 @@ has **no persistent disk**, so handoffs vanish when the service restarts. Use a 
 
 ## What was verified
 
-- The Worker runs in Cloudflare's runtime (`wrangler dev`, workerd) with a KV binding. A "ChatGPT" client checkpointed,
-  a "Claude" client picked up with files, the viewer and zip were served, and a sealed CLI send/pickup verified the root hash.
+- The Worker runs in Cloudflare's runtime (`wrangler dev`, workerd) with a KV binding. A scripted MCP client (not the real
+  ChatGPT or Claude) checkpointed and picked up with files, the viewer and zip were served, and a sealed CLI send/pickup verified the root hash.
 - The same handler is covered by `tests/relay.test.ts` (in-memory KV) and runs on Node (file store).
-- **Not verified:** an actual deploy to a Cloudflare account. No account is available in the build environment.
+- **Deployed for real** on 2026-10-11 to `https://baton-relay.nimitjain-248.workers.dev` with `npm run deploy:relay` ([journal 07](journal/2026-10-11-07-live-deploy.md)).

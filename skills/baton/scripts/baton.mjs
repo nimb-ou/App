@@ -3161,7 +3161,206 @@ async function pickup(input, opts = {}) {
 // src/relay/server.ts
 import { createServer } from "node:http";
 
+// src/relay/linkpage.ts
+function aiBrief(b, files, budget = 9e4) {
+  const handoff = String(files["HANDOFF.md"] ?? "").replace(/^---[\s\S]*?---\n/, "");
+  const parts = [
+    `# Baton handoff: ${b.title}`,
+    "",
+    `> **To the AI reading this:** a user moved this work here from ${b.source.tool}. Read the brief, restate the goal and where`,
+    "> the work stopped in 2\u20133 sentences, list anything marked lost, then continue from the latest instruction (\xA73).",
+    "> Do not assume lost files exist.",
+    "",
+    handoff
+  ];
+  let room = budget - parts.join("\n").length;
+  const inline2 = [];
+  for (const a of b.artifacts) {
+    if (a.content === void 0 || a.encoding === "base64") continue;
+    const block = `### files/${a.path}
+
+\`\`\`
+${a.content.replace(/```/g, "`\u200B``")}
+\`\`\``;
+    if (block.length > room) {
+      inline2.push(`### files/${a.path}
+
+*(${a.bytes} bytes, not inlined here: download the .zip)*`);
+      continue;
+    }
+    room -= block.length;
+    inline2.push(block);
+  }
+  if (inline2.length) parts.push("", "## File contents", "", ...inline2);
+  return parts.join("\n") + "\n";
+}
+function continuePrompt(title, url, tool) {
+  return `Please open this link and continue the work it describes: ${url}
+
+It is a Baton handoff of "${title}" from ${tool}: my prompts, the state of the work, decisions and files. Restate the goal and where it stopped, then continue.`;
+}
+function linkPage({ bundle: b, files, selfUrl, zipUrl, fullUrl, mdUrl }) {
+  const s2 = b.stats;
+  const a = s2.artifacts;
+  const prompt = continuePrompt(b.title, selfUrl, b.source.tool);
+  const q = encodeURIComponent(prompt);
+  const high = b.loss.filter((l) => l.severity === "high");
+  const brief = aiBrief(b, files);
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(b.title)} \xB7 Baton</title>
+<meta name="description" content="${escapeHtml(truncate(`Baton handoff of "${b.title}" from ${b.source.tool}: ${s2.userMessages} prompts, ${a.recovered} files.`, 200))}">
+<meta name="robots" content="noindex">
+<link rel="alternate" type="text/markdown" href="${escapeHtml(mdUrl)}">
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--fg:#14201b;--mu:#5b6b64;--line:#d7dfdb;--ac:#2343c9;--acfg:#fff;--ok:#1f7a4d;--bad:#b4271c;--warn:#9a6400}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--card:#161e1b;--fg:#e4ebe7;--mu:#9aaba3;--line:#2a3632;--ac:#8ea4ff;--acfg:#0d1430;--ok:#69c897;--bad:#f08b80;--warn:#e6b450}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:760px;margin:0 auto;padding:28px 16px 64px}
+.k{font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+h1{font-size:clamp(26px,5vw,36px);line-height:1.1;margin:6px 0 10px;text-wrap:balance}
+.stats{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--mu);font-size:14.5px;font-variant-numeric:tabular-nums}
+.stats b{color:var(--fg)}.lost b{color:var(--bad)}
+.go{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:22px 0 10px}
+.go a,.go button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:10px 14px;border-radius:10px;font:700 16px system-ui,sans-serif;text-decoration:none;cursor:pointer;border:1px solid var(--fg);background:var(--card);color:var(--fg)}
+.go .p{background:var(--ac);border-color:var(--ac);color:var(--acfg)}
+.sub{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14.5px;margin:6px 0 24px}.sub a,.sub button{color:var(--ac);background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline}
+.note{font-size:14px;color:var(--mu);border-left:3px solid var(--line);padding:2px 12px;margin:0 0 22px}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px}summary{cursor:pointer;padding:12px 14px;font-weight:700}
+article{padding:4px 16px 16px;overflow-wrap:anywhere}pre.brief{white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,monospace;margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+</style></head><body><div class="w">
+<div class="k">Baton handoff \xB7 from ${escapeHtml(b.source.tool)}</div>
+<h1>${escapeHtml(b.title)}</h1>
+<div class="stats"><span><b>${s2.userMessages}</b> prompts</span><span><b>${s2.toolCalls}</b> tool calls</span><span><b>${a.recovered + a.attached}</b> files recovered</span>${a.lost ? `<span class="lost"><b>${a.lost}</b> lost at source</span>` : ""}</div>
+<div class="go">
+<a class="p" href="https://claude.ai/new?q=${q}" target="_blank" rel="noopener">Continue in Claude</a>
+<a class="p" href="https://chatgpt.com/?q=${q}" target="_blank" rel="noopener">Continue in ChatGPT</a>
+<button type="button" data-copy-open="https://gemini.google.com/app">Continue in Gemini</button>
+</div>
+<div class="sub"><button type="button" data-copy="1">Copy prompt for any AI</button><button type="button" data-copy-link="1">Copy this link</button><a href="${escapeHtml(zipUrl)}">Download bundle (.zip)</a><a href="${escapeHtml(fullUrl)}">Full transcript</a><a href="${escapeHtml(mdUrl)}">Plain text</a></div>
+<p class="note">Any AI that can browse (ChatGPT, Claude, Gemini, Perplexity, Copilot\u2026) can read this page. Paste the link and say "continue this".${high.length ? ` What the source did not include: ${escapeHtml(high.map((l) => `${l.count} ${l.category.replace(/-/g, " ")}`).join(", "))}.` : ""}</p>
+<details open><summary>Handoff brief (this is what the AI reads)</summary><article><pre class="brief">${escapeHtml(brief)}</pre></article></details>
+</div><div class="toast" id="t"></div>
+<script>
+const P=${JSON.stringify(prompt).replace(/</g, "\\u003c")},L=${JSON.stringify(selfUrl).replace(/</g, "\\u003c")};
+const t=document.getElementById('t');const toast=m=>{t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)};
+const copy=async s=>{try{await navigator.clipboard.writeText(s);return true}catch{return false}};
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>toast(await copy(P)?'Prompt copied: paste it into any AI':'Copy blocked: select the brief below'));
+document.querySelectorAll('[data-copy-link]').forEach(b=>b.onclick=async()=>toast(await copy(L)?'Link copied':'Copy blocked'));
+document.querySelectorAll('[data-copy-open]').forEach(b=>b.onclick=async()=>{await copy(P);toast('Prompt copied. Paste it in Gemini');window.open(b.dataset.copyOpen,'_blank','noopener')});
+</script></body></html>`;
+}
+function homePage(base, mcpDisplay, bookmarklet) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Baton</title>
+<style>:root{--bg:#f3f5f4;--card:#fff;--fg:#14201b;--mu:#5b6b64;--line:#d7dfdb;--ac:#2343c9;--acfg:#fff}@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--card:#161e1b;--fg:#e4ebe7;--mu:#9aaba3;--line:#2a3632;--ac:#8ea4ff;--acfg:#0d1430}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif}.w{max-width:720px;margin:0 auto;padding:40px 16px 64px}
+h1{font-size:clamp(34px,7vw,52px);line-height:1;margin:0 0 10px;letter-spacing:-.01em}p{color:var(--mu);margin:0 0 18px}
+form{display:flex;gap:8px;flex-wrap:wrap}input{flex:1 1 280px;min-width:0;font:16px system-ui,sans-serif;padding:14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+button{font:700 16px system-ui,sans-serif;padding:14px 20px;border-radius:10px;border:0;background:var(--ac);color:var(--acfg);cursor:pointer}
+ol{padding-left:20px;color:var(--mu)}li{margin:6px 0}code{font:13px ui-monospace,monospace;background:var(--card);padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}h2{font-size:18px;margin:34px 0 8px}
+.bm{display:inline-block;padding:12px 18px;border-radius:10px;background:var(--ac);color:var(--acfg);font-weight:800;text-decoration:none;cursor:grab}</style></head>
+<body><div class="w"><h1>Baton</h1><p>Move a conversation from one AI to another, including the parts a share link drops.</p>
+<h2>1 \xB7 Add the Baton button (once)</h2>
+<p><a class="bm" href="${escapeHtml(bookmarklet)}" onclick="event.preventDefault();alert('Drag this button to your bookmarks bar, then click it on a ChatGPT, Claude or Gemini chat.')">\u26A1 Baton</a> \u2190 drag this to your bookmarks bar (show the bar with Ctrl/Cmd+Shift+B).</p>
+<h2>2 \xB7 On any ChatGPT, Claude or Gemini chat, click it</h2>
+<p>Baton reads the chat using your own signed-in browser (prompts, replies and, in ChatGPT and Claude, tool outputs, code and artifacts) and saves it to your relay. A page opens with <b>Continue in Claude / ChatGPT / Gemini</b> buttons, and the link is copied. Any AI can open that link and pick up the work.</p>
+<h2>Or paste a code</h2>
+<form action="/go" method="get"><input name="u" placeholder="BTN-\u2026 or a Baton link" aria-label="Baton code" required><button>Open</button></form>
+<h2>For AIs with connectors</h2><p>MCP server: <code>${escapeHtml(base + mcpDisplay)}</code>. In any AI: "baton: hand this off" \u2192 code \u2192 "baton pickup &lt;code&gt;" elsewhere.</p>
+</div></body></html>`;
+}
+
+// src/relay/ingest.ts
+function ingestToBundle(b) {
+  let parsed;
+  switch (b.source) {
+    case "chatgpt-share-html":
+      parsed = parseChatGPTShareHtml(String(b.payload), b.url);
+      break;
+    case "chatgpt-conversation":
+      parsed = parseChatGPTConversation(b.payload, { kind: "chatgpt-export", url: b.url });
+      parsed.source.tool = "ChatGPT (captured in your browser)";
+      break;
+    case "claude-conversation": {
+      const [c] = parseClaudeExport([b.payload]);
+      if (!c) throw new Error("That does not look like a Claude conversation");
+      parsed = { ...c, source: { ...c.source, tool: "Claude (captured in your browser)", url: b.url }, loss: (c.loss ?? []).filter((l) => l.category !== "memory") };
+      break;
+    }
+    case "messages":
+      parsed = parseMessagesLog(b.payload, "Conversation");
+      parsed.source = { ...parsed.source, tool: hostLabel(b.url), url: b.url };
+      parsed.loss = [{ category: "dom-capture", count: parsed.events.length, severity: "warn", detail: "Captured from the rendered page: visible text and code only. Tool outputs, files and hidden reasoning are not in the page." }];
+      break;
+    default:
+      throw new Error(`Unknown source ${String(b.source)}`);
+  }
+  if (!parsed.events.some((e) => e.kind === "message")) throw new Error("No conversation found on that page. Open a chat with at least one message and try again.");
+  return buildBundle(parsed).bundle;
+}
+function hostLabel(url) {
+  const h = url ? new URL(url).hostname : "";
+  if (h.includes("gemini.google")) return "Gemini (captured in your browser)";
+  if (h.includes("perplexity")) return "Perplexity (captured in your browser)";
+  if (h.includes("copilot")) return "Copilot (captured in your browser)";
+  return `${h || "Web chat"} (captured in your browser)`;
+}
+function captureToIngest(d) {
+  if (!d || typeof d !== "object" || typeof d.url !== "string") throw new Error("Nothing was captured.");
+  if (d.error) throw new Error(`Could not read the chat: ${d.error}`);
+  if (d.chatgpt) return { source: "chatgpt-conversation", payload: d.chatgpt, url: d.url };
+  if (d.claude) return { source: "claude-conversation", payload: d.claude, url: d.url };
+  if (d.html && /(chatgpt\.com|chat\.openai\.com)\/share\//.test(d.url)) return { source: "chatgpt-share-html", payload: d.html, url: d.url };
+  if (d.messages?.length) {
+    const title = String(d.title ?? "").replace(/\s*[-|–—]\s*(Google )?(Gemini|ChatGPT|Claude|Perplexity|Copilot).*$/i, "").trim();
+    return { source: "messages", payload: { title: title || void 0, messages: d.messages }, url: d.url };
+  }
+  throw new Error("No conversation found on that page. Open a chat with at least one message and try again.");
+}
+function isCapture(x) {
+  return !!x && typeof x === "object" && typeof x.url === "string" && !("source" in x);
+}
+function bookmarkletSource(relayOrigin) {
+  const R = JSON.stringify(relayOrigin);
+  const code = `(async()=>{const R=${R},N='baton'+Date.now(),w=window.open('about:blank',N);const d={url:location.href,title:document.title};
+const dom=()=>{const S=[['user-query','model-response','.query-text','message-content'],['[data-message-author-role="user"]','[data-message-author-role="assistant"]'],['[data-testid="user-message"]','.font-claude-response, .font-claude-message']];
+for(const[u,a,ut,at]of S){const all=[...document.querySelectorAll(u+', '+a)],ns=all.filter(n=>!all.some(o=>o!==n&&o.contains(n)));
+const m=ns.map(n=>{const U=n.matches(u),sel=U?ut:at,src=(sel&&n.querySelector(sel))||n,c=src.cloneNode(true);c.querySelectorAll('button,svg,[aria-hidden="true"],style,script,.sr-only,.cdk-visually-hidden,.visually-hidden').forEach(x=>x.remove());return{role:U?'user':'assistant',content:(c.innerText||c.textContent||'').replace(/\\n{3,}/g,'\\n\\n').trim()}}).filter(t=>t.content);
+if(m.length)return m}return null};
+try{const p=location.pathname,h=location.host;
+if(/\\/share\\//.test(p)&&/chatgpt\\.com|openai\\.com/.test(h)){d.html=document.documentElement.outerHTML}
+else if(/chatgpt\\.com|chat\\.openai\\.com/.test(h)&&/\\/c\\//.test(p)){const id=(p.match(/\\/c\\/([0-9a-f-]{20,})/)||[])[1];const s=await(await fetch('/api/auth/session')).json();const H={authorization:'Bearer '+s.accessToken};const a=(document.cookie.match(/(?:^|; )_account=([^;]+)/)||[])[1];if(a)H['chatgpt-account-id']=decodeURIComponent(a);const r=await fetch('/backend-api/conversation/'+id,{headers:H});if(r.ok)d.chatgpt=await r.json();else d.messages=dom()}
+else if(h==='claude.ai'&&/\\/chat\\//.test(p)){const id=(p.match(/\\/chat\\/([0-9a-f-]{20,})/)||[])[1];const o=await(await fetch('/api/organizations')).json();const g=(o.find(x=>(x.capabilities||[]).includes('chat'))||o[0]).uuid;const r=await fetch('/api/organizations/'+g+'/chat_conversations/'+id+'?tree=True&rendering_mode=messages&render_all_tools=true');if(r.ok)d.claude=await r.json();else d.messages=dom()}
+else{d.messages=dom();if(!d.messages)throw'No conversation found on this page'}}catch(e){d.error=String(e)}
+const viaPopup=()=>{const f=e=>{if(e.origin===R&&e.data==='baton:ready'){e.source.postMessage(d,R);removeEventListener('message',f)}};addEventListener('message',f);w.location.href=R+'/receive'};
+if(/(^|\\.)gemini\\.google\\.com$/.test(location.host))return viaPopup();
+let done=0;const v=e=>{if(!done&&/form-action/.test(e.violatedDirective||e.effectiveDirective)){done=1;viaPopup()}};addEventListener('securitypolicyviolation',v);
+const F=document.createElement('form');F.method='POST';F.action=R+'/api/ingest-form';F.target=N;F.acceptCharset='utf-8';F.style.display='none';const t=document.createElement('textarea');t.name='d';t.value=JSON.stringify(d);F.appendChild(t);document.body.appendChild(F);F.submit();F.remove();
+setTimeout(()=>removeEventListener('securitypolicyviolation',v),5000)})()`;
+  return "javascript:" + encodeURIComponent(code.replace(/\n/g, ""));
+}
+function receivePage() {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Baton \xB7 receiving</title>
+<style>:root{--bg:#f3f5f4;--fg:#14201b;--mu:#5b6b64;--bad:#b4271c}@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--fg:#e4ebe7;--mu:#9aaba3;--bad:#f08b80}}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 system-ui,sans-serif}.w{max-width:560px;margin:0 auto;padding:60px 16px}h1{font-size:30px;margin:0 0 10px}#st{color:var(--mu)}#st.err{color:var(--bad)}</style></head>
+<body><div class="w"><h1>Baton</h1><p id="st">Waiting for the conversation\u2026</p></div>
+<script>
+const st=document.getElementById('st');const fail=m=>{st.textContent=m;st.className='err'};
+if(!window.opener){fail('Open this from the Baton bookmark on a ChatGPT, Claude or Gemini chat.')}else{window.opener.postMessage('baton:ready','*')}
+addEventListener('message',async e=>{if(e.source!==window.opener||!e.data||typeof e.data!=='object'||typeof e.data.url!=='string')return;
+ st.textContent='Saving your handoff\u2026';
+ try{const r=await fetch('/api/ingest',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(e.data)});const j=await r.json();if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  await Promise.race([navigator.clipboard.writeText(j.url).catch(()=>{}),new Promise(r=>setTimeout(r,800))]);location.replace(j.url)}catch(err){fail(err.message)}});
+</script></body></html>`;
+}
+
 // src/relay/handler.ts
+var BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
+function shareIdFrom(pathname) {
+  const m = decodeURIComponent(pathname).match(/^\/(?:https?:\/{1,2})?(?:(?:www\.)?chatgpt\.com|chat\.openai\.com)?\/?share\/([0-9a-f]{8}-[0-9a-f-]{20,})(\.zip|\.md|\/full)?\/?$/i);
+  return m ? { id: m[1].toLowerCase(), mode: m[2] ?? "" } : void 0;
+}
 var CORS = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
@@ -3180,6 +3379,16 @@ function createRelayHandler(o) {
   const res = (status, body, type = "application/json", extra = {}) => new Response(body, { status, headers: { "content-type": type, "x-content-type-options": "nosniff", ...CORS, ...extra } });
   const json = (status, v, extra = {}) => res(status, JSON.stringify(v), "application/json", extra);
   const authorized = (req) => !o.token || req.headers.get("authorization") === `Bearer ${o.token}`;
+  const serveBundle = (bundle, files, selfUrl, mode, url, zipName) => {
+    if (mode === ".zip") {
+      const prefixed = {};
+      for (const [k, v] of Object.entries(files)) prefixed[`${zipName}/${k}`] = v;
+      return res(200, zip(prefixed), "application/zip", { "content-disposition": `attachment; filename="${zipName}.baton.zip"` });
+    }
+    if (mode === ".md" || url.searchParams.get("format") === "md") return res(200, aiBrief(bundle, files), "text/markdown; charset=utf-8", { "cache-control": "no-store" });
+    if (mode === "/full") return res(200, String(files["index.html"]), "text/html; charset=utf-8", { "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", "referrer-policy": "no-referrer" });
+    return res(200, linkPage({ bundle, files, selfUrl, zipUrl: `${selfUrl}.zip`, fullUrl: `${selfUrl}/full`, mdUrl: `${selfUrl}.md` }), "text/html; charset=utf-8", { "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'", "referrer-policy": "no-referrer", "cache-control": "no-store" });
+  };
   return async (req) => {
     const url = new URL(req.url);
     const base = (o.publicUrl ?? url.origin).replace(/\/$/, "");
@@ -3242,7 +3451,7 @@ function createRelayHandler(o) {
         if (!rec) return json(404, { error: "Not found or expired" });
         return json(200, rec);
       }
-      const view = url.pathname.match(/^\/h\/([^/.]+)(\.zip)?$/);
+      const view = url.pathname.match(/^\/h\/([^/.]+)(\.zip|\.md|\/full)?\/?$/);
       if (view && req.method === "GET") {
         const rec = await store.get(decodeURIComponent(view[1]));
         if (!rec) return res(404, page("Not found", "<p>This handoff does not exist or has expired.</p>"), "text/html; charset=utf-8");
@@ -3250,15 +3459,66 @@ function createRelayHandler(o) {
           if (view[2]) return json(400, { error: "Sealed handoffs are decrypted in the browser; open /h/<code>#<key>" });
           return res(200, sealedPage(rec.code, rec.title), "text/html; charset=utf-8", { "cache-control": "no-store", "referrer-policy": "no-referrer" });
         }
-        const { files } = renderRecord(rec);
-        if (view[2]) {
-          const prefixed = {};
-          for (const [k, v] of Object.entries(files)) prefixed[`${rec.code}/${k}`] = v;
-          return res(200, zip(prefixed), "application/zip", { "content-disposition": `attachment; filename="${rec.code}.baton.zip"` });
-        }
-        return res(200, String(files["index.html"]), "text/html; charset=utf-8", { "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", "referrer-policy": "no-referrer" });
+        const { bundle, files } = renderRecord(rec);
+        return serveBundle(bundle, files, `${base}/h/${rec.code}`, view[2] ?? "", url, rec.code);
       }
-      if (url.pathname === "/" && req.method === "GET") return res(200, page("Baton relay", landing(base, o.mcpSecret ? "/mcp/<your secret>" : mcpPath)), "text/html; charset=utf-8");
+      const share = shareIdFrom(url.pathname);
+      if (share && req.method === "GET") {
+        const { mode, id } = share;
+        const cacheKey = `s:${id}`;
+        let bundle;
+        const cached = url.searchParams.has("refresh") ? null : await store.kv.get(cacheKey);
+        if (cached) bundle = JSON.parse(cached);
+        else {
+          const shareUrl = `https://chatgpt.com/share/${id}`;
+          const up = await fetch(shareUrl, { headers: { "user-agent": BROWSER_UA, accept: "text/html", "accept-language": "en-US,en;q=0.9" }, redirect: "follow" });
+          const html = await up.text();
+          if (!up.ok || !html.includes("streamController.enqueue")) {
+            log(`share fetch ${id.slice(0, 8)}\u2026 \u2192 ${up.status}`);
+            return res(502, page("Could not read that share link", `<p>ChatGPT answered HTTP ${up.status} for <code>${escapeHtml(shareUrl)}</code>. The link may be private or deleted, or ChatGPT is refusing automated reads right now. Try again, or open the link and check that it is shared publicly.</p>`), "text/html; charset=utf-8");
+          }
+          bundle = buildBundle(parseChatGPTShareHtml(html, shareUrl)).bundle;
+          await store.kv.put(cacheKey, JSON.stringify(bundle), { expirationTtl: 6 * 3600 });
+        }
+        const files = renderBundleFiles(bundle);
+        return serveBundle(bundle, files, `${base}/https://chatgpt.com/share/${id}`, mode, url, id.slice(0, 8));
+      }
+      if (url.pathname === "/receive" && req.method === "GET") return res(200, receivePage(), "text/html; charset=utf-8", { "cache-control": "no-store", "referrer-policy": "no-referrer" });
+      if (url.pathname === "/api/ingest" && req.method === "POST") {
+        if (!authorized(req)) return json(401, { error: "Bearer token required" });
+        const text2 = await req.text();
+        if (text2.length > store.maxBytes) return json(413, { error: "Conversation too large for this relay" });
+        const body = JSON.parse(text2);
+        const bundle = ingestToBundle(isCapture(body) ? captureToIngest(body) : body);
+        const rec = await store.create({ title: bundle.title, from: "bookmarklet", bundle });
+        log(`ingest ${rec.code} (${bundle.source.tool})`);
+        return json(201, { code: rec.code, url: `${base}/h/${rec.code}`, title: bundle.title, stats: bundle.stats });
+      }
+      if (url.pathname === "/api/ingest-form" && req.method === "POST") {
+        const fail = (status, msg) => res(status, page("Baton could not save this chat", `<h1>Baton</h1><p>${escapeHtml(msg)}</p><p class="mu">Nothing was saved. Try again on an open chat, or use the extension.</p>`), "text/html; charset=utf-8", { "cache-control": "no-store" });
+        if (o.token) return fail(401, "This relay requires a token, so the bookmark cannot upload to it.");
+        const text2 = await req.text();
+        if (text2.length > store.maxBytes * 1.5) return fail(413, "Conversation too large for this relay.");
+        try {
+          const d = JSON.parse(new URLSearchParams(text2).get("d") ?? "null");
+          if (!isCapture(d)) return fail(400, "Nothing was captured.");
+          const bundle = ingestToBundle(captureToIngest(d));
+          const rec = await store.create({ title: bundle.title, from: "bookmarklet", bundle });
+          log(`ingest-form ${rec.code} (${bundle.source.tool})`);
+          return new Response(null, { status: 303, headers: { location: `${base}/h/${rec.code}`, "cache-control": "no-store" } });
+        } catch (err) {
+          return fail(400, err instanceof Error ? err.message : String(err));
+        }
+      }
+      if (url.pathname === "/go" && req.method === "GET") {
+        const u = (url.searchParams.get("u") ?? "").trim();
+        const sid = u.match(/(?:chatgpt\.com|chat\.openai\.com)\/share\/([0-9a-f-]{20,})/i)?.[1];
+        if (sid) return Response.redirect(`${base}/https://chatgpt.com/share/${sid}`, 302);
+        const code = normaliseCode(u.replace(/^.*\/h\//, "").split("#")[0]);
+        if (CODE_RE.test(code)) return Response.redirect(`${base}/h/${code}${u.includes("#") ? "#" + u.split("#")[1] : ""}`, 302);
+        return res(400, page("Not recognised", '<p>Paste a ChatGPT share link (https://chatgpt.com/share/\u2026) or a Baton code (BTN-\u2026).</p><p><a href="/">Back</a></p>'), "text/html; charset=utf-8");
+      }
+      if (url.pathname === "/" && req.method === "GET") return res(200, homePage(base, o.mcpSecret ? "/mcp/<your secret>" : mcpPath, bookmarkletSource(base)), "text/html; charset=utf-8");
       return json(404, { error: "Not found" });
     } catch (err) {
       return json(400, { error: err instanceof Error ? err.message : String(err) });
@@ -3269,17 +3529,6 @@ function page(title, body) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title>
 <style>:root{--bg:#f3f5f4;--fg:#14201b;--mu:#5b6b64;--ac:#2343c9}@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--fg:#e4ebe7;--mu:#9aaba3;--ac:#8ea4ff}}
 body{background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif;max-width:760px;margin:0 auto;padding:32px 16px}h1{font-size:34px;margin:0 0 8px}code,pre{font:13px ui-monospace,monospace}pre{background:color-mix(in srgb,var(--fg) 6%,transparent);padding:12px;border-radius:6px;overflow:auto;white-space:pre-wrap}a{color:var(--ac)}.mu{color:var(--mu)}button{font:inherit;padding:8px 14px;border-radius:6px;border:1px solid var(--fg);background:none;color:var(--fg);cursor:pointer}</style></head><body>${body}</body></html>`;
-}
-function landing(base, mcpPath) {
-  const mcp = base + mcpPath;
-  return `<h1>Baton relay</h1><p class="mu">Hands AI work from one assistant to another (prompts, files, tool outputs and decisions) from inside the assistants.</p>
-<h2>Add it to an AI</h2><p><b>MCP server URL:</b></p><pre>${escapeHtml(mcp)}</pre>
-<ul><li><b>ChatGPT</b>: Settings \u2192 Apps &amp; Connectors \u2192 Advanced settings \u2192 turn on Developer mode \u2192 Create. Paste the URL, choose "No authentication".</li>
-<li><b>Claude</b> (web/desktop): Settings \u2192 Connectors \u2192 Add custom connector \u2192 paste the URL.</li>
-<li><b>Claude Code</b>: <code>claude mcp add --transport http baton ${escapeHtml(mcp)}</code></li>
-<li><b>Cursor / Codex / Gemini CLI</b>: add an HTTP MCP server with this URL.</li>
-<li><b>Baton browser extension</b>: Options \u2192 Relay URL: <code>${escapeHtml(base)}</code></li></ul>
-<h2>Use it</h2><p>In any AI: <i>"baton: hand this off"</i> \u2192 you get a code like <code>BTN-7F3K-9QXA-2M4P</code>. In another AI: <i>"baton pickup BTN-7F3K-9QXA-2M4P"</i>. Or open <code>${escapeHtml(base)}/h/&lt;code&gt;</code>.</p>`;
 }
 function sealedPage(code, title) {
   return page(

@@ -33,7 +33,17 @@ What in-page capture gets compared with a share link of the same ChatGPT chat (f
 **Setup for each AI: [`docs/EMBED.md`](docs/EMBED.md).** Architecture: [ADR-002](docs/decisions/ADR-002-capture-from-within.md).
 What each capture position can see: [research 07](docs/research/07-capture-surfaces.md).
 
-## Try it on your own ChatGPT, Claude and Gemini
+## The easy way: one bookmark, one link (nothing to install)
+
+1. Open **<https://baton-relay.nimitjain-248.workers.dev>** and drag the **⚡ Baton** button to your bookmarks bar.
+2. On any ChatGPT, Claude or Gemini chat, click it. Baton reads the chat **with your own signed-in browser** and opens a
+   **Baton Link** like `…/h/BTN-0NSQ-64G6-3VKJ`.
+3. Tap **Continue in Claude / ChatGPT / Gemini**, or paste the link into any AI that can browse and say "continue this".
+
+The same link is a page for you and plain text for the AI. It works for the receiving AI with no connector, extension or account setup.
+How the bookmark picks its transport per site, and the real test results: [journal 08](docs/journal/2026-10-11-08-baton-link.md).
+
+## Deeper capture: extension and connectors
 
 1. **Extension (no server):** download [`extension/baton-extension.zip`](https://github.com/nimb-ou/App/raw/claude/laughing-davinci-c048d8/extension/baton-extension.zip),
    unzip, open `chrome://extensions` → Developer mode → **Load unpacked**. A **BATON** button appears on chatgpt.com, claude.ai and gemini.google.com:

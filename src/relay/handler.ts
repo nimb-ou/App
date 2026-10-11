@@ -16,6 +16,20 @@ import { handleRpc, type McpSession } from '../mcp/protocol.ts';
 import { renderRecord, type SealedPayload } from './checkpoint.ts';
 import { CODE_RE, normaliseCode, type AsyncRelayStore } from './kvstore.ts';
 import { RELAY_INSTRUCTIONS, relayTools } from './tools.ts';
+import { aiBrief, homePage, linkPage } from './linkpage.ts';
+import { bookmarkletSource, captureToIngest, ingestToBundle, isCapture, receivePage, type IngestBody } from './ingest.ts';
+import { buildBundle } from '../core/build.ts';
+import { parseChatGPTShareHtml } from '../parsers/chatgpt.ts';
+import { renderBundleFiles } from '../render/files.ts';
+import type { FileMap } from '../core/zip.ts';
+
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36';
+
+/** Accepts /https://chatgpt.com/share/<id>, /https:/chatgpt.com/… (merged slashes), /chatgpt.com/share/<id>, /share/<id>, plus .md/.zip//full. */
+export function shareIdFrom(pathname: string): { id: string; mode: string } | undefined {
+  const m = decodeURIComponent(pathname).match(/^\/(?:https?:\/{1,2})?(?:(?:www\.)?chatgpt\.com|chat\.openai\.com)?\/?share\/([0-9a-f]{8}-[0-9a-f-]{20,})(\.zip|\.md|\/full)?\/?$/i);
+  return m ? { id: m[1].toLowerCase(), mode: m[2] ?? '' } : undefined;
+}
 
 export interface RelayHandlerOptions {
   store: AsyncRelayStore;
@@ -46,6 +60,18 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
     new Response(body, { status, headers: { 'content-type': type, 'x-content-type-options': 'nosniff', ...CORS, ...extra } });
   const json = (status: number, v: unknown, extra: Record<string, string> = {}) => res(status, JSON.stringify(v), 'application/json', extra);
   const authorized = (req: Request) => !o.token || req.headers.get('authorization') === `Bearer ${o.token}`;
+
+  /** One bundle, four views: link page (default), full transcript viewer, plain Markdown for AIs, zip. */
+  const serveBundle = (bundle: BatonBundle, files: FileMap, selfUrl: string, mode: string, url: URL, zipName: string): Response => {
+    if (mode === '.zip') {
+      const prefixed: Record<string, string | Uint8Array> = {};
+      for (const [k, v] of Object.entries(files)) prefixed[`${zipName}/${k}`] = v;
+      return res(200, zip(prefixed) as BodyInit, 'application/zip', { 'content-disposition': `attachment; filename="${zipName}.baton.zip"` });
+    }
+    if (mode === '.md' || url.searchParams.get('format') === 'md') return res(200, aiBrief(bundle, files), 'text/markdown; charset=utf-8', { 'cache-control': 'no-store' });
+    if (mode === '/full') return res(200, String(files['index.html']), 'text/html; charset=utf-8', { 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", 'referrer-policy': 'no-referrer' });
+    return res(200, linkPage({ bundle, files, selfUrl, zipUrl: `${selfUrl}.zip`, fullUrl: `${selfUrl}/full`, mdUrl: `${selfUrl}.md` }), 'text/html; charset=utf-8', { 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'", 'referrer-policy': 'no-referrer', 'cache-control': 'no-store' });
+  };
 
   return async (req: Request): Promise<Response> => {
     const url = new URL(req.url);
@@ -115,8 +141,8 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
         return json(200, rec);
       }
 
-      // ── Viewer ──
-      const view = url.pathname.match(/^\/h\/([^/.]+)(\.zip)?$/);
+      // ── Viewer: /h/<code>  (link page) · /h/<code>/full · /h/<code>.md · /h/<code>.zip ──
+      const view = url.pathname.match(/^\/h\/([^/.]+)(\.zip|\.md|\/full)?\/?$/);
       if (view && req.method === 'GET') {
         const rec = await store.get(decodeURIComponent(view[1]));
         if (!rec) return res(404, page('Not found', '<p>This handoff does not exist or has expired.</p>'), 'text/html; charset=utf-8');
@@ -124,17 +150,75 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
           if (view[2]) return json(400, { error: 'Sealed handoffs are decrypted in the browser; open /h/<code>#<key>' });
           return res(200, sealedPage(rec.code, rec.title), 'text/html; charset=utf-8', { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
         }
-        const { files } = renderRecord(rec);
-        if (view[2]) {
-          const prefixed: Record<string, string | Uint8Array> = {};
-          for (const [k, v] of Object.entries(files)) prefixed[`${rec.code}/${k}`] = v;
-          return res(200, zip(prefixed) as BodyInit, 'application/zip', { 'content-disposition': `attachment; filename="${rec.code}.baton.zip"` });
+        const { bundle, files } = renderRecord(rec);
+        return serveBundle(bundle, files, `${base}/h/${rec.code}`, view[2] ?? '', url, rec.code);
+      }
+
+      // ── Baton Link: /<chatgpt share url>  (prefix any share link with this site) ──
+      const share = shareIdFrom(url.pathname);
+      if (share && req.method === 'GET') {
+        const { mode, id } = share;
+        const cacheKey = `s:${id}`;
+        let bundle: BatonBundle | undefined;
+        const cached = url.searchParams.has('refresh') ? null : await store.kv.get(cacheKey);
+        if (cached) bundle = JSON.parse(cached) as BatonBundle;
+        else {
+          const shareUrl = `https://chatgpt.com/share/${id}`;
+          const up = await fetch(shareUrl, { headers: { 'user-agent': BROWSER_UA, accept: 'text/html', 'accept-language': 'en-US,en;q=0.9' }, redirect: 'follow' });
+          const html = await up.text();
+          if (!up.ok || !html.includes('streamController.enqueue')) {
+            log(`share fetch ${id.slice(0, 8)}… → ${up.status}`);
+            return res(502, page('Could not read that share link', `<p>ChatGPT answered HTTP ${up.status} for <code>${escapeHtml(shareUrl)}</code>. The link may be private or deleted, or ChatGPT is refusing automated reads right now. Try again, or open the link and check that it is shared publicly.</p>`), 'text/html; charset=utf-8');
+          }
+          bundle = buildBundle(parseChatGPTShareHtml(html, shareUrl)).bundle;
+          await store.kv.put(cacheKey, JSON.stringify(bundle), { expirationTtl: 6 * 3600 });
         }
-        return res(200, String(files['index.html']), 'text/html; charset=utf-8', { 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", 'referrer-policy': 'no-referrer' });
+        const files = renderBundleFiles(bundle);
+        return serveBundle(bundle, files, `${base}/https://chatgpt.com/share/${id}`, mode, url, id.slice(0, 8));
+      }
+
+      // ── Bookmarklet capture: popup page + upload endpoint ──
+      if (url.pathname === '/receive' && req.method === 'GET') return res(200, receivePage(), 'text/html; charset=utf-8', { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
+      if (url.pathname === '/api/ingest' && req.method === 'POST') {
+        if (!authorized(req)) return json(401, { error: 'Bearer token required' });
+        const text = await req.text();
+        if (text.length > store.maxBytes) return json(413, { error: 'Conversation too large for this relay' });
+        const body = JSON.parse(text) as unknown;
+        const bundle = ingestToBundle(isCapture(body) ? captureToIngest(body) : (body as IngestBody));
+        const rec = await store.create({ title: bundle.title, from: 'bookmarklet', bundle });
+        log(`ingest ${rec.code} (${bundle.source.tool})`);
+        return json(201, { code: rec.code, url: `${base}/h/${rec.code}`, title: bundle.title, stats: bundle.stats });
+      }
+      // Form POST from the bookmarklet (works under COOP: same-origin, e.g. claude.ai). Answers with a redirect.
+      if (url.pathname === '/api/ingest-form' && req.method === 'POST') {
+        const fail = (status: number, msg: string) => res(status, page('Baton could not save this chat', `<h1>Baton</h1><p>${escapeHtml(msg)}</p><p class="mu">Nothing was saved. Try again on an open chat, or use the extension.</p>`), 'text/html; charset=utf-8', { 'cache-control': 'no-store' });
+        if (o.token) return fail(401, 'This relay requires a token, so the bookmark cannot upload to it.');
+        const text = await req.text();
+        if (text.length > store.maxBytes * 1.5) return fail(413, 'Conversation too large for this relay.');
+        try {
+          const d = JSON.parse(new URLSearchParams(text).get('d') ?? 'null') as unknown;
+          if (!isCapture(d)) return fail(400, 'Nothing was captured.');
+          const bundle = ingestToBundle(captureToIngest(d));
+          const rec = await store.create({ title: bundle.title, from: 'bookmarklet', bundle });
+          log(`ingest-form ${rec.code} (${bundle.source.tool})`);
+          return new Response(null, { status: 303, headers: { location: `${base}/h/${rec.code}`, 'cache-control': 'no-store' } });
+        } catch (err) {
+          return fail(400, err instanceof Error ? err.message : String(err));
+        }
+      }
+
+      // ── Paste box target: /go?u=<share link | code> ──
+      if (url.pathname === '/go' && req.method === 'GET') {
+        const u = (url.searchParams.get('u') ?? '').trim();
+        const sid = u.match(/(?:chatgpt\.com|chat\.openai\.com)\/share\/([0-9a-f-]{20,})/i)?.[1];
+        if (sid) return Response.redirect(`${base}/https://chatgpt.com/share/${sid}`, 302);
+        const code = normaliseCode(u.replace(/^.*\/h\//, '').split('#')[0]);
+        if (CODE_RE.test(code)) return Response.redirect(`${base}/h/${code}${u.includes('#') ? '#' + u.split('#')[1] : ''}`, 302);
+        return res(400, page('Not recognised', '<p>Paste a ChatGPT share link (https://chatgpt.com/share/…) or a Baton code (BTN-…).</p><p><a href="/">Back</a></p>'), 'text/html; charset=utf-8');
       }
 
       // Never reveal a secret MCP path on the public home page.
-      if (url.pathname === '/' && req.method === 'GET') return res(200, page('Baton relay', landing(base, o.mcpSecret ? '/mcp/<your secret>' : mcpPath)), 'text/html; charset=utf-8');
+      if (url.pathname === '/' && req.method === 'GET') return res(200, homePage(base, o.mcpSecret ? '/mcp/<your secret>' : mcpPath, bookmarkletSource(base)), 'text/html; charset=utf-8');
       return json(404, { error: 'Not found' });
     } catch (err) {
       return json(400, { error: err instanceof Error ? err.message : String(err) });
