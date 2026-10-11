@@ -34,9 +34,14 @@ export class Redactor {
   rules: RedactionRule[];
   enabled: boolean;
 
-  constructor(enabled = true, rules: RedactionRule[] = DEFAULT_RULES) {
+  constructor(enabled = true, rules: RedactionRule[] = DEFAULT_RULES, terms: string[] = []) {
     this.enabled = enabled;
-    this.rules = rules;
+    // User-supplied literal terms (names, client codenames…) run first, case-insensitively.
+    const custom = terms
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 3)
+      .map((t, i): RedactionRule => ({ id: 'custom', label: `TERM${i + 1}`, re: new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi') }));
+    this.rules = [...custom, ...rules];
   }
 
   apply(text: string): string {

@@ -20,7 +20,7 @@ const NOISE_URL = /^https?:\/\/(?:images\.openai\.com|cdn\.oaistatic\.com|files\
 export function buildBundle(parsed: ParsedConversation, options: BuildOptions = {}): BuildResult {
   const redact = options.redact !== false;
   const includeHidden = options.includeHidden === true;
-  const redactor = new Redactor(redact);
+  const redactor = new Redactor(redact, undefined, options.redactTerms ?? []);
 
   let privateDropped = 0;
   const events: BatonEvent[] = [];

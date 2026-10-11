@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // src/cli.ts
-import { cpSync, existsSync as existsSync2, mkdirSync as mkdirSync2 } from "node:fs";
+import { cpSync, existsSync as existsSync2, mkdirSync as mkdirSync2, readFileSync as readFileSync2 } from "node:fs";
 import { join as join3, resolve as resolve3 } from "node:path";
 
 // src/core/schema.ts
@@ -1172,9 +1172,10 @@ var Redactor = class {
   counts = {};
   rules;
   enabled;
-  constructor(enabled = true, rules = DEFAULT_RULES) {
+  constructor(enabled = true, rules = DEFAULT_RULES, terms = []) {
     this.enabled = enabled;
-    this.rules = rules;
+    const custom = terms.map((t) => t.trim()).filter((t) => t.length >= 3).map((t, i) => ({ id: "custom", label: `TERM${i + 1}`, re: new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi") }));
+    this.rules = [...custom, ...rules];
   }
   apply(text2) {
     if (!this.enabled || !text2) return text2;
@@ -1214,7 +1215,7 @@ var NOISE_URL = /^https?:\/\/(?:images\.openai\.com|cdn\.oaistatic\.com|files\.o
 function buildBundle(parsed, options = {}) {
   const redact = options.redact !== false;
   const includeHidden = options.includeHidden === true;
-  const redactor = new Redactor(redact);
+  const redactor = new Redactor(redact, void 0, options.redactTerms ?? []);
   let privateDropped = 0;
   const events = [];
   for (const draft of parsed.events) {
@@ -2623,6 +2624,8 @@ OPTIONS
   --pick <id|text>         choose conversation(s) from a multi-conversation export
   --sink <a,b>             add sinks/<system>.json payloads (${SINKS.join(", ")})
   --install-skill          also copy the bundle into .claude/skills/<continue-\u2026>/ for Claude Code
+  --redact <a,b>           also redact these terms (names, client codenames\u2026)
+  --redact-file <path>     \u2026 or terms listed one per line in a file
   --no-redact              keep emails, keys and tokens (default: redact)
   --include-hidden         keep private context (system prompts, memory, harness notes)
   --keep-source            store the raw input under source/
@@ -2634,7 +2637,7 @@ OPTIONS
 Docs: docs/SPEC.md \xB7 https://github.com/nimb-ou/App`;
 function parseArgs(argv) {
   const out = { _: [], flags: {} };
-  const valued = /* @__PURE__ */ new Set(["o", "out", "pick", "sink", "to", "jira-project", "sf-parent", "now"]);
+  const valued = /* @__PURE__ */ new Set(["o", "out", "pick", "sink", "to", "jira-project", "sf-parent", "now", "redact", "redact-file"]);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--") {
@@ -2678,6 +2681,7 @@ async function cmdImport(source, a, fromSession = false) {
     url: input.url,
     pick: str(a.flags.pick),
     redact: a.flags["no-redact"] !== true,
+    redactTerms: [...(str(a.flags.redact) ?? "").split(","), ...str(a.flags["redact-file"]) ? readFileSync2(str(a.flags["redact-file"]), "utf8").split("\n") : []].filter((t) => t.trim()),
     includeHidden: a.flags["include-hidden"] === true,
     keepSource: a.flags["keep-source"] === true,
     sinks,

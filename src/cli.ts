@@ -1,6 +1,6 @@
 // baton: carry AI work between tools, people and systems. Entry point: src/bin.ts
 
-import { cpSync, existsSync, mkdirSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { verifyBundle } from './core/integrity.ts';
 import type { BatonBundle } from './core/schema.ts';
@@ -36,6 +36,8 @@ OPTIONS
   --pick <id|text>         choose conversation(s) from a multi-conversation export
   --sink <a,b>             add sinks/<system>.json payloads (${SINKS.join(', ')})
   --install-skill          also copy the bundle into .claude/skills/<continue-…>/ for Claude Code
+  --redact <a,b>           also redact these terms (names, client codenames…)
+  --redact-file <path>     … or terms listed one per line in a file
   --no-redact              keep emails, keys and tokens (default: redact)
   --include-hidden         keep private context (system prompts, memory, harness notes)
   --keep-source            store the raw input under source/
@@ -53,7 +55,7 @@ interface Args {
 
 function parseArgs(argv: string[]): Args {
   const out: Args = { _: [], flags: {} };
-  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now']);
+  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--') {
@@ -100,6 +102,7 @@ async function cmdImport(source: string | undefined, a: Args, fromSession = fals
     url: input.url,
     pick: str(a.flags.pick),
     redact: a.flags['no-redact'] !== true,
+    redactTerms: [...(str(a.flags.redact) ?? '').split(','), ...(str(a.flags['redact-file']) ? readFileSync(str(a.flags['redact-file'])!, 'utf8').split('\n') : [])].filter((t) => t.trim()),
     includeHidden: a.flags['include-hidden'] === true,
     keepSource: a.flags['keep-source'] === true,
     sinks,

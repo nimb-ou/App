@@ -128,6 +128,7 @@ export interface ParsedConversation {
 
 export interface BuildOptions {
   redact?: boolean; // default true
+  redactTerms?: string[]; // extra literal terms to redact (case-insensitive)
   includeHidden?: boolean; // default false
   now?: string; // ISO timestamp override for reproducible output
 }
