@@ -4,7 +4,7 @@ emoji: 🏏
 colorFrom: green
 colorTo: yellow
 sdk: static
-app_file: web/index.html
+app_file: index.html
 pinned: false
 ---
 
@@ -14,7 +14,7 @@ pinned: false
 
 ## Try the browser app
 
-The static app is in [`web/index.html`](web/index.html). It parses files locally in your browser and creates a ZIP on your device; it does not upload the conversation. Supported inputs are ChatGPT share-page HTML, ChatGPT `conversations.json`, Claude export JSON, Claude Code JSONL, Markdown, and text. A direct share URL can be fetched by the CLI; browsers generally prevent a static page from fetching another site's share page.
+The static app lives in [`web/index.html`](web/index.html) and is shown from the root `index.html`. It parses files locally in your browser and creates a ZIP on your device; it does not upload the conversation. Supported inputs are ChatGPT share-page HTML, ChatGPT `conversations.json`, Claude export JSON, Claude Code JSONL, Markdown, and text. A direct share URL can be fetched by the CLI; browsers generally prevent a static page from fetching another site's share page.
 
 For a local preview, serve the repository root with any static file server and open `/web/`.
 
