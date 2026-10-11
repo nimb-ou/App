@@ -1,0 +1,14 @@
+{
+  "name": "baton",
+  "owner": {
+    "name": "nimb-ou"
+  },
+  "description": "Baton: hand off AI work between tools, people and systems.",
+  "plugins": [
+    {
+      "name": "baton",
+      "source": "./",
+      "description": "Hand off AI work between tools, people and systems, with a loss audit and recovered files."
+    }
+  ]
+}

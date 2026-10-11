@@ -1,0 +1,3 @@
+# Cell 052 · source event 799f3a57-09aa-4b64-af04-529274a359c5 · 2026-10-11T16:58:35.382Z
+# 
+rm -f /mnt/data/stumping_recovery_lab_repo_root.zip && cd /mnt/data/stumping_research_package && zip -qr /mnt/data/stumping_recovery_lab_repo_root.zip README.md app.py stumping_model.py simulate_stumping.py paper.md requirements.txt Dockerfile LICENSE CITATION.cff DATA_AND_VALIDATION.md VALIDATION_PROTOCOL.md data_collection_template.csv .gitignore .github/workflows/tests.yml tests/test_model.py results/interactive_model_baseline.json stumping_recovery_research_paper.pdf stumping_recovery_research_paper.docx && unzip -l /mnt/data/stumping_recovery_lab_repo_root.zip | tail -8 && ls -lh /mnt/data/stumping_recovery_lab_repo_root.zip

@@ -1,0 +1,30 @@
+$ baton inspect fixtures/chatgpt-share-cricket-stumping.html.gz
+format: chatgpt-share (HTML with React Router stream (ChatGPT share page))
+
+✓ Cricket Stumping Simulation
+  source   ChatGPT (chatgpt-share)
+  content  8 prompts · 20 replies · 47 reasoning · 133 tool calls
+  files    13 recovered · 3 stale · 16 lost
+  loss     163 tool-outputs · 81 tool-inputs · 16 files-lost (see LOSS_AUDIT.md)
+  root     0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6
+    [high] tool-outputs ×163: The source replaced 163 tool output(s) with a placeholder (container.exec ×52, api_tool.call_tool ×52, functions.exec ×33, container.open_image ×20, web.run ×6). Results of searches, code runs and connector calls are not available. The receiving agent must re-run them if needed.
+    [high] tool-inputs ×81: 81 tool call(s) have no input in the source (api_tool.call_tool ×41, functions.exec ×33, web.run ×5, q7dr546 ×2). The code or arguments they ran cannot be recovered.
+    [high] files-lost ×16: 16 file(s) were created or linked but their contents are not in the source: simulate_stumping.py, stumping_recovery_lab_repo_root.zip, stumping_recovery_README.txt, stumping_recovery_research_paper.docx, stumping_recovery_research_paper.pdf, stumping_recovery_simulation_bundle.zip, stumping_research_lab.zip, stumping_research_package.zip, …. Some derived outputs can be regenerated with replay/.
+    [warn] files-stale ×3: 3 file(s) were recovered exactly as last written, but later code changed them in ways that cannot be replayed statically: stumping_research_package/make_paper.py, stumping_study/build_paper.py, stumping_study/simulate_stumping.py.
+    [warn] citations ×3: 3 inline citation marker(s) point to search results that the source did not include; only marker ids survive. See links for the source's URL list.
+    [info] files-recovered ×13: 13 file(s) were reconstructed byte-for-byte from the code that created them.
+    [info] images ×4: Images shown in the conversation are not included; placeholders keep their search query where available.
+    [info] reasoning-depth ×47: Reasoning is available as the summaries ChatGPT displays, not the full internal chain of thought.
+
+
+$ baton import https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388 -o /tmp/live (live network fetch)
+✓ Cricket Stumping Simulation
+  source   ChatGPT (chatgpt-share) https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388
+  content  8 prompts · 20 replies · 47 reasoning · 133 tool calls
+  files    13 recovered · 3 stale · 16 lost
+  loss     163 tool-outputs · 81 tool-inputs · 16 files-lost (see LOSS_AUDIT.md)
+  root     0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6
+  → <out>/HANDOFF.md  (start here)
+
+$ baton verify examples/cricket-stumping
+✓ intact: 379 events, 32 artifacts, root 0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6

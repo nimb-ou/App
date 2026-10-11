@@ -1,0 +1,72 @@
+{
+  "sink": "slack",
+  "method": "POST",
+  "path": "(incoming webhook URL)",
+  "body": {
+    "text": "Handoff: Cricket Stumping Simulation",
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "Handoff: Cricket Stumping Simulation"
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": "ChatGPT (gpt-6) · public share link · 8 prompts · 133 tool calls · files: 13 recovered / 3 stale / 16 lost"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Goal*\nModel and plan full research paper level simulatable process or whatever to simulate in a cricket match if there is getting stumping. There is one way the batsman has to drag his leg to the line, or the driver can lift his leg, faceless resistance, move across air and bring back his time. There has to be a trade-off. There has to be an equation. There has to be a best time. There has to be a maximum height or the best option to do this. I want that equation derived mathematically and simulated."
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Latest instruction*\nIt is connevted"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Open threads*\n• But the connection available to me is still rejecting write requests with a `403 Resource not accessible by integration` error\\.\n• So being connected hasn't given this integration the required write scope.\n• I haven't uploaded the project or deployed the app yet, and I won't claim otherwise.\n• You shouldn't need to run Git commands yourself if I can get the right repository permissions.\n• The blocker is that GitHub is rejecting write operations from the current connection, even though the repository exists and your account has access."
+        }
+      },
+      {
+        "type": "context",
+        "elements": [
+          {
+            "type": "mrkdwn",
+            "text": ":warning: 163 tool-outputs · 81 tool-inputs · 16 files-lost. See LOSS_AUDIT.md"
+          }
+        ]
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "Open source conversation"
+            },
+            "url": "https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388"
+          }
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "Env for --post: SLACK_WEBHOOK_URL (incoming webhook)."
+  ]
+}

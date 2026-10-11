@@ -1,0 +1,112 @@
+
+> baton-handoff@0.1.0 test
+> node --test --test-reporter=spec "tests/*.test.ts"
+
+▶ sha256
+  ✔ matches FIPS test vectors (1.335549ms)
+  ✔ matches node:crypto on multi-block unicode input (1.350768ms)
+✔ sha256 (3.871391ms)
+▶ zip
+  ✔ crc32 known value (0.356777ms)
+  ✔ round-trips files with UTF-8 names (2.325809ms)
+  ✔ reads deflated members via the central directory (1.298519ms)
+✔ zip (4.26548ms)
+▶ turbo-stream
+  ✔ decodes indexed objects, shared strings and sentinels (0.571744ms)
+  ✔ extracts enqueue chunks from HTML (0.57701ms)
+✔ turbo-stream (1.687928ms)
+▶ redaction
+  ✔ redacts ANTHROPIC KEY (2.367392ms)
+  ✔ redacts OPENAI KEY (0.290651ms)
+  ✔ redacts GITHUB TOKEN (0.285188ms)
+  ✔ redacts AWS KEY (0.1474ms)
+  ✔ redacts EMAIL (0.323134ms)
+  ✔ redacts CARD (0.225829ms)
+  ✔ redacts PHONE (0.076167ms)
+  ✔ redacts BEARER (0.072003ms)
+  ✔ redacts PRIVATE KEY (0.228038ms)
+  ✔ leaves identifiers, decimals, dates and allowed emails alone (0.347091ms)
+  ✔ can be disabled (0.090891ms)
+✔ redaction (4.914556ms)
+▶ util
+  ✔ slugify (0.416925ms)
+  ✔ stableStringify sorts keys and drops undefined (0.259026ms)
+  ✔ fence avoids collisions (0.163192ms)
+✔ util (1.05072ms)
+▶ mdlite (viewer safety)
+  ✔ escapes raw HTML and scripts (1.065571ms)
+  ✔ does not create javascript: links (0.382594ms)
+  ✔ renders tables, lists, code and details (0.693239ms)
+✔ mdlite (viewer safety) (2.344772ms)
+▶ ChatGPT share page (real fixture)
+  ✔ detects the format (1.603662ms)
+  ✔ extracts title, source and all 8 user prompts verbatim (0.463112ms)
+  ✔ keeps reasoning summaries and executed code (0.27251ms)
+  ✔ audits what the share dropped (0.144111ms)
+  ✔ recovers project files byte-for-byte and marks the rest honestly (0.421673ms)
+  ✔ emits a replay kit with one cell per container.exec call (0.159355ms)
+  ✔ excludes empty private context and converts GenUI markers (0.292566ms)
+  ✔ is deterministic and verifiable (110.556914ms)
+✔ ChatGPT share page (real fixture) (115.556708ms)
+▶ ChatGPT export (conversations.json)
+  ✔ follows the active branch, records the dropped branch and redacts (3.301277ms)
+✔ ChatGPT export (conversations.json) (3.602615ms)
+▶ Claude.ai export
+  ✔ parses blocks, thinking and attachments (1.138713ms)
+✔ Claude.ai export (1.243875ms)
+▶ Claude Code JSONL
+  ✔ parses, strips harness context and replays file edits (1.756741ms)
+✔ Claude Code JSONL (1.850063ms)
+▶ generic message logs
+  ✔ parses [{role, content}] with tool calls (0.763249ms)
+  ✔ rejects unknown input clearly (0.398594ms)
+✔ generic message logs (1.345759ms)
+▶ shell heredoc extraction
+  ✔ recovers quoted heredocs exactly, with trailing newline (3.351695ms)
+  ✔ flags unquoted heredocs that would expand (0.485156ms)
+  ✔ handles append, tee, <<- tab stripping and multiple heredocs (8.843483ms)
+  ✔ tracks cd per command segment (0.862183ms)
+  ✔ detects python in-place rewrites as touches (0.789938ms)
+  ✔ does not mistake .zip in filenames or inline > for commands (0.27489ms)
+  ✔ unwraps JSON cmd form (0.105519ms)
+✔ shell heredoc extraction (15.762373ms)
+▶ fold + statuses
+  ✔ recovered → stale after unreplayable modification; rewrite resets (3.64716ms)
+  ✔ sandbox links without content are lost; binaries point to replay (13.131431ms)
+  ✔ replays Claude Code Write + Edit + MultiEdit exactly (0.807513ms)
+  ✔ bundle paths can never escape the bundle (0.442867ms)
+  ✔ folds ops in order with replace on known content (0.287142ms)
+✔ fold + statuses (18.732252ms)
+▶ bundle layout
+  ✔ contains every surface file (1.08899ms)
+  ✔ HANDOFF.md carries goal, prompts, state and loss (0.385962ms)
+  ✔ SKILL.md has valid Agent Skill front matter (0.220036ms)
+  ✔ PROMPT.md stays within its paste budget (0.113523ms)
+  ✔ index.html escapes conversation content (1.559769ms)
+✔ bundle layout (4.50821ms)
+▶ sinks
+  ✔ jira uses ADF and labels (0.515249ms)
+  ✔ salesforce composite links note and tasks to the case (3.634133ms)
+  ✔ salesforce can attach to an existing record (3.018633ms)
+  ✔ zendesk is an internal note; slack has blocks (0.581839ms)
+✔ sinks (8.190902ms)
+▶ node io safety
+  ✔ refuses to write outside the output directory (0.641529ms)
+  ✔ only fetches public ChatGPT share URLs (0.283828ms)
+✔ node io safety (1.063693ms)
+▶ MCP server
+  ✔ initializes and lists tools (0.354406ms)
+  ✔ imports via tools/call and reports errors as tool results (85.272367ms)
+✔ MCP server (85.755251ms)
+▶ CLI (end to end)
+  ✔ imports, zips, verifies, and detects tampering (1165.72312ms)
+  ✔ prints help and fails cleanly on bad input (349.697914ms)
+✔ CLI (end to end) (1515.663704ms)
+ℹ tests 64
+ℹ suites 18
+ℹ pass 64
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2218.103655
