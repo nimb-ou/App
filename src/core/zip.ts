@@ -97,22 +97,64 @@ export function zip(files: FileMap, mtime: Date = new Date()): Uint8Array {
   return out;
 }
 
-/** Read a STORE-only zip (as produced above) back into a FileMap. Used by tests and `baton verify`. */
-export function unzipStored(buf: Uint8Array): Record<string, Uint8Array> {
+export interface ZipEntry {
+  name: string;
+  method: number; // 0 = STORE, 8 = DEFLATE
+  size: number;
+  compressed: Uint8Array; // raw member data (deflate-raw when method === 8)
+}
+
+/**
+ * List members via the central directory, which is the reliable source of sizes. Account exports often use
+ * data descriptors, so local headers carry zero sizes. ZIP64 archives are not supported.
+ */
+export function listZip(buf: Uint8Array): ZipEntry[] {
   const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
   const dec = new TextDecoder();
-  const out: Record<string, Uint8Array> = {};
-  let p = 0;
-  while (p + 4 <= buf.length && view.getUint32(p, true) === 0x04034b50) {
-    const method = view.getUint16(p + 8, true);
-    const size = view.getUint32(p + 18, true);
-    const nameLen = view.getUint16(p + 26, true);
-    const extraLen = view.getUint16(p + 28, true);
-    const name = dec.decode(buf.subarray(p + 30, p + 30 + nameLen));
-    const start = p + 30 + nameLen + extraLen;
-    if (method !== 0) throw new Error(`unzipStored: ${name} uses compression method ${method}`);
-    out[name] = buf.subarray(start, start + size);
-    p = start + size;
+  let eocd = -1;
+  for (let p = buf.length - 22; p >= Math.max(0, buf.length - 22 - 0xffff); p--) {
+    if (view.getUint32(p, true) === 0x06054b50) {
+      eocd = p;
+      break;
+    }
+  }
+  if (eocd < 0) throw new Error('Not a zip file (no end-of-central-directory record)');
+  const count = view.getUint16(eocd + 10, true);
+  let p = view.getUint32(eocd + 16, true);
+  if (p === 0xffffffff) throw new Error('ZIP64 archives are not supported; unzip it and pass conversations.json instead');
+  const out: ZipEntry[] = [];
+  for (let i = 0; i < count; i++) {
+    if (view.getUint32(p, true) !== 0x02014b50) throw new Error('Corrupt zip central directory');
+    const method = view.getUint16(p + 10, true);
+    const csize = view.getUint32(p + 20, true);
+    const size = view.getUint32(p + 24, true);
+    const nameLen = view.getUint16(p + 28, true);
+    const extraLen = view.getUint16(p + 30, true);
+    const commentLen = view.getUint16(p + 32, true);
+    const localOff = view.getUint32(p + 42, true);
+    const name = dec.decode(buf.subarray(p + 46, p + 46 + nameLen));
+    const lNameLen = view.getUint16(localOff + 26, true);
+    const lExtraLen = view.getUint16(localOff + 28, true);
+    const start = localOff + 30 + lNameLen + lExtraLen;
+    out.push({ name, method, size, compressed: buf.subarray(start, start + csize) });
+    p += 46 + nameLen + extraLen + commentLen;
   }
   return out;
+}
+
+/** Extract members synchronously; `inflateRaw` is supplied by the host (node:zlib in Node). */
+export function unzipSync(buf: Uint8Array, inflateRaw?: (d: Uint8Array) => Uint8Array, filter?: (name: string) => boolean): Record<string, Uint8Array> {
+  const out: Record<string, Uint8Array> = {};
+  for (const e of listZip(buf)) {
+    if (e.name.endsWith('/') || (filter && !filter(e.name))) continue;
+    if (e.method === 0) out[e.name] = e.compressed;
+    else if (e.method === 8 && inflateRaw) out[e.name] = inflateRaw(e.compressed);
+    else throw new Error(`${e.name}: unsupported compression method ${e.method}`);
+  }
+  return out;
+}
+
+/** Read a STORE-only zip (as produced above) back into a FileMap. Used by tests and `baton verify`. */
+export function unzipStored(buf: Uint8Array): Record<string, Uint8Array> {
+  return unzipSync(buf);
 }

@@ -46,10 +46,11 @@ export function verifyBundle(bundle: BatonBundle, files?: Record<string, string>
   }
   const badArtifacts: string[] = [];
   for (const a of [...bundle.artifacts].sort((x, y) => x.path.localeCompare(y.path))) {
-    if (files && a.sha256 && files[a.path] !== undefined && sha256Hex(files[a.path]) !== a.sha256) {
-      badArtifacts.push(a.path);
-    }
-    h = sha256Hex(h + artifactPayload(a));
+    // Hash what is actually shipped: the file on disk if present, else the content embedded in bundle.json.
+    const shipped = files?.[a.path] ?? a.content;
+    const actual = shipped !== undefined ? sha256Hex(shipped) : a.sha256;
+    if (a.sha256 && actual !== a.sha256) badArtifacts.push(a.path);
+    h = sha256Hex(h + artifactPayload({ ...a, sha256: actual }));
   }
   return {
     ok: h === bundle.integrity.root && !firstBad && badArtifacts.length === 0,

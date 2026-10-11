@@ -29,6 +29,7 @@ const IGNORED_PREFIXES = ['/tmp/', '/dev/', '/proc/', '/sys/', '/etc/', '/usr/',
 const IGNORED_PARTS = ['/node_modules/', '/.git/', '/__pycache__/'];
 
 function ignorable(p: string): boolean {
+  if (/[$`*?{}]/.test(p)) return true; // unexpanded variables / globs: not a concrete file
   return IGNORED_PREFIXES.some((x) => p.startsWith(x)) || IGNORED_PARTS.some((x) => p.includes(x)) || p === '/dev/null';
 }
 
@@ -210,6 +211,7 @@ export interface RecoveryResult {
 
 export function bundlePath(original: string, kind: SourceKind, cwd?: string): string {
   let p = original.replace(/^sandbox:/, '');
+  if (p.startsWith('/')) p = normaliseDots(p);
   if (p.startsWith('/mnt/data/')) p = p.slice('/mnt/data/'.length);
   else if (cwd && p.startsWith(cwd.replace(/\/$/, '') + '/')) p = p.slice(cwd.replace(/\/$/, '').length + 1);
   else if (p.startsWith('/')) p = '_abs' + p;

@@ -20,8 +20,10 @@ export const DEFAULT_RULES: RedactionRule[] = [
   { id: 'bearer', label: 'BEARER TOKEN', re: /\b(Bearer\s+)[A-Za-z0-9._~+/-]{20,}=*/g },
   { id: 'password_assign', label: 'PASSWORD', re: /\b((?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token)\s*[:=]\s*)(["']?)[^\s"']{6,}\2/gi },
   { id: 'email', label: 'EMAIL', re: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g },
-  { id: 'phone', label: 'PHONE', re: /(?<![\w.])\+?\d{1,3}[\s.-]?\(?\d{2,4}\)?[\s.-]\d{3,4}[\s.-]\d{3,4}(?![\w.])/g },
-  { id: 'card', label: 'CARD', re: /\b(?:\d[ -]?){13,19}\b/g },
+  // Cards run before phones so a Luhn-valid card is not mislabelled as a phone number.
+  { id: 'card', label: 'CARD', re: /(?<![\w.-])\d(?:[ -]?\d){12,18}(?![\w.-])/g },
+  // Not inside identifiers (UUIDs, hashes, version strings): no word char, dot or hyphen on either side.
+  { id: 'phone', label: 'PHONE', re: /(?<![\w.-]|\d\s)\+?\d{1,3}[\s.-]?\(?\d{2,4}\)?[\s.-]\d{3,4}[\s.-]\d{3,4}(?![\w.-]|\s\d)/g },
 ];
 
 // Addresses that are part of software (not people) and are safe to keep.

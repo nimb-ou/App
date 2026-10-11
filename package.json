@@ -1,0 +1,24 @@
+{
+  "name": "baton-handoff",
+  "version": "0.1.0",
+  "description": "Hand off AI work, not just chat text: turn ChatGPT / Claude / Claude Code conversations into audited, agent-ready bundles (Markdown, HTML, Agent Skill, MCP, CRM/ITSM sinks).",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "https://github.com/nimb-ou/App.git" },
+  "keywords": ["ai", "handoff", "chatgpt", "claude", "claude-code", "mcp", "agent-skills", "portability", "export"],
+  "bin": { "baton": "dist/baton.mjs" },
+  "files": ["dist/", "skills/", "README.md", "LICENSE", "docs/SPEC.md"],
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "baton": "node src/bin.ts",
+    "test": "node --test --test-reporter=spec \"tests/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs",
+    "examples": "node scripts/build-examples.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}
