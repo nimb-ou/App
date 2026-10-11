@@ -1,6 +1,6 @@
 # Transcript: https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388. Build this. End 
 
-*Claude Code (claude-opus-5-5) · session log · 4 prompts · 456 events · exported by Baton 0.1.0*
+*Claude Code (claude-opus-5-5) · session log · 5 prompts · 681 events · exported by Baton 0.2.0*
 
 Reasoning, tool calls and tool outputs are folded into `<details>` blocks. Placeholders mark content the source did not include. See `LOSS_AUDIT.md`.
 
@@ -6332,6 +6332,2913 @@ committed
 
 ```bash
 rm -rf examples/this-build-session && node src/bin.ts session latest -o examples/this-build-session --redact-file /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt | tail -6 && T=$(cat /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt) && echo "term hits: $(grep -rl "$T" examples/this-build-session | wc -l)" && echo "emails:" && grep -rhoE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" examples/this-build-session | sort -u && node src/bin.ts verify examples/this-build-session && sed -n '/## 2\. How the ask/,/## 3\./p' examples/this-build-session/HANDOFF.md | cut -c1-200
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+  content  4 prompts · 29 replies · 99 reasoning · 162 tool calls
+  files    50 recovered · 11 stale · 5 lost
+  loss     5 files-lost (see LOSS_AUDIT.md)
+  redacted 36 secret/PII match(es)
+  root     66d9b0eefaf7312b87f6b0892c5b7960aebe881d0f6ea487387caa274b74234d
+  → examples/this-build-session/HANDOFF.md  (start here)
+term hits: 0
+emails:
+nnoreply@anthropic.com
+noreply@anthropic.com
+✓ intact: 456 events, 66 artifacts, root 66d9b0eefaf7312b87f6b0892c5b7960aebe881d0f6ea487387caa274b74234d
+## 2. How the ask evolved (every prompt, verbatim)
+
+1. *2026-10-11 17:10 UTC*: hi
+2. *2026-10-11 17:15 UTC*: https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388. Build this. End to end. Product. As a skill? app? plugin? something else? some other product build using this
+3. *2026-10-11 17:16 UTC*: [Request interrupted by user]
+4. *2026-10-11 17:18 UTC*: Now this is the exact problem. how to properly transfer the chat or plan along with the prompt and resoning and all outputs vey easily. maybe a skill or as md files or html 
+
+## 3. Where it left off
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 17:52 UTC
+
+The final export is clean: zero hits for the term, only `noreply@anthropic.com` addresses, and the integrity check passes. Committing and pushing.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Commit self-export, push, list remote refs</summary>
+
+```bash
+git add -A && git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -q -m "docs(examples): this build session, exported by Baton itself
+
+All prompts, assistant messages and tool calls of the Claude Code session
+that built Baton, with repo files recovered from its Write/Edit calls.
+Harness context stripped; secrets, PII and a custom term list redacted.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HU3UboJxfLgugTuRfMGMHe" && git push -q origin claude/laughing-davinci-c048d8 && git log --oneline && git ls-remote origin
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+3c0a11a docs(examples): this build session, exported by Baton itself
+2baf9df feat(redact): custom literal terms via --redact / --redact-file; journal 04
+e39240a build: track dist/baton.mjs and web/dist (needed by npx, the plugin MCP config and the web app)
+b3a395f feat: web app, Agent Skill, Claude Code plugin, spec, examples, CI
+781c3c4 feat: CLI, MCP server, business sinks, ZIP export reading, tests
+f7e6ce8 feat(core): parsers, recovery, loss audit, integrity and renderers
+681067a docs: research, prompts, ADR-001 and kickoff journal for Baton
+3c0a11ae679805a6295eee7f47e23a09481bbcaf	HEAD
+3c0a11ae679805a6295eee7f47e23a09481bbcaf	refs/heads/claude/laughing-davinci-c048d8
+623741548e6f3733233d23daf6207fec12753769	refs/heads/codex/baton-mvp
+623741548e6f3733233d23daf6207fec12753769	refs/pull/1/head
+06cce49c4ed5c97104854a986c86c0a3133eeae4	refs/pull/1/merge
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+I noticed the remote has changed — there's now a `codex/baton-mvp` branch and an open PR #1 from a parallel Codex run. I'll take a read-only look to see how it relates to this branch.
+
+</details>
+
+<details><summary>Tool call: <code>ToolSearch</code> · ToolSearch: select:mcp__github__pull_request_read,mcp__github__list_branches</summary>
+
+```json
+{
+  "query": "select:mcp__github__pull_request_read,mcp__github__list_branches",
+  "max_results": 2
+}
+```
+
+</details>
+
+<details><summary>Output: <code>ToolSearch</code></summary>
+
+```
+(tool loaded: mcp__github__pull_request_read)
+(tool loaded: mcp__github__list_branches)
+```
+
+</details>
+
+<details><summary>Tool call: <code>mcp__github__pull_request_read</code></summary>
+
+```json
+{
+  "method": "get",
+  "owner": "nimb-ou",
+  "repo": "App",
+  "pullNumber": 1
+}
+```
+
+</details>
+
+<details><summary>Output: <code>mcp__github__pull_request_read</code></summary>
+
+```
+{"number":1,"title":"Build Baton handoff MVP","body":"## Summary\n\nBuilds the first usable Baton MVP: a local-first handoff for AI conversations that preserves the source, makes omissions explicit, and reconstructs files when visible code allows it.\n\n## Included\n\n- Shared parser for ChatGPT share HTML and exports, Claude export JSON, Claude Code JSONL, Markdown, and text.\n- Node CLI that imports local files or public URLs and writes a folder or ZIP.\n- Static browser app that parses locally and downloads a handoff ZIP.\n- Stdio MCP server with `baton_import`, receiving-agent Skill, and draft payload builders for Salesforce, Jira, Zendesk, and Slack.\n- Versioned bundle-format note, manifest hashes, privacy/limitations documentation, and build journal.\n\n## Validation\n\n- Node syntax checks and `git diff --check` succeeded.\n- Dogfooded the importer on the repository's supplied ChatGPT share fixture: 383 visible messages, 6 audit findings, and 8 reconstructed files. The audit calls out 163 redacted tool outputs, 33 blank function inputs, and 18 sandbox links.\n\n## Known limits\n\n- The public share parser follows an undocumented format; original source is retained for reprocessing.\n- The browser UI imports HTML/JSON/text files; direct share URL fetching is available from the CLI.\n- Work-system payload builders create drafts; they do not authenticate or send records.\n- MCP currently provides import only.\n","state":"open","draft":false,"merged":false,"mergeable_state":"unknown","html_url":"https://github.com/nimb-ou/App/pull/1","user":{"login":"nimb-ou","id":73484792,"profile_url":"https://github.com/nimb-ou","avatar_url":"https://avatars.githubusercontent.com/u/73484792?v=4"},"head":{"ref":"codex/baton-mvp","sha":"623741548e6f3733233d23daf6207fec12753769","repo":{"full_name":"nimb-ou/App"}},"base":{"ref":"claude/laughing-davinci-c048d8","sha":"681067a8516e64866b474ea7a5a27352cbb50739","repo":{"full_name":"nimb-ou/App"}},"additions":846,"deletions":4,"changed_files":14,"commits":3,"created_at":"2026-10-11T17:35:57Z","updated_at":"2026-10-11T17:40:39Z"}
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Tool call: <code>Artifact</code> · Artifact: /home/user/App/web/dist/artifact.html</summary>
+
+```json
+{
+  "file_path": "/home/user/App/web/dist/artifact.html",
+  "label": "Custom-term redaction core"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "4",
+  "status": "completed"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "5",
+  "status": "completed"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>Artifact</code></summary>
+
+```
+Published /home/user/App/web/dist/artifact.html at https://claude.ai/artifact/LNWKhj92JwA6wVtBkBMmRK (Version 2, version id 1791741180-c9f6)
+
+Stored — contract 0.2.75 · capabilities downloads · readable by only you; the declaration was carried forward from the previous version. To change it, pass `capabilities` explicitly on the next publish; to clear it, pass `capabilities: {}`.
+
+Durable wake subscription: already registered from earlier in this session — this session is woken by a new turn when this artifact is republished elsewhere, or when anyone sends a comment on it to Claude.
+
+To update: publish the same file path here (keeps this URL); from another conversation pass the URL as `url`, or that publish creates a separate artifact. This artifact is private: only its owner and the people the owner has given access can open the link. You cannot change sharing; that is done from the page's Share menu. If the page is meant for someone else, tell the user when you present the page that those people cannot open it until it is shared with them.
+
+The files you sent are still on disk. For a small, specific change to a file whose text is in this conversation, send the Edit call(s) and an Artifact publish of the same file_path together in one response, with no Read and no shell command that edits the file: these calls run one after another in the order given, so the publish sends the edited file. If an Edit reports that it did not apply, correct it and publish again. If the file's text is no longer in this conversation, or you cannot place the change exactly from the text you have, Read it first.
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #5 status
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #4 status
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 17:53 UTC
+
+I built **Baton**, a tool that moves AI work between apps and people, not just the chat text. Everything is pushed to `nimb-ou/App` on the branch `claude/laughing-davinci-c048d8`. I treated your share link as the first real test case and did not build the cricket app itself (more on that below).
+
+**What it does with your ChatGPT link.** Your share page looks complete and even says "Download the complete ZIP". But the share drops every tool output (163), all of the later code, and every file ChatGPT made. Baton turns the link into a handoff folder that contains:
+- **All 8 of your prompts**, word for word, plus the replies and reasoning.
+- **13 project files rebuilt exactly** (e.g. `paper.md`, `simulate_stumping.py`, `Dockerfile`) from the code ChatGPT ran.
+- **3 files marked stale** (changed later by code that can't be replayed) and **16 listed as lost**, including `app.py`, the PDF and the ZIPs, instead of pretending they exist.
+- **`HANDOFF.md`**, a brief any agent can read to continue: goal, where it stopped (the GitHub 403 blocker), open threads, file status.
+- **`PROMPT.md`**, one block you can paste into ChatGPT, Claude or Gemini.
+- A tamper check: any edit to the folder is detected.
+
+**How you can use it:**
+- **Command line:** `npx github:nimb-ou/App import <link or file>`. I tested this install from GitHub and it works.
+- **Claude Code plugin:** a skill, `/baton:import` and `/baton:handoff` commands, and an MCP server. It passes Claude Code's plugin validator.
+- **Any agent that supports Skills** (Codex, Cursor and others): copy `skills/baton/`; the tool is bundled inside.
+- **Web page** that runs entirely in your browser. A live copy is here (private to you until you share it): https://claude.ai/artifact/LNWKhj92JwA6wVtBkBMmRK
+- **Business systems:** it can file a handoff as a Salesforce Case, a Jira issue, a Zendesk ticket or a Slack message.
+
+**Inputs it reads:** ChatGPT share links or saved share pages, ChatGPT and Claude data exports, Claude Code sessions, and generic chat logs. Secrets and personal data are redacted by default, and it never runs code captured from another AI.
+
+**Testing:** all 65 automated tests pass, the strict typecheck is clean, and a live fetch of your link gives the same result as the saved copy. Sending to Salesforce, Jira, Zendesk or Slack was not tested, because there are no credentials here; only the payload shapes are tested.
+
+**Documentation (in `docs/` and `examples/`):**
+- Your prompts, word for word, with how I read each one.
+- A timestamped build journal, including the bugs the tests caught.
+- Decision records and the open format spec.
+- Research with sources: market, file formats, legal, monetization, and the business layer.
+- The full Claude Code session that built Baton, exported by Baton itself (secrets and your email username redacted).
+
+**Product and money, in short:** Baton is free for the person moving their work. Revenue would come from whoever gains: the AI company receiving a new user (a per-migration fee), employers who want AI work filed into Salesforce or Jira with redaction and an audit trail, and apps that want an "import from ChatGPT" button. Conversation data is never sold.
+
+**Three things need your call:**
+1. **No pull request yet.** The repo has no `main` branch, so a PR has nothing to target. Should I create `main` from this branch (or empty) and open the PR?
+2. **There's a competing pull request.** [nimb-ou/App#1](https://github.com/nimb-ou/App/pull/1), from a parallel Codex run, builds a separate Baton MVP on top of my first commit. It will conflict with this branch. I haven't touched it; you'll want to keep one of the two.
+3. **The cricket "Stumping Recovery Lab" itself is not rebuilt.** Its handoff is ready in `examples/cricket-stumping/`, so a follow-up session can continue it with `/baton:import`.
+
+---
+
+## Turn 5
+
+### User · 2026-10-11 17:53 UTC
+
+not necessary drop a file, i mean we can embed it in multiple ais and transfer from within, so that w capturw what sharing could never possibly can. build from that perspective. think bih
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 17:54 UTC
+
+Understood. The goal is to capture from inside each AI, not after the fact. A share link or export only ever gets what the vendor chooses to publish. If Baton lives inside the AI (in the page, in the model's tool list, in the agent's hooks), it sees everything: tool outputs, the actual generated files, streamed content, and the model's own account of its state. I'll redesign around that, starting with a quick check of where each AI lets something be embedded today.
+
+<details><summary>Tool call: <code>WebSearch</code> · WebSearch: ChatGPT developer mode custom MCP connector remote server write actions 2026</summary>
+
+```json
+{
+  "query": "ChatGPT developer mode custom MCP connector remote server write actions 2026",
+  "mode": "standard"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>WebSearch</code> · WebSearch: Claude custom connectors remote MCP server claude.ai Gemini CLI MCP httpUrl Codex config.toml mcp_servers</summary>
+
+```json
+{
+  "query": "Claude custom connectors remote MCP server claude.ai Gemini CLI MCP httpUrl Codex config.toml mcp_servers",
+  "mode": "standard"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>WebSearch</code> · WebSearch: chatgpt backend-api conversation interpreter download sandbox_path extension export code interpreter files</summary>
+
+```json
+{
+  "query": "chatgpt backend-api conversation interpreter download sandbox_path extension export code interpreter files",
+  "mode": "standard"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>WebSearch</code> · WebSearch: Claude Code hooks PreCompact SessionEnd transcript_path hook input plugin hooks.json</summary>
+
+```json
+{
+  "query": "Claude Code hooks PreCompact SessionEnd transcript_path hook input plugin hooks.json",
+  "mode": "standard"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>WebSearch</code></summary>
+
+```
+Web search results for query: "ChatGPT developer mode custom MCP connector remote server write actions 2026"
+
+Links: [{"title":"Connect chatgpt setup","url":"https://help.boomi.com/docs/Atomsphere/Platform/Connect_chatgpt_setup"},{"title":"chat gpt mcp","url":"https://www.infoq.com/news/2025/10/chat-gpt-mcp"},{"title":"12584461 developer mode and full mcp connectors in chatgpt","url":"https://help.openai.com/en/articles/12584461-developer-mode-and-full-mcp-connectors-in-chatgpt"},{"title":"devops.com","url":"https://devops.com/?p=179495"},{"title":"chatgpt developer mode full mcp access with serious responsibilities","url":"https://devops.com/chatgpt-developer-mode-full-mcp-access-with-serious-responsibilities/"},{"title":"12584461 developer mode and mcp apps in chatgpt","url":"https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt"},{"title":"hyper.ai","url":"https://hyper.ai/en/stories/6abe2f6f03f19fba2b76f5df7186b9d3"},{"title":"OpenAI Introduces Developer Mode for ChatGPT, Unlocking Full MCP Client Access","url":"https://www.cxodigitalpulse.com/openai-introduces-developer-mode-for-chatgpt-unlocking-full-mcp-client-access/"},{"title":"OpenAI Introduces Developer Mode for ChatGPT, Unlocking Full MCP Client Access","url":"https://www.cxodigitalpulse.com/?p=37809"}]
+
+Write actions through custom MCP connectors in ChatGPT are in beta and limited to paid workspace plans. Sources differ on some details, so check OpenAI's current help article before relying on them.
+
+- **Plan access:** OpenAI's help center says full MCP support, including write actions, is rolling out in beta to Business, Enterprise, and Edu plans, and that functionality may change. Plus and Pro users can use Developer Mode for read-only custom MCP connectors. That claim comes from a third-party integration guide (Boomi), not OpenAI.
+- **Admin setup:** One guide says a workspace admin or owner must enable Developer Mode before anyone can create custom MCP apps.
+- **Confirmation:** ChatGPT asks for confirmation based on app permissions and the action's context. Per a DevOps article, the system respects the readOnlyHint annotation from MCP tool specifications. Tools without this hint are treated as write actions and require confirmation.
+- **Transports and auth:** ChatGPT supports both SSE (Server-Sent Events) and Streamable HTTP MCP transports. It supports OAuth, No Authentication, and Mixed Authentication.
+- **Publishing limits:** OpenAI says apps cannot be updated after publishing at launch. To change tools or metadata after publishing, you must recreate and republish.
+- **OAuth refresh:** OpenAI advises including offline access in OAuth configuration. Without it, ChatGPT may lose access after the original authorization expires.
+- **Risks:** OpenAI calls the mode "powerful but dangerous", and it warns about prompt injection, model mistakes in write actions, and malicious MCP servers.
+
+REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+```
+
+</details>
+
+<details><summary>Output: <code>WebSearch</code></summary>
+
+```
+Web search results for query: "Claude custom connectors remote MCP server claude.ai Gemini CLI MCP httpUrl Codex config.toml mcp_servers"
+
+Links: [{"title":"11175166 using connectors in claude ai","url":"https://support.claude.com/en/articles/11175166-using-connectors-in-claude-ai"},{"title":"11503834 building custom connectors via remote mcp servers","url":"https://support.anthropic.com/en/articles/11503834-building-custom-connectors-via-remote-mcp-servers"},{"title":"Connect claude setup","url":"https://help.boomi.com/docs/Atomsphere/Connect/MCPSetup/Connect_claude_setup"},{"title":"Connect claude setup","url":"https://help.boomi.com/docs/Atomsphere/Platform/Connect_claude_setup"},{"title":"support.claude.com","url":"https://support.claude.com/en/articles/11503834"},{"title":"local vs remote mcp claude custom connectors","url":"https://mer.vin/2026/08/local-vs-remote-mcp-claude-custom-connectors/?amp=1"},{"title":"local vs remote mcp claude custom connectors","url":"https://mer.vin/2026/08/local-vs-remote-mcp-claude-custom-connectors/"},{"title":"connect claude mcp","url":"https://hjarni.com/docs/connect-claude-mcp"},{"title":"Claude Custom Connectors","url":"https://skillsplayground.com/integrations/claude-connectors/"}]
+
+The search returned good coverage of Claude's custom connectors but nothing on Gemini CLI's `httpUrl` setting or Codex's `config.toml` `mcp_servers` section, so those parts of your query are unanswered.
+
+**Claude custom connectors (claude.ai)**
+- Plan access: Support docs say custom connectors using remote MCP are available on Claude, Cowork, and Claude Desktop for users on Free, Pro, Max, Team, and Enterprise plans, with Free limited to one connector.
+- Cloud-side connection: Requests come from Anthropic's infrastructure, so your MCP server must be reachable over the public internet from Anthropic's IP ranges.
+- Transport and auth: Claude supports both SSE- and Streamable HTTP-based remote servers, although support for SSE may be deprecated, and supports both authless and OAuth-based remote servers. The OAuth callback is listed as https://claude.ai/api/mcp/auth_callback, and Dynamic Client Registration is supported.
+- Setup steps: In claude.ai, go to Customize > Connectors, click the + button, choose Add custom connector, and enter the server URL. Team and Enterprise plans need an owner to add the connector to the organization first, then members connect individually.
+- Claude Desktop: Claude Desktop will not connect to remote servers that are configured directly via claude_desktop_config.json. Remote servers go through Settings > Connectors instead.
+- Claude Code: One third-party guide shows adding a remote server from the terminal with `claude mcp add --transport http`, followed by a server name and URL.
+
+**Not covered by these results:** Gemini CLI's `httpUrl` field and Codex's `config.toml` `mcp_servers` table. A follow-up search on each would be needed to verify their current syntax.
+
+REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+```
+
+</details>
+
+<details><summary>Output: <code>WebSearch</code></summary>
+
+```
+Web search results for query: "chatgpt backend-api conversation interpreter download sandbox_path extension export code interpreter files"
+
+Links: [{"title":"DEPRECATED - visit Code Interpreter SDK instead","url":"https://github.com/e2b-dev/llm-code-interpreter"},{"title":"How to Add a Code Interpreter to an AI App with a Sandbox","url":"https://blogs.novita.ai/how-to-add-code-interpreter-ai-app-sandbox/"},{"title":"vercel.com","url":"https://vercel.com/vuth9808s-projects/mini-chat-gpt-main-back-end/sandboxes"},{"title":"a fully replicated OpenAI GPT Code Interpreter sandbox, that is deployable to modal","url":"https://git.tdem.in/raidendotai/clone-interpreter"},{"title":"The Easiest Way to Add Code Interpreter into Your LLM Apps","url":"https://thetechnician.substack.com/p/the-easiest-way-to-add-code-interpreter"},{"title":"developers.cloudflare.com","url":"https://developers.cloudflare.com/sandbox/llms.txt"},{"title":"e2b.dev","url":"https://e2b.dev/docs/legacy/code-interpreter/installation"},{"title":"Sandbox / Code Execution","url":"https://docs.litellm.ai/docs/sandbox"},{"title":"Skillshub e2b-sandbox","url":"https://openskillindex.com/skills/comeonoliver-skillshub-e2b-sandbox"}]
+
+The search didn't find anything about ChatGPT's internal `backend-api` interpreter download endpoint, the `sandbox_path` field, or how export works. That API is undocumented, so public sources are unlikely to cover it.
+
+The results were about general code-interpreter design:
+
+- A sandbox-design guide suggests keeping a mapping from each user-facing file name to its sandbox path, and says generated files should be scanned and classified before they're delivered. (Keep a mapping from display name to sandbox path in application state.)
+- That same guide describes returning generated artifacts as structured records with a path, type, and size. (Capture structured execution output)
+- E2B's open-source Code Interpreter SDK is one option for running code in a sandbox, and the search returned its docs and a deprecated ChatGPT plugin built on E2B. (E2B's Code Interpreter SDK allows you to add code interpreting capabilities to your AI apps.)
+
+If you need the actual ChatGPT behavior, you'd have to inspect network traffic in the browser or find community reverse-engineering write-ups, which this search didn't surface. I can run another search for those if you want.
+
+REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+```
+
+</details>
+
+<details><summary>Output: <code>WebSearch</code></summary>
+
+```
+Web search results for query: "Claude Code hooks PreCompact SessionEnd transcript_path hook input plugin hooks.json"
+
+Links: [{"title":"如需包含範例的快速入門指南,請參閱 Claude Code hooks 入門","url":"https://docs.claude.com/zh-TW/docs/claude-code/hooks"},{"title":"如需包含範例的快速入門指南,請參閱 Claude Code hooks 入門","url":"https://docs.anthropic.com/zh-TW/docs/claude-code/hooks"},{"title":"有关包含示例的快速入门指南,请参阅 Claude Code hooks 入门","url":"https://docs.claude.com/zh-CN/docs/claude-code/hooks"},{"title":"有关带示例的快速入门指南,请参阅 Claude Code hooks 入门","url":"https://docs.anthropic.com/zh-CN/docs/claude-code/hooks"},{"title":"docs.claude.com","url":"https://docs.claude.com/en/docs/claude-code/hooks"},{"title":"docs.claude-mem.ai","url":"https://docs.claude-mem.ai/configuration/hooks"},{"title":"docs.anthropic.com","url":"https://docs.anthropic.com/en/docs/claude-code/hooks"},{"title":"session lifecycle hooks","url":"https://claudefa.st/blog/tools/hooks/session-lifecycle-hooks"},{"title":"session lifecycle hooks","url":"https://pilot-shell.com/blog/session-lifecycle-hooks"},{"title":"Session transcripts (UUID.jsonl) are never written to disk","url":"https://claudeissues.com/issue/20612-session-transcripts-uuid-jsonl-are-never-written-to-disk"}]
+
+Links: [{"title":"docs.claude.com","url":"https://docs.claude.com/en/docs/claude-code/hooks"},{"title":"www.mintlify.com","url":"https://www.mintlify.com/affaan-m/everything-claude-code/hooks/overview"},{"title":"mintlify.com","url":"https://mintlify.com/shanraisshan/claude-code-best-practice/concepts/hooks"},{"title":"www.mintlify.com","url":"https://www.mintlify.com/VineeTagarwaL-code/claude-code/guides/hooks"},{"title":"hook development","url":"https://skillselion.com/skills/sanity-io/claude-plugins-official/hook-development"},{"title":"From plugin-dev","url":"https://www.claudepluginhub.com/skills/0xlxx-plugin-dev-plugins-plugin-dev/hook-development"},{"title":"From plugin-dev","url":"https://www.claudepluginhub.com/skills/mind-reply-plugin-dev-plugins-plugin-dev/hook-development"},{"title":"hook development","url":"https://claudeskills.info/ja/skills/josiahsiegel/claude-plugin-marketplace/hook-development/"},{"title":"hook development","url":"https://claudeskills.info/zh/skills/josiahsiegel/claude-plugin-marketplace/hook-development/"},{"title":"hook development","url":"https://claudeskills.info/zh-hant/skills/josiahsiegel/claude-plugin-marketplace/hook-development/"}]
+
+The search turned up the official hook input schemas and plugin hook layout, plus one resolved bug report about transcripts.
+
+- **Common fields:** Hooks receive JSON on stdin. Per the official docs, hooks are configured in settings files, and the common inputs include session ID, transcript path, working directory, and permission mode.
+- **PreCompact:** The input includes a `trigger` value of manual or auto, plus `custom_instructions`. For manual, custom_instructions comes from what the user passes into /compact. For auto, custom_instructions is empty.
+- **SessionEnd:** The example input includes `session_id`, `transcript_path`, `cwd`, and a `reason` field (the example shows "exit"). The results don't list the other possible reason values.
+- **Plugin hooks:** Plugin hooks are defined in the plugin's hooks/hooks.json file or in a file given by a custom path to the hooks field. Plugin hooks use the ${CLAUDE_PLUGIN_ROOT} environment variable to reference plugin files. One guide notes that for plugin hooks.json you wrap the event definitions in a top-level "hooks" object, while settings files take the events directly.
+- **Reload behavior:** Changes to hook configuration require restarting Claude Code.
+- **Known issue:** A GitHub issue reported that this affects all hooks that expect to access transcripts (SessionEnd, PreCompact, etc.). It was closed Jan 29, 2026 and marked resolved. The results don't say which release fixed it, so check the version if transcript access matters.
+
+The results were mostly official docs and third-party guides, with no direct source for the exact plugin hooks.json schema beyond these snippets.
+
+REMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+I've confirmed the embedding points: both ChatGPT and claude.ai support remote MCP servers over Streamable HTTP, Claude Code plugins can hook into PreCompact/SessionEnd for transcript access, and a browser extension can tap into the logged-in page directly. I'm now recording this new direction before starting to build.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Check branch sync and time</summary>
+
+```bash
+git fetch -q origin && git status -sb | head -2 && date -u +%H:%M
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+## claude/laughing-davinci-c048d8...origin/claude/laughing-davinci-c048d8
+17:54
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/docs/prompts/004-capture-from-within.md</summary>
+
+```json
+/home/user/App/docs/prompts/004-capture-from-within.md  (1561 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/docs/prompts/004-capture-from-within.md (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/docs/research/07-capture-surfaces.md</summary>
+
+```json
+/home/user/App/docs/research/07-capture-surfaces.md  (4685 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/docs/research/07-capture-surfaces.md (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/docs/decisions/ADR-002-capture-from-within.md</summary>
+
+```json
+/home/user/App/docs/decisions/ADR-002-capture-from-within.md  (3241 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/docs/decisions/ADR-002-capture-from-within.md (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskCreate</code> · TaskCreate: encoding base64 artifacts, captured files injection into build, recovery for claude.ai artifacts/create_file/str_replace.</summary>
+
+```json
+{
+  "subject": "Binary artifacts + Claude.ai tool recovery in core",
+  "description": "encoding base64 artifacts, captured files injection into build, recovery for claude.ai artifacts/create_file/str_replace.",
+  "activeForm": "Extending core for captured files"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskCreate</code></summary>
+
+```
+Task #6 created successfully: Binary artifacts + Claude.ai tool recovery in core
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskCreate</code> · TaskCreate: src/relay/*, baton relay/send/pickup, local store shared by stdio MCP.</summary>
+
+```json
+{
+  "subject": "Relay: store, MCP tools, HTTP server, CLI send/pickup",
+  "description": "src/relay/*, baton relay/send/pickup, local store shared by stdio MCP.",
+  "activeForm": "Building the relay"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskCreate</code></summary>
+
+```
+Task #7 created successfully: Relay: store, MCP tools, HTTP server, CLI send/pickup
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskCreate</code> · TaskCreate: MV3 extension for ChatGPT/Claude/Gemini/generic with e2e tests against mock site.</summary>
+
+```json
+{
+  "subject": "Browser extension: adapters, panel, tab-to-tab transfer, relay send",
+  "description": "MV3 extension for ChatGPT/Claude/Gemini/generic with e2e tests against mock site.",
+  "activeForm": "Building the browser extension"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskCreate</code></summary>
+
+```
+Task #8 created successfully: Browser extension: adapters, panel, tab-to-tab transfer, relay send
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskCreate</code> · TaskCreate: hooks.json + baton hook; README/SPEC/journal updates; setup guides per AI; commit/push.</summary>
+
+```json
+{
+  "subject": "Claude Code hooks, docs, tests, push",
+  "description": "hooks.json + baton hook; README/SPEC/journal updates; setup guides per AI; commit/push.",
+  "activeForm": "Wiring hooks and documenting"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskCreate</code></summary>
+
+```
+Task #9 created successfully: Claude Code hooks, docs, tests, push
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Recording's done. Next I'll add support for binary files (PDFs, images, ZIPs), merge captured files in to replace "lost" entries, and add recovery for claude.ai's own file tools like artifacts and `create_file`/`str_replace`.
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "6",
+  "status": "in_progress"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #6 status
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Locate code to extend for captured files</summary>
+
+```bash
+grep -n "attachments?:\|export interface BatonArtifact" -A3 src/core/schema.ts | head -20; grep -n "for (const att of parsed.attachments" -B3 -A6 src/core/build.ts; grep -n "FILE_TOOLS\|function toolLang" -A3 src/parsers/claude.ts | head -20; grep -n "name === 'Bash'" src/recover/artifacts.ts
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+55:export interface BatonArtifact {
+56-  path: string; // relative path inside bundle files/ (POSIX)
+57-  originalPath: string;
+58-  status: ArtifactStatus;
+--
+122:  attachments?: { path: string; content: string; note?: string }[];
+123-  /** URLs the source itself lists (e.g. ChatGPT safe_urls). */
+124-  sourceLinks?: string[];
+125-  /** Parser-level loss observations (things only the parser can know). */
+42-
+43-  // Recover files from the (already redacted) tool calls.
+44-  const { artifacts, replay } = recoverArtifacts(events, parsed.source.kind, parsed.source.cwd);
+45:  for (const att of parsed.attachments ?? []) {
+46-    const content = redactor.apply(att.content);
+47-    artifacts.push({ path: att.path, originalPath: att.path, status: 'attached', content, bytes: new TextEncoder().encode(content).length, sha256: sha256Hex(content), note: att.note });
+48-  }
+49-  artifacts.sort((a, b) => a.path.localeCompare(b.path));
+50-
+51-  const links = collectLinks(events, parsed.sourceLinks ?? []);
+80:    const args = FILE_TOOLS.has(name) && isRecord(input) ? input : undefined;
+81-    events.push({ id, kind: 'tool_call', role: 'assistant', time, model, text: describeToolCall(name, input), tool: { name, callId: asString(b.id) || undefined, input: toolInputText(name, input), language: toolLang(name), args } });
+82-  } else if (type === 'tool_result' || type.endsWith('_tool_result')) {
+83-    const text = toolResultText(b.content);
+--
+97:const FILE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
+98-
+99-function toolInputText(name: string, input: unknown): string {
+100-  if (isRecord(input)) {
+--
+109:function toolLang(name: string): string | undefined {
+110-  if (name === 'Bash') return 'bash';
+111-  return 'json';
+112-}
+231:      else if (input && (name === 'container.exec' || name === 'python' || name === 'Bash' || e.tool.language === 'bash')) {
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Add binary artifacts, captured files and claude.ai tool recovery</summary>
+
+```bash
+python3 - <<'EOF'
+def sub(p, old, new, count=1):
+    s=open(p).read(); assert old in s, (p, old[:70]); open(p,'w').write(s.replace(old,new,count))
+
+# ---- schema
+sub('src/core/schema.ts', """  content?: string;
+  bytes?: number;
+  sha256?: string;""", """  content?: string;
+  encoding?: 'utf8' | 'base64'; // base64 for binary files captured from the source (PDFs, images, archives)
+  mimeType?: string;
+  bytes?: number;
+  sha256?: string; // over the decoded bytes""")
+sub('src/core/schema.ts', """  attachments?: { path: string; content: string; note?: string }[];""", """  attachments?: { path: string; content: string; note?: string }[];
+  /** Files captured live from the source (extension, relay): exact bytes, override code-based recovery. */
+  capturedFiles?: CapturedFile[];""")
+sub('src/core/schema.ts', """export interface BuildOptions {""", """export interface CapturedFile {
+  path: string; // original path as the source names it (e.g. /mnt/data/report.pdf)
+  content: string; // utf8 text or base64
+  encoding?: 'utf8' | 'base64';
+  mimeType?: string;
+  note?: string;
+  eventId?: string;
+}
+
+export interface BuildOptions {""")
+
+# ---- util base64
+s=open('src/core/util.ts').read()
+s+='''
+export function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64.replace(/\\s+/g, ''));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+export function bytesToBase64(bytes: Uint8Array): string {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/** Raw bytes of an artifact's content, honouring its encoding. */
+export function artifactBytes(a: { content?: string; encoding?: string }): Uint8Array | undefined {
+  if (a.content === undefined) return undefined;
+  return a.encoding === 'base64' ? base64ToBytes(a.content) : new TextEncoder().encode(a.content);
+}
+'''
+open('src/core/util.ts','w').write(s)
+
+# ---- build: captured files
+sub('src/core/build.ts', """  for (const att of parsed.attachments ?? []) {""", """  for (const cf of parsed.capturedFiles ?? []) {
+    const binary = cf.encoding === 'base64';
+    const content = binary ? cf.content : redactor.apply(cf.content);
+    const bytes = binary ? base64ToBytes(content) : new TextEncoder().encode(content);
+    const path = bundlePath(cf.path, parsed.source.kind, parsed.source.cwd);
+    const prior = artifacts.findIndex((a) => a.path === path);
+    const captured: BatonArtifact = {
+      path,
+      originalPath: cf.path,
+      status: 'recovered',
+      content,
+      encoding: binary ? 'base64' : undefined,
+      mimeType: cf.mimeType,
+      bytes: bytes.length,
+      sha256: sha256Hex(bytes),
+      recoveredFrom: cf.eventId ? [cf.eventId] : undefined,
+      note: cf.note ?? 'captured from the source (exact bytes)',
+    };
+    if (prior >= 0) artifacts[prior] = { ...captured, versions: artifacts[prior].versions, modifiedBy: undefined };
+    else artifacts.push(captured);
+  }
+  for (const att of parsed.attachments ?? []) {""")
+sub('src/core/build.ts', """import { recoverArtifacts } from '../recover/artifacts.ts';""", """import { bundlePath, recoverArtifacts } from '../recover/artifacts.ts';""")
+sub('src/core/build.ts', """import { extractUrls, isRecord } from './util.ts';""", """import { base64ToBytes, extractUrls, isRecord } from './util.ts';""")
+
+# ---- integrity: hash bytes
+s=open('src/core/integrity.ts').read()
+s=s.replace("""export function verifyBundle(bundle: BatonBundle, files?: Record<string, string>): VerifyResult {""","""export function verifyBundle(bundle: BatonBundle, files?: Record<string, string | Uint8Array>): VerifyResult {""")
+s=s.replace("""    const shipped = files?.[a.path] ?? a.content;
+    const actual = shipped !== undefined ? sha256Hex(shipped) : a.sha256;""","""    const onDisk = files?.[a.path];
+    const shipped = onDisk !== undefined ? (typeof onDisk === 'string' ? new TextEncoder().encode(onDisk) : onDisk) : artifactBytes(a);
+    const actual = shipped !== undefined ? sha256Hex(shipped) : a.sha256;""")
+s=s.replace("""import { stableStringify } from './util.ts';""","""import { artifactBytes, stableStringify } from './util.ts';""")
+open('src/core/integrity.ts','w').write(s)
+
+# ---- render files: binary
+sub('src/render/files.ts', """  for (const a of b.artifacts) if (a.content !== undefined) files[`files/${a.path}`] = a.content;""", """  for (const a of b.artifacts) {
+    const bytes = a.encoding === 'base64' ? artifactBytes(a) : undefined;
+    if (a.content !== undefined) files[`files/${a.path}`] = bytes ?? a.content;
+  }""")
+sub('src/render/files.ts', """import type { FileMap } from '../core/zip.ts';""", """import { artifactBytes } from '../core/util.ts';
+import type { FileMap } from '../core/zip.ts';""")
+
+# ---- claude.ai tools
+sub('src/parsers/claude.ts', """const FILE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);""", """const FILE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'artifacts', 'create_file', 'str_replace']);""")
+sub('src/parsers/claude.ts', """  if (name === 'Bash') return 'bash';""", """  if (name === 'Bash' || name === 'bash_tool') return 'bash';""")
+sub('src/parsers/claude.ts', """    if (name === 'Bash' && typeof input.command === 'string') return input.command;""", """    if ((name === 'Bash' || name === 'bash_tool') && typeof input.command === 'string') return input.command;
+    if (name === 'artifacts') return `${asString(input.command)} ${asString(input.id)}${input.title ? ` "${asString(input.title)}"` : ''}  (${asString(input.content || input.new_str).length} chars → recovered file)`;
+    if (name === 'create_file') return `${asString(input.path)}  (${asString(input.file_text).length} chars → recovered file)`;""")
+
+# ---- recovery of claude.ai tools
+sub('src/recover/artifacts.ts', """export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string): FileOp[] {
+  const path = asString(args.file_path || args.notebook_path || args.path);""", """const ARTIFACT_EXT: Record<string, string> = {
+  'application/vnd.ant.code': '', 'text/markdown': '.md', 'text/html': '.html', 'image/svg+xml': '.svg',
+  'application/vnd.ant.react': '.jsx', 'application/vnd.ant.mermaid': '.mmd',
+};
+const LANG_EXT: Record<string, string> = { python: '.py', javascript: '.js', typescript: '.ts', tsx: '.tsx', jsx: '.jsx', html: '.html', css: '.css', json: '.json', bash: '.sh', shell: '.sh', sql: '.sql', rust: '.rs', go: '.go', java: '.java', markdown: '.md', yaml: '.yaml' };
+
+/** claude.ai "artifacts" tool: create / update / rewrite a named artifact. */
+function artifactOps(args: Record<string, unknown>, eventId: string): FileOp[] {
+  const id = asString(args.id) || 'artifact';
+  const type = asString(args.type);
+  const ext = ARTIFACT_EXT[type] || LANG_EXT[asString(args.language).toLowerCase()] || (type ? '' : '.txt');
+  const path = `/claude-artifacts/${id}${ext || '.txt'}`;
+  const cmd = asString(args.command);
+  if (cmd === 'update') return [{ kind: 'replace', path, eventId, old: asString(args.old_str), new: asString(args.new_str) }];
+  if (cmd === 'create' || cmd === 'rewrite') return [{ kind: 'write', path, eventId, content: asString(args.content) }];
+  return [];
+}
+
+export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string): FileOp[] {
+  if (name === 'artifacts') return artifactOps(args, eventId);
+  const path = asString(args.file_path || args.notebook_path || args.path);""")
+sub('src/recover/artifacts.ts', """  if (name === 'Write') return [{ kind: 'write', path, eventId, content: asString(args.content) }];""", """  if (name === 'Write') return [{ kind: 'write', path, eventId, content: asString(args.content) }];
+  if (name === 'create_file') return [{ kind: 'write', path, eventId, content: asString(args.file_text) }];
+  if (name === 'str_replace') return [{ kind: 'replace', path, eventId, old: asString(args.old_str), new: asString(args.new_str) }];""")
+sub('src/recover/artifacts.ts', """name === 'container.exec' || name === 'python' || name === 'Bash' ||""", """name === 'container.exec' || name === 'python' || name === 'Bash' || name === 'bash_tool' ||""")
+sub('src/recover/artifacts.ts', """  if (p.startsWith('/mnt/data/')) p = p.slice('/mnt/data/'.length);""", """  const sandboxRoot = SANDBOX_ROOTS.find((r) => p.startsWith(r));
+  if (sandboxRoot) p = p.slice(sandboxRoot.length);""")
+sub('src/recover/artifacts.ts', """export function bundlePath(""", """// Vendor sandbox roots that map to the top of files/ (ChatGPT, claude.ai file tools and artifacts).
+const SANDBOX_ROOTS = ['/mnt/data/', '/mnt/user-data/outputs/', '/home/claude/', '/claude-artifacts/'];
+
+export function bundlePath(""")
+EOF
+grep -n "claude-artifacts" src/recover/artifacts.ts | head -3; npx tsc --noEmit && echo TSC-OK && npm test 2>&1 | grep -E "^ℹ (pass|fail)"
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+194:  const path = `/claude-artifacts/${id}${ext || '.txt'}`;
+234:const SANDBOX_ROOTS = ['/mnt/data/', '/mnt/user-data/outputs/', '/home/claude/', '/claude-artifacts/'];
+TSC-OK
+ℹ pass 65
+ℹ fail 0
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Core now supports binary files, captured files, and claude.ai's file tools, with all 65 tests passing. Next, I'll make sure reading a bundle back preserves binary files as bytes and prevent the viewer from dumping raw base64 text.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Keep binary files as bytes when reading bundles</summary>
+
+```bash
+python3 - <<'EOF'
+def sub(p, old, new):
+    s=open(p).read(); assert old in s, (p, old[:70]); open(p,'w').write(s.replace(old,new,1))
+p='src/node/io.ts'
+sub(p, """export function readBundleFiles(path: string): Record<string, string> {
+  const dec = new TextDecoder();
+  if (statSync(path).isDirectory()) {
+    const out: Record<string, string> = {};""", """/** files/ entries stay raw bytes (they may be binary); everything else is decoded as UTF-8. */
+export function readBundleFiles(path: string): Record<string, string | Uint8Array> {
+  const dec = new TextDecoder();
+  if (statSync(path).isDirectory()) {
+    const out: Record<string, string | Uint8Array> = {};""")
+sub(p, """        else out[relative(path, p).split(sep).join('/')] = readFileSync(p, 'utf8');""", """        else {
+          const rel = relative(path, p).split(sep).join('/');
+          out[rel] = rel.startsWith('files/') ? new Uint8Array(readFileSync(p)) : readFileSync(p, 'utf8');
+        }""")
+sub(p, """    const out: Record<string, string> = {};
+    const names = Object.keys(members);""", """    const out: Record<string, string | Uint8Array> = {};
+    const names = Object.keys(members);""")
+sub(p, """    for (const n of names) if (n.startsWith(prefix)) out[n.slice(prefix.length)] = dec.decode(members[n]);""", """    for (const n of names) {
+      if (!n.startsWith(prefix)) continue;
+      const rel = n.slice(prefix.length);
+      out[rel] = rel.startsWith('files/') ? members[n] : dec.decode(members[n]);
+    }""")
+for p in ['src/cli.ts','src/mcp/server.ts']:
+    s=open(p).read()
+    s=s.replace("""function loadBundle(path: string): { bundle: BatonBundle; files: Record<string, string> } {""","""function loadBundle(path: string): { bundle: BatonBundle; files: Record<string, string | Uint8Array> } {""")
+    s=s.replace("""  const files: Record<string, string> = {};""","""  const files: Record<string, string | Uint8Array> = {};""")
+    s=s.replace("""JSON.parse(raw['bundle.json'])""","""JSON.parse(String(raw['bundle.json']))""")
+    open(p,'w').write(s)
+p='src/render/html.ts'
+sub(p, """      return a.content !== undefined ? `<details>""", """      if (a.encoding === 'base64') return `<p>${head} · <span class="meta">binary${a.mimeType ? ` ${escapeHtml(a.mimeType)}` : ''}, saved under files/</span></p>`;
+      return a.content !== undefined ? `<details>""")
+EOF
+npx tsc --noEmit && echo TSC-OK && npm test 2>&1 | grep -E "^ℹ (pass|fail)"
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+TSC-OK
+ℹ pass 65
+ℹ fail 0
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Bundles now correctly read back binary files. Next I'll build the relay—an MCP server exposing `baton_checkpoint` and `baton_pickup` tools—starting with the checkpoint model, store, and tools.
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "6",
+  "status": "completed"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "7",
+  "status": "in_progress"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #7 status
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #6 status
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/relay/checkpoint.ts</summary>
+
+```json
+/home/user/App/src/relay/checkpoint.ts  (5911 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/relay/checkpoint.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/relay/store.ts</summary>
+
+```json
+/home/user/App/src/relay/store.ts  (4716 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/relay/store.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Add baton-relay source kind</summary>
+
+```bash
+sed -i "s/  | 'openai-messages'\n  | 'unknown';/X/" src/core/schema.ts && python3 - <<'EOF'
+p='src/core/schema.ts'; s=open(p).read()
+s=s.replace("  | 'openai-messages'\n  | 'unknown';","  | 'openai-messages'\n  | 'baton-relay'\n  | 'unknown';",1); open(p,'w').write(s)
+EOF
+grep -n "baton-relay" src/core/schema.ts; sed -n 1,40p src/mcp/server.ts | grep -n "interface Tool" -A6
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+23:  | 'baton-relay'
+19:interface Tool {
+20-  name: string;
+21-  description: string;
+22-  inputSchema: Record<string, unknown>;
+23-  run: (args: Record<string, unknown>) => Promise<string>;
+24-}
+25-
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+I'll move on to the shared MCP protocol layer and relay tools next—the tool descriptions here are key since they instruct the model to store full file contents, tool outputs, and verbatim prompts in checkpoints.
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/mcp/protocol.ts</summary>
+
+```json
+/home/user/App/src/mcp/protocol.ts  (2953 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/mcp/protocol.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/relay/tools.ts</summary>
+
+```json
+/home/user/App/src/relay/tools.ts  (11077 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/relay/tools.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 17:58 UTC
+
+Next is end-to-end encryption, so captures from the extension can go through the relay without the server being able to read them. After that, the HTTP relay server.
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/relay/seal.ts</summary>
+
+```json
+/home/user/App/src/relay/seal.ts  (2086 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/relay/seal.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/relay/server.ts</summary>
+
+```json
+/home/user/App/src/relay/server.ts  (13726 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/relay/server.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Next I'll build out the CLI's `relay`, `send`, and `pickup` commands along with the local stdio MCP server, giving it the same checkpoint and pickup tools backed by `~/.baton/store` so local AIs can share one store without a server.
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/src/relay/client.ts</summary>
+
+```json
+/home/user/App/src/relay/client.ts  (4222 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/src/relay/client.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Refactor stdio MCP server onto shared protocol with relay tools</summary>
+
+```bash
+python3 - <<'EOF'
+p='src/mcp/server.ts'; s=open(p).read()
+# replace local Tool interface + handleMessage + startMcpServer with protocol-based versions
+start=s.index('const SUPPORTED =')
+s=s.replace(s[start:s.index('const s = (v: unknown)')], '')
+s=s.replace("""const TOOLS: Tool[] = [""","""const FILE_TOOLS: Tool[] = [""")
+i=s.index('type Json = Record<string, unknown>;')
+s=s[:i]+'''type Json = Record<string, unknown>;
+
+/** Local tools (files, sessions, sinks) + relay tools (local ~/.baton/store, or a remote hub via BATON_RELAY_URL). */
+export function localTools(): Tool[] {
+  const relay = process.env.BATON_RELAY_URL
+    ? remoteRelayTools(process.env.BATON_RELAY_URL, process.env.BATON_RELAY_TOKEN)
+    : relayTools(new RelayStore(), { allowList: true, publicUrl: process.env.BATON_PUBLIC_URL });
+  return [...FILE_TOOLS, ...relay];
+}
+
+const INFO = {
+  name: 'baton',
+  version: VERSION,
+  instructions: `${RELAY_INSTRUCTIONS}\\nFor files on disk (ChatGPT share links, exports, Claude Code sessions) use baton_import / baton_session and read the returned HANDOFF.md. Respect the loss audit: lost files do not exist.`,
+};
+
+let cachedTools: Tool[] | undefined;
+const stdioSession: McpSession = { clientName: 'mcp-client' };
+
+export async function handleMessage(msg: Json, session: McpSession = stdioSession): Promise<Json | undefined> {
+  cachedTools ??= localTools();
+  return handleRpc(msg, cachedTools, INFO, session);
+}
+
+export async function startMcpServer(): Promise<void> {
+  const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
+  const write = (m: Json) => process.stdout.write(JSON.stringify(m) + '\\n');
+  for await (const line of rl) {
+    if (!line.trim()) continue;
+    let msg: Json;
+    try {
+      msg = JSON.parse(line) as Json;
+    } catch {
+      write({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } });
+      continue;
+    }
+    const res = await handleMessage(msg);
+    if (res) write(res);
+  }
+}
+'''
+s=s.replace("""import { buildSink, SINKS, type SinkName } from '../sinks/index.ts';""","""import { buildSink, SINKS, type SinkName } from '../sinks/index.ts';
+import { handleRpc, type McpSession, type Tool } from './protocol.ts';
+import { RelayStore } from '../relay/store.ts';
+import { RELAY_INSTRUCTIONS, relayTools, remoteRelayTools } from '../relay/tools.ts';""")
+open(p,'w').write(s)
+EOF
+grep -n "interface Tool\|SUPPORTED\|run: async (args)" src/mcp/server.ts | head; npx tsc --noEmit 2>&1 | head -20
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+63:    run: async (args) => {
+80:    run: async (args) => {
+90:    run: async (args) => {
+104:    run: async (args) => {
+117:    run: async (args) => {
+130:    run: async (args) => {
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:00 UTC
+
+The stdio server now carries both the file tools and the relay tools. Next: the `relay`, `send`, `pickup` and `hook` CLI commands.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Add relay/send/pickup/hook CLI commands</summary>
+
+```bash
+python3 - <<'EOF'
+def sub(p, old, new):
+    s=open(p).read(); assert old in s, (p, old[:70]); open(p,'w').write(s.replace(old,new,1))
+p='src/cli.ts'
+sub(p, """  baton mcp                           Run as an MCP server over stdio
+""", """  baton mcp                           Run as an MCP server over stdio (file tools + relay tools)
+
+EMBED IN AIs (capture from within)
+  baton relay [--port 8787]           Run the relay hub: MCP for ChatGPT/Claude connectors, REST, viewer
+  baton send <bundle|source> [--relay URL] [--seal]   Upload a bundle; prints a pickup code (sealed = end-to-end encrypted)
+  baton pickup <code> [--relay URL] [-o dir]          Receive a handoff from any AI or teammate
+  baton hook                          Claude Code hook entry (PreCompact/SessionEnd): auto-bundle into .baton/sessions/
+""")
+sub(p, """  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file']);""", """  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file', 'relay', 'port', 'token', 'store', 'public-url']);""")
+sub(p, """    case 'mcp':
+      await startMcpServer();
+      return 0;""", """    case 'mcp':
+      await startMcpServer();
+      return 0;
+    case 'relay':
+      await startRelay({ port: Number(str(a.flags.port) ?? process.env.PORT ?? 8787), store: new RelayStore({ dir: str(a.flags.store) }), publicUrl: str(a.flags['public-url']), token: str(a.flags.token), log: (m) => console.error(m) });
+      return 0;
+    case 'send':
+      await cmdSend(arg, a);
+      return 0;
+    case 'pickup':
+      await cmdPickup(arg, a);
+      return 0;
+    case 'hook':
+      await cmdHook();
+      return 0;""")
+sub(p, """export async function main(argv: string[]): Promise<number> {""", """const relayUrl = (a: Args) => str(a.flags.relay) ?? process.env.BATON_RELAY_URL;
+
+async function cmdSend(source: string | undefined, a: Args): Promise<void> {
+  if (!source) throw new Error('Missing <bundle dir | source>');
+  let bundle: BatonBundle;
+  let files: FileMap;
+  if (existsSync(join(source, 'bundle.json'))) {
+    const raw = readBundleFiles(source);
+    bundle = JSON.parse(String(raw['bundle.json'])) as BatonBundle;
+    files = raw;
+  } else {
+    const input = await loadInput(source);
+    const [r] = convert(input.text, input.filename, { url: input.url, pick: str(a.flags.pick) });
+    bundle = r.bundle;
+    files = r.files;
+  }
+  const res = await sendBundle(bundle, files, { relay: relayUrl(a), token: str(a.flags.token) ?? process.env.BATON_RELAY_TOKEN, sealed: a.flags.seal === true });
+  if (a.flags.json) return console.log(JSON.stringify(res, null, 2));
+  console.log(`✓ sent "${bundle.title}"${res.sealed ? ' (end-to-end encrypted)' : ''}`);
+  console.log(`  pickup   ${res.link}`);
+  console.log(`  in another AI: "baton pickup ${res.sealed ? res.link : res.code}"  ·  terminal: baton pickup ${res.sealed ? `"${res.link}"` : res.code}${relayUrl(a) ? '' : '  (local store)'}`);
+}
+
+async function cmdPickup(code: string | undefined, a: Args): Promise<void> {
+  if (!code) throw new Error('Missing <code>');
+  const r = await pickup(code, { relay: relayUrl(a) });
+  const out = str(a.flags.o) ?? str(a.flags.out) ?? join('handoffs', r.code);
+  writeFiles(out, r.files);
+  console.log(`✓ picked up "${r.title}" (${r.code})\\n  → ${out}/HANDOFF.md  (start here)`);
+}
+
+/** Claude Code hook: reads the hook JSON on stdin and bundles the transcript before it is compacted or closed. */
+async function cmdHook(): Promise<void> {
+  const chunks: Buffer[] = [];
+  for await (const c of process.stdin) chunks.push(c as Buffer);
+  const h = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as { session_id?: string; transcript_path?: string; cwd?: string; hook_event_name?: string };
+  if (!h.transcript_path || !existsSync(h.transcript_path)) return;
+  const input = await loadInput(h.transcript_path);
+  const [r] = convert(input.text, input.filename, {});
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
+  const dir = join(h.cwd ?? process.cwd(), '.baton', 'sessions', `${stamp}-${(h.hook_event_name ?? 'hook').toLowerCase()}-${(h.session_id ?? r.bundle.id).slice(0, 8)}`);
+  writeFiles(dir, r.files);
+  let sent = '';
+  if (process.env.BATON_AUTO_SEND === '1') {
+    const res = await sendBundle(r.bundle, r.files, { relay: process.env.BATON_RELAY_URL, token: process.env.BATON_RELAY_TOKEN, from: 'claude-code-hook' });
+    sent = ` · pickup ${res.link}`;
+  }
+  console.error(`baton: saved ${h.hook_event_name ?? 'session'} snapshot → ${dir}${sent}`);
+}
+
+export async function main(argv: string[]): Promise<number> {""")
+sub(p, """import { startMcpServer } from './mcp/server.ts';""", """import { startMcpServer } from './mcp/server.ts';
+import { pickup, sendBundle } from './relay/client.ts';
+import { startRelay } from './relay/server.ts';
+import { RelayStore } from './relay/store.ts';
+import type { FileMap } from './core/zip.ts';""")
+EOF
+npx tsc --noEmit 2>&1 | head; grep -n "'relay'\|BATON_RELAY" src/cli.ts | head -3
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+68:  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file', 'relay', 'port', 'token', 'store', 'public-url']);
+199:const relayUrl = (a: Args) => str(a.flags.relay) ?? process.env.BATON_RELAY_URL;
+215:  const res = await sendBundle(bundle, files, { relay: relayUrl(a), token: str(a.flags.token) ?? process.env.BATON_RELAY_TOKEN, sealed: a.flags.seal === true });
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+The relay commands compile. Now I'll run a live end-to-end test: start a relay, checkpoint as ChatGPT over MCP, resume as Claude, and verify the encrypted send/pickup path and browser viewer.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: End-to-end relay test: ChatGPT checkpoints, Claude picks up</summary>
+
+```bash
+S=/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/relaytest && rm -rf $S && mkdir -p $S && (node src/bin.ts relay --port 8799 --store $S/store --public-url http://localhost:8799 > $S/relay.log 2>&1 &) && sleep 1.5 && cat > $S/e2e.mjs <<'EOF'
+const U='http://localhost:8799/mcp';
+async function rpc(sid, body){const r=await fetch(U,{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream',...(sid?{'mcp-session-id':sid}:{})},body:JSON.stringify(body)});const t=await r.text();return {sid:r.headers.get('mcp-session-id')??sid,status:r.status,body:t?JSON.parse(t):null};}
+// ChatGPT side
+let a=await rpc(null,{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-06-18',capabilities:{},clientInfo:{name:'ChatGPT',version:'x'}}});
+console.log('init', a.status, a.body.result.serverInfo, 'sid?', !!a.sid);
+await rpc(a.sid,{jsonrpc:'2.0',method:'notifications/initialized'});
+const list=await rpc(a.sid,{jsonrpc:'2.0',id:2,method:'tools/list'});
+console.log('tools', list.body.result.tools.map(t=>t.name+(t.annotations?.readOnlyHint?'(ro)':'')).join(', '));
+const cp=await rpc(a.sid,{jsonrpc:'2.0',id:3,method:'tools/call',params:{name:'baton_checkpoint',arguments:{title:'Stumping Recovery Lab',goal:'Derive and simulate optimal foot-lift height for stumping recovery',state:'Model + Monte Carlo done; Streamlit app written; GitHub upload blocked by 403.',decisions:['Use smoothstep trajectory because it has zero end velocity'],next_steps:['Push repo','Deploy to Streamlit Cloud'],user_prompts:['Model and plan full research paper level simulatable process…','Bild it'],files:[{path:'/mnt/data/stumping_research_package/app.py',content:'import streamlit as st\nst.title("Stumping Recovery Lab")\n'},{path:'/mnt/data/figure.png',content:'iVBORw0KGgo=',encoding:'base64'}],tool_outputs:[{tool:'python',input:'optimise()',output:'h*=4.29 cm, T=319 ms, P=70.24%'}]}}});
+const text=cp.body.result.content[0].text; console.log(text);
+const code=text.match(/BTN-[0-9A-Z-]{14}/)[0];
+await rpc(a.sid,{jsonrpc:'2.0',id:4,method:'tools/call',params:{name:'baton_checkpoint',arguments:{handoff:code,state:'Added README',files:[{path:'/mnt/data/stumping_research_package/README.md',content:'# Lab\n'}]}}});
+// Claude side
+let b=await rpc(null,{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'claude-ai',version:'y'}}});
+const pick=await rpc(b.sid,{jsonrpc:'2.0',id:5,method:'tools/call',params:{name:'baton_pickup',arguments:{code:code.toLowerCase()}}});
+const pt=pick.body.result.content[0].text;
+console.log('--- pickup excerpt'); console.log(pt.split('\n').filter(l=>/^## |Files \||recovered \||h\*=|--- files|st.title|Checkpoint/.test(l)).slice(0,25).join('\n'));
+const gf=await rpc(b.sid,{jsonrpc:'2.0',id:6,method:'tools/call',params:{name:'baton_get_file',arguments:{code,path:'figure.png'}}});
+console.log('get_file png:', gf.body.result.content[0].text.slice(0,80));
+const v=await fetch('http://localhost:8799/h/'+code); console.log('viewer', v.status, (await v.text()).includes('Stumping Recovery Lab'));
+const z=await fetch('http://localhost:8799/h/'+code+'.zip'); console.log('zip', z.status, z.headers.get('content-type'), (await z.arrayBuffer()).byteLength);
+const bad=await fetch('http://localhost:8799/h/BTN-0000-0000-0000'); console.log('missing', bad.status);
+EOF
+node $S/e2e.mjs; echo ---- ; cat $S/relay.log
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+init 200 { name: 'baton-relay', version: '0.1.0' } sid? true
+tools baton_checkpoint, baton_pickup(ro), baton_get_file(ro)
+Saved checkpoint 1 of "Stumping Recovery Lab".
+Captured: 2 prompt(s), 2 file(s), 1 tool output(s). Expires 2026-10-18.
+Pickup code: BTN-8WPC-HKV3-NDS8
+Viewer: http://localhost:8799/h/BTN-8WPC-HKV3-NDS8
+To continue in another AI: tell it "baton pickup BTN-8WPC-HKV3-NDS8" (with the Baton connector enabled), or run `baton pickup BTN-8WPC-HKV3-NDS8` in a terminal.
+--- pickup excerpt
+## At a glance
+| Files | 3 recovered · 0 stale · 0 lost |
+## 1. Original goal
+## 2. How the ask evolved (every prompt, verbatim)
+## 3. Where it left off
+## 4. Open threads and blockers
+## 5. Reasoning trail (per turn)
+## 6. Files
+| recovered | [`figure.png`](files/figure.png) | 8 B | written by the model at checkpoint 1 (ChatGPT) |
+| recovered | [`stumping_research_package/app.py`](files/stumping_research_package/app.py) | 57 B | written by the model at checkpoint 1 (ChatGPT) |
+| recovered | [`stumping_research_package/README.md`](files/stumping_research_package/README.md) | 6 B | written by the model at checkpoint 2 (ChatGPT) |
+## 7. What the source dropped
+## 8. Tool activity
+## 10. How to continue
+## File contents
+--- files/stumping_research_package/app.py ---
+st.title("Stumping Recovery Lab")
+--- files/stumping_research_package/README.md ---
+get_file png: files/figure.png is binary (8 bytes, unknown type), base64:
+iVBORw0KGgo=
+viewer 200 true
+zip 200 application/zip 29753
+missing 404
+----
+Baton relay 0.1.0 listening on http://localhost:8799 · MCP at http://localhost:8799/mcp
+mcp initialize from ChatGPT
+mcp tools/list from ChatGPT
+mcp tools/call:baton_checkpoint from ChatGPT
+mcp tools/call:baton_checkpoint from ChatGPT
+mcp initialize from claude-ai
+mcp tools/call:baton_pickup from claude-ai
+mcp tools/call:baton_get_file from claude-ai
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Confirmed the cross-AI handoff works end to end, with app.py now arriving intact when captured from inside the AI. Next I'll test encrypted send/pickup via the CLI and check two separate local MCP processes sharing one store.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Test sealed send/pickup and shared local store</summary>
+
+```bash
+S=/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/relaytest && cd $S && node /home/user/App/src/bin.ts send /home/user/App/examples/cricket-stumping --relay http://localhost:8799 --seal | tee send.txt && LINK=$(grep -o 'http[^ ]*#[^ ]*' send.txt | head -1) && echo "stored record has bundle? $(curl -s "${LINK%%#*}" >/dev/null; curl -s http://localhost:8799/api/handoffs/$(echo $LINK | grep -o 'BTN-[0-9A-Z-]*') | python3 -c 'import sys,json; r=json.load(sys.stdin); print("bundle" in r and r["bundle"] is not None, "sealed" in r, len(r["sealed"]["data"]))')" && node /home/user/App/src/bin.ts pickup "$LINK" -o picked && node /home/user/App/src/bin.ts verify picked && echo "wrong key:" && node /home/user/App/src/bin.ts pickup "${LINK%%#*}#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" -o x 2>&1 | tail -1; echo "--- local shared store across two MCP processes"; export BATON_STORE=$S/localstore; printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","clientInfo":{"name":"claude-desktop"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"baton_checkpoint","arguments":{"title":"Pricing page","state":"Draft v2 done","files":[{"path":"pricing.md","content":"# Pricing\nFree / Pro $12"}]}}}' | node /home/user/App/src/bin.ts mcp | tail -1 | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["content"][0]["text"].splitlines()[2])' ; C=$(ls $S/localstore | head -1 | sed 's/.json//'); printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","clientInfo":{"name":"cursor"}}}' "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"baton_list\",\"arguments\":{}}}" "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"baton_get_file\",\"arguments\":{\"code\":\"$C\",\"path\":\"pricing.md\"}}}" | node /home/user/App/src/bin.ts mcp | python3 -c '
+import sys,json
+for l in sys.stdin:
+    m=json.loads(l)
+    if m["id"]>1: print(m["result"]["content"][0]["text"])'; node /home/user/App/src/bin.ts pickup $C | tail -1
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+✓ sent "Cricket Stumping Simulation" (end-to-end encrypted)
+  pickup   http://localhost:8799/h/BTN-AVZA-W7VG-VDKZ#n6HnrXQWtPXenCBkLUxuDlnlnjZ9WBNTauBhFHrVIIA
+  in another AI: "baton pickup http://localhost:8799/h/BTN-AVZA-W7VG-VDKZ#n6HnrXQWtPXenCBkLUxuDlnlnjZ9WBNTauBhFHrVIIA"  ·  terminal: baton pickup "http://localhost:8799/h/BTN-AVZA-W7VG-VDKZ#n6HnrXQWtPXenCBkLUxuDlnlnjZ9WBNTauBhFHrVIIA"
+stored record has bundle? False True 2270472
+✓ picked up "Cricket Stumping Simulation" (BTN-AVZA-W7VG-VDKZ)
+  → picked/HANDOFF.md  (start here)
+✓ intact: 379 events, 32 artifacts, root 0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6
+wrong key:
+baton: Could not decrypt: wrong key or tampered data
+--- local shared store across two MCP processes
+Pickup code: BTN-ZCKV-54EJ-RVZZ
+BTN-ZCKV-54EJ-RVZZ  2026-10-11 18:01  Pricing page  (from claude-desktop, 1 checkpoint(s))
+# Pricing
+Free / Pro $12
+  → handoffs/BTN-ZCKV-54EJ-RVZZ/HANDOFF.md  (start here)
+Shell cwd was reset to /home/user/App
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Encrypted send and local store both check out: server-side storage stays ciphertext-only with correct verification and key rejection, and the two MCP processes exchanged a handoff without any server involved. Next I'll check the browser decryption page.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Verify browser-side decryption of sealed handoff</summary>
+
+```bash
+cd /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad && LINK=$(grep -o 'http[^ ]*#[^ ]*' relaytest/send.txt | head -1) && cat > sealed.cjs <<EOF
+const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
+(async () => { const b = await chromium.launch(); const p = await b.newPage(); const errs=[]; p.on('pageerror',e=>errs.push(e.message));
+await p.goto('$LINK'); await p.waitForSelector('#cp', {timeout: 8000}).catch(()=>{});
+const t = await p.textContent('#out'); console.log('decrypted:', t.includes('Handoff: Cricket Stumping Simulation'), '| errors', errs);
+await p.goto('${LINK%%#*}'); await p.waitForTimeout(800); console.log('no key:', (await p.textContent('#out')).trim().slice(0,60)); await b.close(); })();
+EOF
+node sealed.cjs; pkill -f "bin.ts relay --port 8799"; echo stopped
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+Exit code 144
+decrypted: true | errors []
+no key: This link is missing its #key part. Ask the sender for the f
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:01 UTC
+
+Browser-side decryption works too (the non-zero exit is only from stopping the test server). Now I'm adding automated tests for the relay so all of this stays covered in CI.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Update MCP tool-list test and isolate store</summary>
+
+```bash
+python3 - <<'EOF'
+p='tests/surfaces.test.ts'; s=open(p).read()
+old="""    assert.deepEqual(list.result.tools.map((t) => t.name), ['baton_import', 'baton_session', 'baton_inspect', 'baton_read_turn', 'baton_verify', 'baton_sink']);"""
+new="""    assert.deepEqual(list.result.tools.map((t) => t.name), ['baton_import', 'baton_session', 'baton_inspect', 'baton_read_turn', 'baton_verify', 'baton_sink', 'baton_checkpoint', 'baton_pickup', 'baton_get_file', 'baton_list']);"""
+assert old in s; s=s.replace(old,new)
+s=s.replace("""const tmp = mkdtempSync(join(tmpdir(), 'baton-test-'));""","""const tmp = mkdtempSync(join(tmpdir(), 'baton-test-'));
+process.env.BATON_STORE = join(tmp, 'store');""")
+open(p,'w').write(s)
+EOF
+grep -n "BATON_STORE" tests/surfaces.test.ts
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+16:process.env.BATON_STORE = join(tmp, 'store');
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/tests/relay.test.ts</summary>
+
+```json
+/home/user/App/tests/relay.test.ts  (7683 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/tests/relay.test.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Typecheck and run the full test suite</summary>
+
+```bash
+npx tsc --noEmit && echo TSC-OK; npm test 2>&1 | grep -E "^ℹ (tests|pass|fail)|^✖|AssertionError|Error:" | head -20
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+TSC-OK
+ℹ tests 74
+ℹ pass 74
+ℹ fail 0
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:01 UTC
+
+74 of 74 tests pass. Committing the relay, then on to the browser extension.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Build, commit relay work and push</summary>
+
+```bash
+npm run build 2>&1 | tail -1 && git add -A && git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -q -m "feat(relay): embed Baton inside AIs: MCP checkpoint/pickup, relay hub, E2E sealing
+
+Capture from within (prompt 004, ADR-002):
+- baton_checkpoint / baton_pickup / baton_get_file / baton_list MCP tools: the
+  model writes what it holds in context (full files, tool outputs, verbatim
+  prompts, decisions) and any other AI picks it up by code
+- relay hub (baton relay): MCP over Streamable HTTP for ChatGPT and claude.ai
+  connectors, REST, /h/<code> viewer and zip, bearer token, rate limit, TTL
+- local stdio server shares ~/.baton/store, so AIs on one machine hand off with
+  no server; BATON_RELAY_URL forwards to a hub instead
+- AES-GCM end-to-end sealing with the key in the link fragment; browser decrypt page
+- baton send / pickup / hook; binary artifacts; claude.ai artifacts,
+  create_file and str_replace recovery
+- research 07 (capture surfaces), ADR-002, prompt 004; 74 tests
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HU3UboJxfLgugTuRfMGMHe" && git push -q origin claude/laughing-davinci-c048d8 && git log --oneline | head -1
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+dist/baton.mjs 167 KB · web/dist/baton.html 819 KB
+5ded953 feat(relay): embed Baton inside AIs: MCP checkpoint/pickup, relay hub, E2E sealing
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Pushed. Now moving to the browser extension that runs inside logged-in ChatGPT, Claude, and Gemini tabs—it reads full conversation data (including tool outputs and sandbox files) and hands work off to another AI tab, with adapters using an injected network layer so they're testable without live accounts.
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "7",
+  "status": "completed"
+}
+```
+
+</details>
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "8",
+  "status": "in_progress"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #7 status
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #8 status
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/extension/src/adapters.ts</summary>
+
+```json
+/home/user/App/extension/src/adapters.ts  (10265 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/extension/src/adapters.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:03 UTC
+
+Adapters done. Next: composer injection (fill the target AI's input box and attach files), the main-world stream tap, the in-page panel, the background worker and an options page.
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/extension/src/inject.ts</summary>
+
+```json
+/home/user/App/extension/src/inject.ts  (2967 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/extension/src/inject.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/extension/src/tap.ts</summary>
+
+```json
+/home/user/App/extension/src/tap.ts  (1460 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/extension/src/tap.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/extension/src/background.ts</summary>
+
+```json
+/home/user/App/extension/src/background.ts  (2147 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/extension/src/background.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:04 UTC
+
+Now the in-page panel, which ties capture, copy, save, "Continue in…" and relay send together.
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/extension/src/content.ts</summary>
+
+```json
+/home/user/App/extension/src/content.ts  (13044 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/extension/src/content.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Create extension options page and script</summary>
+
+```bash
+mkdir -p /home/user/App/extension/static && cd /home/user/App/extension/static && cat > options.html <<'EOF'
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Baton options</title>
+<style>
+:root{--bg:#f3f5f4;--fg:#14201b;--mu:#5b6b64;--ac:#2343c9;--line:#d7dfdb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--fg:#e4ebe7;--mu:#9aaba3;--ac:#8ea4ff;--line:#2a3632}}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;max-width:560px;margin:0 auto;padding:28px 16px}
+h1{font-size:26px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.02em}
+label{display:grid;gap:4px;margin:14px 0;font-weight:600}
+input[type=url],input[type=password]{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:transparent;color:inherit}
+.cb{display:flex;gap:8px;align-items:center;font-weight:400}
+small,.mu{color:var(--mu);font-weight:400}
+button{font:inherit;font-weight:700;padding:8px 14px;border-radius:6px;border:0;background:var(--ac);color:#fff;cursor:pointer}
+#st{margin-top:10px}
+</style></head>
+<body>
+<h1>Baton</h1>
+<p class="mu">Capture AI work inside ChatGPT, Claude and Gemini and continue it in another AI. Everything stays in your browser unless you send to a relay.</p>
+<label>Relay URL <small>Optional. Your Baton relay, e.g. https://baton.example.com. Needed only for pickup codes and sharing.</small><input type="url" id="relay" placeholder="https://"></label>
+<label>Relay token <small>Only if your relay requires one.</small><input type="password" id="token"></label>
+<label class="cb"><input type="checkbox" id="seal" checked> Encrypt before sending (the relay cannot read it)</label>
+<label class="cb"><input type="checkbox" id="redact" checked> Redact keys, tokens, emails and phone numbers</label>
+<button id="save">Save</button>
+<div id="st" class="mu" role="status"></div>
+<script src="options.js"></script>
+</body></html>
+EOF
+cat > ../src/options.ts <<'EOF'
+declare const chrome: any;
+const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+
+chrome.storage.sync.get(['relay', 'token', 'seal', 'redact']).then((s: Record<string, unknown>) => {
+  $('relay').value = String(s.relay ?? '');
+  $('token').value = String(s.token ?? '');
+  $('seal').checked = s.seal !== false;
+  $('redact').checked = s.redact !== false;
+});
+
+$('save').addEventListener('click', async () => {
+  const relay = $('relay').value.trim().replace(/\/$/, '');
+  if (relay) {
+    // Ask for access to the relay's origin only (optional host permission), at the moment of the click.
+    const granted = await chrome.permissions.request({ origins: [new URL(relay).origin + '/*'] }).catch(() => false);
+    if (!granted) return void ($('st').textContent = 'Permission to reach the relay was not granted.');
+  }
+  await chrome.storage.sync.set({ relay, token: $('token').value, seal: $('seal').checked, redact: $('redact').checked });
+  $('st').textContent = 'Saved.';
+});
+EOF
+ls /home/user/App/extension/src /home/user/App/extension/static
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+/home/user/App/extension/src:
+adapters.ts
+background.ts
+content.ts
+inject.ts
+options.ts
+tap.ts
+
+/home/user/App/extension/static:
+options.html
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:05 UTC
+
+Now the extension build script. It generates the manifest and produces a test variant that can also run against a local mock site.
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/scripts/build-extension.mjs</summary>
+
+```json
+/home/user/App/scripts/build-extension.mjs  (2141 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/scripts/build-extension.mjs (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Build extension (prod and test) and typecheck</summary>
+
+```bash
+cd /home/user/App && node scripts/build-extension.mjs && node scripts/build-extension.mjs --test && ls -la extension/dist && npx tsc --noEmit -p . 2>&1 | head
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+Exit code 1
+✘ [ERROR] Could not resolve "node:fs"
+
+    src/relay/store.ts:3:100:
+      3 │ ..., readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+        ╵                                                             ~~~~~~~~~
+
+  The package "node:fs" wasn't found on the file system but is built into node. Are you trying to bundle for node? You can use "platform: 'node'" to do that, which will remove this error.
+
+✘ [ERROR] Could not resolve "node:os"
+
+    src/relay/store.ts:4:24:
+      4 │ import { homedir } from 'node:os';
+        ╵                         ~~~~~~~~~
+
+  The package "node:os" wasn't found on the file system but is built into node. Are you trying to bundle for node? You can use "platform: 'node'" to do that, which will remove this error.
+
+✘ [ERROR] Could not resolve "node:path"
+
+    src/relay/store.ts:5:21:
+      5 │ import { join } from 'node:path';
+        ╵                      ~~~~~~~~~~~
+
+  The package "node:path" wasn't found on the file system but is built into node. Are you trying to bundle for node? You can use "platform: 'node'" to do that, which will remove this error.
+
+/home/user/App/node_modules/esbuild/lib/main.js:1467
+  let error = new Error(text);
+              ^
+
+Error: Build failed with 3 errors:
+src/relay/store.ts:3:100: ERROR: Could not resolve "node:fs"
+src/relay/store.ts:4:24: ERROR: Could not resolve "node:os"
+src/relay/store.ts:5:21: ERROR: Could not resolve "node:path"
+    at failureErrorWithLog (/home/user/App/node_modules/esbuild/lib/main.js:1467:15)
+    at /home/user/App/node_modules/esbuild/lib/main.js:926:25
+    at /home/user/App/node_modules/esbuild/lib/main.js:878:52
+    at buildResponseToResult (/home/user/App/node_modules/esbuild/lib/main.js:924:7)
+    at /home/user/App/node_modules/esbuild/lib/main.js:951:16
+    at responseCallbacks.<computed> (/home/user/App/node_modules/esbuild/lib/main.js:603:9)
+    at handleIncomingPacket (/home/user/App/node_modules/esbuild/lib/main.js:658:12)
+    at Socket.readFromStdout (/home/user/App/node_modules/esbuild/lib/main.js:581:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
+
+Node.js v22.22.0
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:05 UTC
+
+The browser bundle pulled in the Node-only store through `client.ts`. Moving the browser-safe `sealedPlaintext` helper into `seal.ts` fixes it.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Move sealedPlaintext to browser-safe module; rebuild</summary>
+
+```bash
+cd /home/user/App && python3 - <<'EOF'
+def sub(p, old, new):
+    s=open(p).read(); assert old in s, (p, old[:70]); open(p,'w').write(s.replace(old,new,1))
+p='src/relay/client.ts'; s=open(p).read()
+start=s.index('export function sealedPlaintext'); end=s.index('export async function sendBundle')
+fn=s[start:end]; s=s[:start]+s[end:]
+s=s.replace("import { parsePickup, seal, unseal } from './seal.ts';","import { parsePickup, seal, sealedPlaintext, unseal } from './seal.ts';\n\nexport { sealedPlaintext };")
+s=s.replace("import { base64ToBytes, bytesToBase64 } from '../core/util.ts';","import { base64ToBytes } from '../core/util.ts';")
+s=s.replace("import { unzipStored, zip, type FileMap } from '../core/zip.ts';","import { unzipStored, type FileMap } from '../core/zip.ts';")
+open(p,'w').write(s)
+p='src/relay/seal.ts'; s=open(p).read()
+s=s.replace("import { base64ToBytes, bytesToBase64 } from '../core/util.ts';","import type { BatonBundle } from '../core/schema.ts';\nimport { base64ToBytes, bytesToBase64 } from '../core/util.ts';\nimport { zip, type FileMap } from '../core/zip.ts';")
+s+='\n/** What a sealed upload contains: enough to read, paste and download the bundle. */\n'+fn.replace('export function sealedPlaintext','export function sealedPlaintext')
+open(p,'w').write(s)
+sub('extension/src/content.ts',"import { sealedPlaintext } from '../../src/relay/client.ts';\nimport { seal } from '../../src/relay/seal.ts';","import { seal, sealedPlaintext } from '../../src/relay/seal.ts';")
+EOF
+node scripts/build-extension.mjs && node scripts/build-extension.mjs --test && ls -la extension/dist && npx tsc --noEmit && echo TSC-OK
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+extension → extension/dist/
+extension → extension/dist-test/
+total 104
+drwxr-xr-x 2 root root  4096 Oct 11 18:05 .
+drwxr-xr-x 6 root root  4096 Oct 11 18:05 ..
+-rw-r--r-- 1 root root  1419 Oct 11 18:05 background.js
+-rw-r--r-- 1 root root 74766 Oct 11 18:05 content.js
+-rw-r--r-- 1 root root  1377 Oct 11 18:05 manifest.json
+-rw-r--r-- 1 root root  1807 Oct 11 18:05 options.html
+-rw-r--r-- 1 root root   679 Oct 11 18:05 options.js
+-rw-r--r-- 1 root root   650 Oct 11 18:05 tap.js
+TSC-OK
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Builds and typecheck pass. Next I'll run an end-to-end test loading the extension in Chromium against mock ChatGPT/Claude pages, capturing a conversation with tool outputs and a sandbox PDF, then verifying it transfers correctly into the Claude composer.
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/tests-e2e/extension.e2e.mjs</summary>
+
+```json
+/home/user/App/tests-e2e/extension.e2e.mjs  (8011 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/tests-e2e/extension.e2e.mjs (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Run extension end-to-end test in Chromium</summary>
+
+```bash
+timeout 120 node tests-e2e/extension.e2e.mjs 2>&1 | tail -25
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+EXTENSION E2E: FAIL
+ browserContext.waitForEvent: Timeout 10000ms exceeded while waiting for event "serviceworker"
+    at /home/user/App/tests-e2e/extension.e2e.mjs:71:20 {
+  name: 'TimeoutError'
+}
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:06 UTC
+
+The extension didn't load in default headless mode. Playwright needs the new headless mode (`channel: 'chromium'`) for extensions. Retrying.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Retry e2e with new headless channel</summary>
+
+```bash
+sed -i "s/  headless: true,\n/X/" tests-e2e/extension.e2e.mjs && python3 - <<'EOF'
+p='tests-e2e/extension.e2e.mjs'; s=open(p).read()
+s=s.replace("  headless: true,\n","  headless: true,\n  channel: 'chromium', // new headless mode: required for extensions\n",1); open(p,'w').write(s)
+EOF
+timeout 120 node tests-e2e/extension.e2e.mjs 2>&1 | tail -25
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+captured stats: 1 prompts · 1 tool outputs · 3 files · 0 files lost
+vs share link : A share link of this chat would keep 0 tool outputs and 0 files. Captured here: 1 outputs, 2 files.
+zip           : 14 entries; report.pdf exact; tool output present; live stream kept
+claude tab    : ok:input | composer starts: "I'm continuing a piece of work I started in ChatGPT (capture" | files: HANDOFF.md:3166, 001.txt:100
+
+EXTENSION E2E: FAIL
+ AssertionError [ERR_ASSERTION]: The input did not match the regular expression /app\.py:13/. Input:
+
+'HANDOFF.md:3166\n001.txt:100'
+
+    at file:///home/user/App/tests-e2e/extension.e2e.mjs:112:10 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'HANDOFF.md:3166\n001.txt:100',
+  expected: /app\.py:13/,
+  operator: 'match',
+  diff: 'simple'
+}
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Almost everything checks out, but `app.py` got captured as base64 and was skipped, letting a raw stream log take its spot. I'm fixing this by storing captured text files as UTF-8 and prioritizing work files over stream logs.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Store captured text files as UTF-8; rerun extension e2e</summary>
+
+```bash
+python3 - <<'EOF'
+def sub(p, old, new):
+    s=open(p).read(); assert old in s, (p, old[:70]); open(p,'w').write(s.replace(old,new,1))
+p='extension/src/adapters.ts'
+sub(p, """        capturedFiles.push({ path, content: bin.base64, encoding: 'base64', mimeType: bin.type, eventId: messageId, note: 'captured from the ChatGPT sandbox (exact bytes)' });""",
+"""        capturedFiles.push({ path, ...asCaptured(bin), mimeType: bin.type, eventId: messageId, note: 'captured from the ChatGPT sandbox (exact bytes)' });""")
+sub(p, """          capturedFiles.push({ path: `uploads/${name}`, content: bin.base64, encoding: 'base64', mimeType: bin.type, note: 'file the user uploaded (captured in page)' });""",
+"""          capturedFiles.push({ path: `uploads/${name}`, ...asCaptured(bin, name), mimeType: bin.type, note: 'file the user uploaded (captured in page)' });""")
+sub(p, """const MB = 1024 * 1024;""", """const MB = 1024 * 1024;
+const TEXT_EXT = /\\.(py|js|mjs|ts|tsx|jsx|json|md|txt|csv|tsv|html?|css|ya?ml|toml|ini|cfg|sh|bash|sql|r|rb|go|rs|java|kt|c|h|cpp|hpp|cs|php|swift|xml|svg|tex|bib|cff|dockerfile|gitignore|env\\.example)$/i;
+
+/** Keep text files as UTF-8 (diffable, readable, attachable); binary stays base64. */
+function asCaptured(bin: { base64: string; type: string }, name = ''): { content: string; encoding?: 'base64' } {
+  const textual = /^text\\/|json|xml|javascript|x-python|x-sh|yaml|csv/.test(bin.type) || TEXT_EXT.test(name);
+  if (textual) {
+    try {
+      return { content: new TextDecoder('utf-8', { fatal: true }).decode(base64ToBytes(bin.base64)) };
+    } catch {
+      /* not valid UTF-8 after all */
+    }
+  }
+  return { content: bin.base64, encoding: 'base64' };
+}""")
+sub(p, """import { isRecord } from '../../src/core/util.ts';""", """import { base64ToBytes, isRecord } from '../../src/core/util.ts';""")
+# use path name for text detection in sandbox capture
+s=open(p).read(); s=s.replace("...asCaptured(bin), mimeType: bin.type, eventId: messageId","...asCaptured(bin, path), mimeType: bin.type, eventId: messageId"); open(p,'w').write(s)
+p='extension/src/content.ts'
+sub(p, """  const textFiles = last.bundle.artifacts.filter((a) => a.content !== undefined && a.encoding !== 'base64' && (a.bytes ?? 0) < 200000).slice(0, 8);""",
+"""  // Work files first; raw stream logs are kept in the zip but are not worth an attachment slot.
+  const textFiles = last.bundle.artifacts.filter((a) => a.content !== undefined && a.encoding !== 'base64' && (a.bytes ?? 0) < 200000 && !a.path.startsWith('live-streams/')).slice(0, 8);""")
+EOF
+npm run -s typecheck && node scripts/build-extension.mjs --test >/dev/null && timeout 120 node tests-e2e/extension.e2e.mjs 2>&1 | tail -8
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+captured stats: 1 prompts · 1 tool outputs · 3 files · 0 files lost
+vs share link : A share link of this chat would keep 0 tool outputs and 0 files. Captured here: 1 outputs, 2 files.
+zip           : 14 entries; report.pdf exact; tool output present; live stream kept
+claude tab    : ok:input | composer starts: "I'm continuing a piece of work I started in ChatGPT (capture" | files: HANDOFF.md:3166, app.py:13
+
+EXTENSION E2E: PASS
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+The end-to-end test confirms the extension works in a real Chromium instance: capture includes tool output and both sandbox files (byte-exact PDF, raw stream recorded) that a share link would otherwise miss, and "Continue in Claude" correctly opens a tab with the composer filled and `HANDOFF.md`/`app.py` attached. Next I'll write adapter unit tests, add the Claude Code hooks, and wire everything into the build and CI.
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/tests/extension.test.ts</summary>
+
+```json
+/home/user/App/tests/extension.test.ts  (6312 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/tests/extension.test.ts (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Run unit tests including adapter tests</summary>
+
+```bash
+npm test 2>&1 | grep -E "^ℹ (tests|pass|fail)|^✖|AssertionError|actual|expected" | head -20
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+✖ Claude in-page capture (4.569105ms)
+ℹ tests 78
+ℹ pass 77
+ℹ fail 1
+✖ failing tests:
+✖ captures tool use, artifacts and created files from the full conversation API (4.404008ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+    actual: '<h1>Hi</h1>',
+    expected: '<h1>Hello</h1>',
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:07 UTC
+
+Real bug caught: an artifact `update` carries no `type`, so it resolved to a different file path than the `create` it modifies. Fixing it by remembering each artifact's path by its id.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Track artifact paths by id; rerun tests</summary>
+
+```bash
+python3 - <<'EOF'
+def sub(p, old, new):
+    s=open(p).read(); assert old in s, (p, old[:70]); open(p,'w').write(s.replace(old,new,1))
+p='src/recover/artifacts.ts'
+sub(p, """function artifactOps(args: Record<string, unknown>, eventId: string): FileOp[] {
+  const id = asString(args.id) || 'artifact';
+  const type = asString(args.type);
+  const ext = ARTIFACT_EXT[type] || LANG_EXT[asString(args.language).toLowerCase()] || (type ? '' : '.txt');
+  const path = `/claude-artifacts/${id}${ext || '.txt'}`;""", """function artifactOps(args: Record<string, unknown>, eventId: string, paths: Map<string, string>): FileOp[] {
+  const id = asString(args.id) || 'artifact';
+  const type = asString(args.type);
+  // Updates carry no type; reuse the path chosen when the artifact was created.
+  const ext = ARTIFACT_EXT[type] || LANG_EXT[asString(args.language).toLowerCase()] || (type ? '' : '.txt');
+  const path = (args.command === 'update' && paths.get(id)) || paths.get(id) && !type ? paths.get(id)! : `/claude-artifacts/${id}${ext || '.txt'}`;
+  paths.set(id, path);""")
+sub(p, """export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string): FileOp[] {
+  if (name === 'artifacts') return artifactOps(args, eventId);""", """export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string, artifactPaths: Map<string, string> = new Map()): FileOp[] {
+  if (name === 'artifacts') return artifactOps(args, eventId, artifactPaths);""")
+sub(p, """  const ops: FileOp[] = [];
+  for (const e of events) {
+    if (e.kind === 'tool_call' && e.tool) {
+      const { name, input, args } = e.tool;
+      if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id));""", """  const ops: FileOp[] = [];
+  const artifactPaths = new Map<string, string>();
+  for (const e of events) {
+    if (e.kind === 'tool_call' && e.tool) {
+      const { name, input, args } = e.tool;
+      if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id, artifactPaths));""")
+EOF
+npm test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; npx tsc --noEmit && echo TSC-OK
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+Exit code 2
+ℹ tests 78
+ℹ pass 78
+ℹ fail 0
+extension/src/adapters.ts(161,21): error TS2488: Type 'NodeListOf<Element>' must have a '[Symbol.iterator]()' method that returns an iterator.
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:07 UTC
+
+All 78 tests pass. Two cleanups: simplify that path expression, and add `DOM.Iterable` to the TypeScript config so the extension code typechecks.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Simplify artifact path logic; fix tsconfig libs</summary>
+
+```bash
+python3 - <<'EOF'
+p='src/recover/artifacts.ts'; s=open(p).read()
+old="""  const path = (args.command === 'update' && paths.get(id)) || paths.get(id) && !type ? paths.get(id)! : `/claude-artifacts/${id}${ext || '.txt'}`;"""
+new="""  const known = paths.get(id);
+  const path = known && (args.command === 'update' || !type) ? known : `/claude-artifacts/${id}${ext || '.txt'}`;"""
+assert old in s; s=s.replace(old,new); open(p,'w').write(s)
+p='tsconfig.json'; s=open(p).read()
+s=s.replace('"lib": ["ES2023", "DOM"]','"lib": ["ES2023", "DOM", "DOM.Iterable"]').replace('"include": ["src", "tests", "web/*.ts", "scripts/*.ts"]','"include": ["src", "tests", "web/*.ts", "scripts/*.ts", "extension/src"]')
+open(p,'w').write(s)
+EOF
+npx tsc --noEmit && echo TSC-OK && npm test 2>&1 | grep -E "^ℹ (pass|fail)"
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+TSC-OK
+ℹ pass 78
+ℹ fail 0
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:07 UTC
+
+Next: the Claude Code hooks, so a plugin install automatically snapshots each session before compaction and at exit.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Add plugin hooks, bump version, test hook, rebuild</summary>
+
+```bash
+mkdir -p hooks && cat > hooks/hooks.json <<'EOF'
+{
+  "description": "Baton: snapshot the session into .baton/sessions/ before context compaction and at session end, so nothing compaction drops is lost. Set BATON_AUTO_SEND=1 (+ BATON_RELAY_URL) to also send each snapshot to a relay.",
+  "hooks": {
+    "PreCompact": [
+      { "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/dist/baton.mjs\" hook", "timeout": 60 }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/dist/baton.mjs\" hook", "timeout": 60 }] }
+    ]
+  }
+}
+EOF
+python3 - <<'EOF'
+import json
+p='package.json'; d=json.load(open(p))
+d['version']='0.2.0'
+d['scripts'].update({
+ 'build': 'node scripts/build.mjs && node scripts/build-extension.mjs',
+ 'build:extension:test': 'node scripts/build-extension.mjs --test',
+ 'test:e2e': 'node scripts/build-extension.mjs --test && node tests-e2e/extension.e2e.mjs',
+})
+d['files']=['dist/','skills/','hooks/','commands/','.claude-plugin/','.mcp.json','extension/dist/','README.md','LICENSE','docs/SPEC.md']
+d['description']='Carry AI work between assistants from the inside: capture prompts, tool outputs and files in ChatGPT/Claude/Gemini (extension), let models checkpoint and pick up work over MCP (relay), and hand off as audited bundles.'
+open(p,'w').write(json.dumps(d,indent=2)+'\n')
+p='.claude-plugin/plugin.json'; d=json.load(open(p)); d['version']='0.2.0'
+d['description']='Carry AI work between assistants from the inside: checkpoint/pickup tools for any AI (MCP), auto-snapshots before compaction (hooks), import of ChatGPT/Claude conversations as audited bundles, and sinks to Jira/Salesforce/Zendesk/Slack.'
+open(p,'w').write(json.dumps(d,indent=2)+'\n')
+EOF
+sed -i "s/export const VERSION = '0.1.0';/export const VERSION = '0.2.0';/" src/core/schema.ts && echo 'extension/dist-test/' >> .gitignore && echo '.baton/' >> .gitignore && T=$(ls -t ~/.claude/projects/-home-user-App/*.jsonl | head -1) && W=/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/hookws && rm -rf $W && mkdir -p $W && echo "{\"session_id\":\"79e51797-0382\",\"transcript_path\":\"$T\",\"cwd\":\"$W\",\"hook_event_name\":\"PreCompact\",\"trigger\":\"auto\"}" | node src/bin.ts hook; echo "exit=$?"; ls $W/.baton/sessions/*/ | head -12; claude plugin validate . 2>&1 | tail -2; npm run build 2>&1 | grep -E "KB|extension"
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+baton: saved PreCompact snapshot → /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/hookws/.baton/sessions/20261011T1807-precompact-79e51797
+exit=0
+AGENTS.md
+HANDOFF.md
+LOSS_AUDIT.md
+PROMPT.md
+SKILL.md
+TRANSCRIPT.md
+bundle.json
+files
+index.html
+
+√ Validation passed
+> node scripts/build.mjs && node scripts/build-extension.mjs
+dist/baton.mjs 168 KB · web/dist/baton.html 820 KB
+extension → extension/dist/
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:07 UTC
+
+The hook works: it saved a full session snapshot from the hook payload. Validating the plugin manifest with the hooks included.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Validate plugin manifest including hooks</summary>
+
+```bash
+P=/tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/plugcheck2 && rm -rf $P && mkdir -p $P && cp -r .claude-plugin skills commands hooks .mcp.json dist $P/ && rm $P/.claude-plugin/marketplace.json && claude plugin validate $P 2>&1 | tail -3
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+Validating plugin manifest: /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/plugcheck2/.claude-plugin/plugin.json
+
+√ Validation passed
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:08 UTC
+
+The plugin validates with the hooks. Now deployment files for the relay (Dockerfile and a Render blueprint), and the setup guide for embedding Baton in each AI.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Add relay Dockerfile and Render blueprint</summary>
+
+```bash
+cat > Dockerfile <<'EOF'
+# Baton relay hub: the public HTTPS endpoint ChatGPT and Claude connectors call.
+# docker build -t baton-relay . && docker run -p 8787:8787 -v baton-data:/data -e BATON_PUBLIC_URL=https://your.host baton-relay
+FROM node:22-alpine
+WORKDIR /app
+COPY dist/baton.mjs ./baton.mjs
+ENV PORT=8787 BATON_STORE=/data NODE_ENV=production
+VOLUME ["/data"]
+EXPOSE 8787
+USER node
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:8787/healthz || exit 1
+CMD ["node", "baton.mjs", "relay"]
+EOF
+cat > render.yaml <<'EOF'
+# One-click deploy of the Baton relay on Render (free plan works; add a disk for persistence).
+services:
+  - type: web
+    name: baton-relay
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: BATON_PUBLIC_URL
+        sync: false
+      - key: BATON_MCP_SECRET
+        generateValue: true
+      - key: BATON_TTL_DAYS
+        value: "7"
+EOF
+cat > .dockerignore <<'EOF'
+*
+!dist/baton.mjs
+EOF
+echo ok
+```
+
+</details>
+
+<details><summary>Tool call: <code>Write</code> · Write: /home/user/App/docs/EMBED.md</summary>
+
+```json
+/home/user/App/docs/EMBED.md  (5389 chars → recovered file)
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+ok
+```
+
+</details>
+
+<details><summary>Output: <code>Write</code></summary>
+
+```
+File created successfully at: /home/user/App/docs/EMBED.md (file state is current in your context — no need to Read it back)
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:08 UTC
+
+Now the README, rewritten around the new "from within" architecture.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Check docker availability and README head</summary>
+
+```bash
+which docker || echo "no docker"; sed -n '1,12p' README.md
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+/usr/bin/docker
+# Baton
+
+**Hand off AI work, not just chat text.**
+
+Baton turns an AI conversation into a **handoff bundle** that another tool, agent, teammate or business system can pick up and continue.
+Sources are a ChatGPT share link, a ChatGPT or Claude data export, or a Claude Code session. Each bundle carries:
+
+- every prompt, verbatim
+- the assistant's replies and reasoning
+- every tool call and the code it ran
+- the **files the session created, rebuilt from that code**
+- a **loss audit** of everything the source failed to hand over
+```
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:08 UTC
+
+Docker is available, so I'll also verify the relay image builds and runs. First, the README.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Rewrite README around capture-from-within</summary>
+
+````bash
+python3 - <<'EOF'
+p='README.md'; s=open(p).read()
+start=s.index('# Baton'); end=s.index('## Use it the way you work')
+new_head='''# Baton
+
+**Carry AI work between assistants, from the inside.**
+
+Share links and exports only carry what a vendor chooses to publish. A ChatGPT share link silently drops every tool output and every
+generated file. Baton lives **inside** the assistants instead:
+
+- a **browser extension** in ChatGPT, Claude and Gemini that captures the full conversation the page itself holds: tool outputs,
+  sandbox files as real bytes, uploads, and the live response stream
+- **MCP tools** any model can call (`baton_checkpoint`, `baton_pickup`), so the AI writes down what it knows (full files, outputs,
+  decisions, verbatim prompts) and a *different* AI picks it up by code
+- **agent hooks** that snapshot a Claude Code session before context compaction throws it away
+
+Everything lands in one audited format. The handoff brief says what the work is, where it stopped, which files exist, and
+**what did not make it**. It can be moved tab-to-tab, by pickup code, through a shared local store, or into Salesforce, Jira, Zendesk or Slack.
+
+```
+ChatGPT ─┐  extension: capture in page ──── "Continue in Claude" ─────────▶ fills Claude's composer + attaches files
+Claude  ─┤  MCP: baton_checkpoint ─▶ relay (BTN-7F3K-9QXA-2M4P) ─▶ baton_pickup in Cursor / ChatGPT / Gemini CLI
+Agents  ─┘  hooks: PreCompact/SessionEnd ─▶ .baton/sessions/ (+ optional relay)
+```
+
+What in-page capture gets compared with a share link of the same ChatGPT chat (from [`tests-e2e`](tests-e2e/extension.e2e.mjs) and the real fixture):
+
+| | Share link | Baton, inside the page |
+|---|---|---|
+| Tool / code outputs | 0 (all redacted) | all |
+| Generated files (PDF, ZIP, app.py) | dead `sandbox:` links | exact bytes |
+| `functions.exec` code | blank | present |
+| Streamed output | not kept | raw stream kept |
+| Move to Claude | copy-paste by hand | one click: composer filled, files attached |
+
+**Setup for each AI: [`docs/EMBED.md`](docs/EMBED.md).** Architecture: [ADR-002](docs/decisions/ADR-002-capture-from-within.md).
+What each capture position can see: [research 07](docs/research/07-capture-surfaces.md).
+
+### Also works after the fact
+
+When you only have a link or an export, Baton still extracts the most possible and reports the rest:
+
+```
+$ npx github:nimb-ou/App import https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388
+✓ Cricket Stumping Simulation
+  content  8 prompts · 20 replies · 47 reasoning · 133 tool calls
+  files    13 recovered · 3 stale · 16 lost
+  loss     163 tool-outputs · 81 tool-inputs · 16 files-lost (see LOSS_AUDIT.md)
+  → handoffs/cricket-stumping-simulation/HANDOFF.md  (start here)
+```
+
+It rebuilds **13 project files byte for byte** from the code that wrote them and lists the 16 it cannot recover instead of faking
+them. See [`examples/cricket-stumping/`](examples/cricket-stumping/).
+
+'''
+s=s[:start]+new_head+s[end:]
+old_table_start=s.index('| You are… | Use | How |')
+old_table_end=s.index('### Sources')
+s=s[:old_table_start]+'''| You are… | Use | How |
+|---|---|---|
+| In ChatGPT / Claude / Gemini on the web | **Extension** | load `extension/dist` unpacked → **Baton** button in the page |
+| Any AI with connectors (ChatGPT dev mode, Claude, Cursor, Codex…) | **Relay MCP** | add `https://<your-relay>/mcp` → say "baton: hand this off" / "baton pickup BTN-…" |
+| In Claude Code | **Plugin** (skill + hooks + MCP + `/baton:import`, `/baton:handoff`) | `/plugin marketplace add nimb-ou/App` then `/plugin install baton@baton` |
+| Any local MCP client | **Local MCP** (shared `~/.baton/store`, no server) | `{"command": "npx", "args": ["-y", "github:nimb-ou/App", "mcp"]}` |
+| In a terminal | **CLI** | `npx github:nimb-ou/App import <url-or-file>` · `send` · `pickup` · `relay` |
+| In a browser, no install | **Web app** | [`web/dist/baton.html`](web/dist/baton.html): drop an export or saved page, parsed locally |
+| In a team / company | **Sinks** | `baton sink <bundle> --to salesforce\\|jira\\|zendesk\\|slack [--post]` |
+
+'''+s[old_table_end:]
+s=s.replace('''baton mcp                        MCP server over stdio
+```''','''baton mcp                        MCP server over stdio (file tools + checkpoint/pickup)
+baton relay [--port 8787]        relay hub: MCP over HTTP for web AIs, REST, /h/<code> viewer
+baton send <bundle> [--relay URL] [--seal]   → pickup code / link (sealed = end-to-end encrypted)
+baton pickup <code|link> [-o dir]
+baton hook                       Claude Code PreCompact/SessionEnd hook entry
+```''')
+s=s.replace('''src/mcp        JSON-RPC stdio server''','''src/mcp        MCP protocol (shared) + stdio server
+src/relay      checkpoints, store, relay HTTP server, MCP relay tools, AES-GCM sealing, send/pickup client
+extension/     MV3 extension: site adapters (ChatGPT, Claude, Gemini, DOM), stream tap, composer injection, panel''')
+s=s.replace('''npm test               # 64 tests, incl. end-to-end on the real share fixture''','''npm test               # 78 unit + integration tests (parsers, recovery, relay, adapters, CLI)
+npm run test:e2e       # loads the real extension in Chromium against a mock ChatGPT/Claude''')
+s=s.replace('''npm run build          # dist/baton.mjs, skills/baton/scripts/baton.mjs, web/dist/*.html''','''npm run build          # dist/baton.mjs, skills/baton/scripts/baton.mjs, web/dist/*.html, extension/dist''')
+s=s.replace('''Browser extension for logged-in chats (same core) · Gemini Takeout parser''','''Chrome Web Store listing · Firefox build · Gemini API-level adapter · mobile share-sheet capture · OAuth for the relay · Gemini Takeout parser''')
+open(p,'w').write(s)
+EOF
+grep -n "^## \|^### " README.md
+````
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+36:### Also works after the fact
+52:## Use it the way you work
+64:### Sources
+74:### What a bundle contains
+89:## CLI
+107:## Privacy and safety defaults
+116:## How it is built
+142:## Business model (free to the user)
+149:## Project record
+159:## Roadmap
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Update docs/journal; build and smoke-test relay Docker image</summary>
+
+```bash
+cat >> docs/research/04-monetization.md <<'EOF'
+
+## Update (prompt 004): the relay is the product
+
+With capture moved inside the assistants, the **relay hub** is the natural commercial unit. The open-source relay
+stays free to self-host. These parties pay:
+
+| Offer | Buyer | Price shape | Why they pay |
+|---|---|---|---|
+| **Hosted relay** (personal) | power users | free tier (7-day TTL, 25 MB) → $5/mo (90-day history, 1 GB, custom codes) | No server to run. Works in ChatGPT and Claude connectors immediately. |
+| **Team hub** | teams, agencies | $8/user/mo | Shared handoff inbox, "send to teammate", retention, SSO. A handoff becomes the unit of collaboration across *different* AIs. |
+| **Enterprise capture** | IT, compliance | per seat | Managed extension (Chrome Enterprise policy) captures sanctioned and shadow AI use with consent, redaction, retention and hash-chained records, routed to Salesforce, ServiceNow, Jira or an archive. Capture "from within" sees tool outputs and files that vendor exports omit. |
+| **Destination-pays** | AI vendors | per verified pickup | A pickup in their product is an acquired workflow, not just an imported memory |
+| **Relay API** | agent platforms | usage | `baton_checkpoint` / `baton_pickup` as a service for multi-agent systems (A2A is runtime messaging, while Baton is the persisted, auditable work state) |
+
+Free to the user stays the rule: capture, tab-to-tab transfer, local store, self-hosted relay and sealed sharing are all free.
+EOF
+python3 - <<'EOF'
+p='skills/baton/SKILL.md'; s=open(p).read()
+s=s.replace("""## Hand off this session""","""## Hand off between AIs (checkpoint / pickup)
+
+If the `baton_checkpoint` / `baton_pickup` MCP tools are available (plugin MCP server, or a relay connector), prefer them:
+- **Hand off:** call `baton_checkpoint` with `state`, `goal`, `decisions`, `next_steps`, the user's prompts verbatim,
+  **every file you created or changed with its full content**, and important tool outputs. Give the user the pickup code.
+- **Continue:** when the user gives a code (`BTN-XXXX-XXXX-XXXX`), call `baton_pickup`, read the brief, fetch more files
+  with `baton_get_file`, and confirm the latest instruction before acting.
+
+Without MCP, the CLI does the same: `BATON send <bundle-dir> [--relay URL] [--seal]` and `BATON pickup <code|link>`.
+
+## Hand off this session""")
+open(p,'w').write(s)
+p='docs/SPEC.md'; s=open(p).read()
+s=s.replace("""| `attached` | content shipped with the source (for example, text extracted from an upload) | present |""","""| `attached` | content shipped with the source (for example, text extracted from an upload) | present |
+
+`encoding` is `utf8` (default) or `base64` for binary files captured as bytes (PDFs, images, archives). `mimeType` is optional.
+Files captured live from the source (in-page capture, model checkpoints) use status `recovered` with a `note` naming the capture.""")
+s=s.replace("""    kind: 'chatgpt-share' | 'chatgpt-export' | 'claude-export' | 'claude-code' | 'openai-messages' | 'unknown';""","""    kind: 'chatgpt-share' | 'chatgpt-export' | 'claude-export' | 'claude-code' | 'openai-messages' | 'baton-relay' | 'unknown';""")
+s=s.replace("""## 5. Versioning""","""## 5. Relay records (draft)
+
+A relay stores records `{code, title, createdAt, updatedAt, expiresAt, from[], bundle?, checkpoints[], sealed?}`.
+`checkpoints[]` are model-written states (`goal, state, decisions[], next_steps[], open_questions[], user_prompts[], files[], tool_outputs[]`).
+A record renders to a normal bundle with `source.kind = 'baton-relay'`. `sealed` is `{alg: 'AES-GCM-256', iv, data}` over
+`{title, handoff, prompt, zip}`. The key is never sent to the relay. Codes match `BTN-XXXX-XXXX-XXXX` (Crockford base32, 60 bits).
+
+## 6. Versioning""")
+open(p,'w').write(s)
+EOF
+cat > docs/journal/2026-10-11-05-capture-from-within.md <<'EOF'
+# Journal 05: Capture from within (prompt 004)
+
+**Window:** 2026-10-11 17:53 to 18:15 UTC
+
+## The shift
+
+v0.1 parsed what vendors publish. Prompt 004 asked for Baton to live **inside** the AIs and transfer from there.
+Research ([07](../research/07-capture-surfaces.md)) found four capture positions. ADR-002 commits to three of them
+(in page, in the model's toolbox, in the agent runtime) behind one format and one relay.
+
+## Built
+
+| Piece | Proof |
+|---|---|
+| Relay MCP tools: `baton_checkpoint` (model writes full files, tool outputs, verbatim prompts, decisions), `baton_pickup`, `baton_get_file`, `baton_list` | Live run: a client named "ChatGPT" checkpointed `app.py` (the file the share link lost) plus a PNG plus an output. A client named "claude-ai" picked it up with a lower-cased code and got the files inline. |
+| Relay hub `baton relay`: MCP Streamable HTTP with sessions, REST, `/h/<code>` viewer with a CSP, zip, bearer token, rate limit, TTL purge | `tests/relay.test.ts` against a real HTTP server |
+| End-to-end sealing (AES-GCM, key in the `#fragment`) | Server stored ciphertext only. CLI pickup verified the same root hash as the original. A wrong key was rejected. The browser decrypt page worked in Chromium. |
+| Local shared store | Two separate stdio MCP processes ("claude-desktop" → "cursor") handed off with no server |
+| Extension (MV3): ChatGPT / Claude / Gemini / DOM adapters, main-world stream tap, shadow-DOM panel, composer injection, relay send | `tests-e2e/extension.e2e.mjs`: the real extension in Chromium against mock sites. It captured the tool output and both sandbox files (the PDF byte-exact), kept the live stream, and "Continue in Claude" filled the composer and attached `HANDOFF.md` plus `app.py`. |
+| Claude Code hooks (`PreCompact`, `SessionEnd`) → `.baton/sessions/` | Fed a real hook payload (this session's transcript), and the snapshot was written. Plugin validates. |
+| Core: binary artifacts (base64), captured files override recovery, claude.ai `artifacts` / `create_file` / `str_replace` replay | Unit tests |
+| Deploy: `Dockerfile`, `render.yaml`, `docs/EMBED.md` (setup for each AI) | Docker build and run checked (see below) |
+
+## Bugs caught by the new tests
+
+1. The extension bundle pulled `node:fs` in through the relay client. `sealedPlaintext` moved to the browser-safe `seal.ts`.
+2. Extensions do not load in Playwright's old headless mode. The e2e uses `channel: 'chromium'` (new headless).
+3. Captured text files were stored as base64, so they were skipped as attachments. Text MIME types and extensions now stay UTF-8.
+4. A claude.ai artifact `update` (which has no `type`) resolved to a different path than its `create`. Paths are now tracked by artifact id.
+
+## Limits (stated plainly)
+
+- Extension adapters use the sites' internal web APIs (as every exporter does). They are tested against mocks, not live
+  accounts, because this environment has no logged-in ChatGPT, Claude or Gemini sessions. Expect selector or endpoint drift. Adapters are isolated
+  and fall back to DOM capture.
+- ChatGPT write tools over MCP need a plan with developer-mode write actions. Read-only plans can still pick up.
+- The relay is not deployed publicly from here. It needs an HTTPS host (Render blueprint and Dockerfile provided).
+EOF
+docker build -q -t baton-relay . 2>&1 | tail -2 && (docker run -d --rm -p 8798:8787 --name baton-relay-test baton-relay >/dev/null) && sleep 2 && curl -s localhost:8798/healthz && echo && curl -s -X POST localhost:8798/mcp -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | head -c 160; echo; docker logs baton-relay-test 2>&1 | tail -2; docker stop baton-relay-test >/dev/null
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+Exit code 1
+ERROR: failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory
+failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory
+
+failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory
+failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+Docker CLI is present but there's no running daemon, so I can't build the image here. Instead I'll confirm the exact command the container runs (`dist/baton.mjs relay`) and note that in the journal.
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Smoke-test the bundled relay as the container would run it</summary>
+
+```bash
+cd /tmp && D=$(mktemp -d) && (PORT=8797 BATON_STORE=$D node /home/user/App/dist/baton.mjs relay > $D/log 2>&1 &) && sleep 1.5 && curl -s localhost:8797/healthz && echo && curl -s -X POST localhost:8797/mcp -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | python3 -c "import sys,json; print([t['name'] for t in json.load(sys.stdin)['result']['tools']])"; cat $D/log; pkill -f "dist/baton.mjs relay"; cd /home/user/App && python3 - <<'EOF'
+p='docs/journal/2026-10-11-05-capture-from-within.md'; s=open(p).read()
+s=s.replace("| Docker build and run checked (see below) |","| No Docker daemon is available in this environment, so the image was not built. The exact command it runs (`node dist/baton.mjs relay` with `BATON_STORE`) was run directly: `/healthz` and `tools/list` answered. |")
+open(p,'w').write(s)
+EOF
+echo done
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+Exit code 144
+{"ok":true,"version":"0.2.0"}
+['baton_checkpoint', 'baton_pickup', 'baton_get_file']
+Baton relay 0.2.0 listening on http://localhost:8797 · MCP at http://localhost:8797/mcp
+mcp tools/list from curl/8.5.0
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:09 UTC
+
+The bundled relay answers health checks and lists its tools. Stopping the test server cut my command chain short, so I'm re-running the journal edit.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Record Docker verification note in journal</summary>
+
+```bash
+python3 - <<'EOF'
+p='docs/journal/2026-10-11-05-capture-from-within.md'; s=open(p).read()
+old="| Docker build and run checked (see below) |"
+assert old in s
+s=s.replace(old,"| No Docker daemon is available in this environment, so the image was not built. The exact command it runs (`node dist/baton.mjs relay` with `BATON_STORE`) was run directly: `/healthz` and `tools/list` answered. |")
+open(p,'w').write(s)
+EOF
+grep -c "No Docker daemon" docs/journal/2026-10-11-05-capture-from-within.md
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+1
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:09 UTC
+
+Now CI: add a build-drift check for the extension and a job that runs the extension end-to-end test in Chromium.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Update CI, rebuild, run unit and e2e tests, save outputs</summary>
+
+```bash
+cat > .github/workflows/ci.yml <<'EOF'
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Built artifacts are up to date
+        run: |
+          npm run build
+          git diff --exit-code -- dist skills/baton/scripts web/dist extension/dist
+      - name: Bundled CLI smoke test (no TypeScript)
+        run: node dist/baton.mjs inspect fixtures/chatgpt-share-cricket-stumping.html.gz
+  extension-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install -g playwright@1.56.1 && npx -y playwright@1.56.1 install --with-deps chromium
+      - run: npm run test:e2e
+EOF
+sed -i 's#<span class="ver">v0.1 · baton.bundle/v1</span>#<span class="ver">v0.2 · baton.bundle/v1</span>#' web/page.html && python3 - <<'EOF'
+p='docs/prompts/README.md'; s=open(p).read()
+s=s.replace("| 003 | 2026-10-11 ~17:20 |","| 003 | 2026-10-11 ~17:20 |",1)
+s=s.rstrip('\n').split('\n')
+# insert row after 003 row
+out=[]
+for line in s:
+    out.append(line)
+    if line.startswith('| 003 |'):
+        out.append('| 004 | 2026-10-11 ~17:53 | see [004-capture-from-within.md](004-capture-from-within.md) | **Reframe 2:** embed Baton *inside* every AI (extension, MCP relay, hooks) and capture what sharing never can. |')
+open(p,'w').write('\n'.join(out)+'\n')
+EOF
+npm run build 2>&1 | grep -E "KB|extension" && npm test > docs/outputs/test-run.txt 2>&1; grep -E "^ℹ (tests|pass|fail)" docs/outputs/test-run.txt; npm run test:e2e > docs/outputs/extension-e2e.txt 2>&1; tail -6 docs/outputs/extension-e2e.txt; npx tsc --noEmit && echo TSC-OK
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+> node scripts/build.mjs && node scripts/build-extension.mjs
+dist/baton.mjs 168 KB · web/dist/baton.html 820 KB
+extension → extension/dist/
+ℹ tests 78
+ℹ pass 78
+ℹ fail 0
+captured stats: 1 prompts · 1 tool outputs · 3 files · 0 files lost
+vs share link : A share link of this chat would keep 0 tool outputs and 0 files. Captured here: 1 outputs, 2 files.
+zip           : 14 entries; report.pdf exact; tool output present; live stream kept
+claude tab    : ok:input | composer starts: "I'm continuing a piece of work I started in ChatGPT (capture" | files: HANDOFF.md:3166, app.py:13
+
+EXTENSION E2E: PASS
+TSC-OK
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:10 UTC
+
+All green: 78 of 78 unit and integration tests, the extension end-to-end test, and the typecheck. Regenerating the examples for v0.2, syncing the lockfile, then committing.
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Regenerate examples, commit extension work and push</summary>
+
+```bash
+npm install --no-audit --no-fund >/dev/null 2>&1; node scripts/build-examples.ts && git add -A && git status --short | wc -l && git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -q -m "feat(extension): capture inside ChatGPT, Claude and Gemini; transfer tab-to-tab; hooks
+
+- MV3 extension: site adapters use the page's own conversation APIs (ChatGPT
+  tool outputs + sandbox files as bytes + uploads; Claude full tool/artifact
+  data; Gemini DOM), main-world stream tap, shadow-DOM panel, composer
+  injection (Continue in Claude/ChatGPT/Gemini), sealed relay send, options
+- Claude Code plugin hooks: PreCompact/SessionEnd snapshots via baton hook
+- claude.ai artifact paths tracked by id; captured text files kept as UTF-8
+- Chromium e2e (tests-e2e) proving capture of what share links drop and
+  tab-to-tab injection; CI job for it; 78 unit/integration tests
+- docs: EMBED.md setup per AI, README reframed, SPEC (binary artifacts, relay
+  records), monetisation update, journal 05; Dockerfile + render.yaml for the relay
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HU3UboJxfLgugTuRfMGMHe" && git push -q origin claude/laughing-davinci-c048d8 && git log --oneline | head -2
+```
+
+</details>
+
+<details><summary>Output: <code>Bash</code></summary>
+
+```
+examples/cricket-stumping: 82 files, root 0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6
+50
+5b10521 feat(extension): capture inside ChatGPT, Claude and Gemini; transfer tab-to-tab; hooks
+5ded953 feat(relay): embed Baton inside AIs: MCP checkpoint/pickup, relay hub, E2E sealing
+```
+
+</details>
+
+<details><summary>Reasoning</summary>
+
+*Reasoning was produced but the source stores it in encrypted form only.*
+
+</details>
+
+### Assistant · claude-opus-5-5 · 2026-10-11 18:10 UTC
+
+Pushed. Last step: refresh the exported record of this session, so the repo's "everything documented" archive includes this round.
+
+<details><summary>Tool call: <code>TaskUpdate</code></summary>
+
+```json
+{
+  "taskId": "8",
+  "status": "completed"
+}
+```
+
+</details>
+
+<details><summary>Output: <code>TaskUpdate</code></summary>
+
+```
+Updated task #8 status
+```
+
+</details>
+
+<details><summary>Tool call: <code>Bash</code> · Bash: Re-export this session, scan, verify, commit, push</summary>
+
+```bash
+rm -rf examples/this-build-session && node src/bin.ts session latest -o examples/this-build-session --redact-file /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt | sed -n 2,6p && T=$(cat /tmp/claude-0/-home-user-App/79e51797-0382-58e9-9ea6-5a5d0096d01b/scratchpad/redact-terms.txt) && echo "term hits: $(grep -rl "$T" examples/this-build-session | wc -l)"; grep -rhoE "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" examples/this-build-session | sort -u; node src/bin.ts verify examples/this-build-session && npm run -s build >/dev/null && git add -A && git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -q -m "docs(examples): refresh this build session export (through prompt 004)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HU3UboJxfLgugTuRfMGMHe" && git push -q origin claude/laughing-davinci-c048d8 && git log --oneline | head -1 && git status -sb | head -1
 ```
 
 </details>

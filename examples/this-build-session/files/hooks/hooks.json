@@ -1,0 +1,11 @@
+{
+  "description": "Baton: snapshot the session into .baton/sessions/ before context compaction and at session end, so nothing compaction drops is lost. Set BATON_AUTO_SEND=1 (+ BATON_RELAY_URL) to also send each snapshot to a relay.",
+  "hooks": {
+    "PreCompact": [
+      { "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/dist/baton.mjs\" hook", "timeout": 60 }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/dist/baton.mjs\" hook", "timeout": 60 }] }
+    ]
+  }
+}

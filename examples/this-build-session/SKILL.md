@@ -15,10 +15,10 @@ Everything needed to resume is next to this file.
 3. Treat `files/` as the recovered working tree. Only **recovered** files are exact. **stale** files need checking.
    **lost** files do not exist and must be rebuilt (see `LOSS_AUDIT.md`).
 4. Confirm the latest instruction with the user before large changes:
-   > Now this is the exact problem. how to properly transfer the chat or plan along with the prompt and resoning and all outputs vey easily. maybe a skill or as md files or html or zip or whatever. As a skill? app? plugin? something else? some other product build using this idea, or this idea as an enab…
+   > not necessary drop a file, i mean we can embed it in multiple ais and transfer from within, so that w capturw what sharing could never possibly can. build from that perspective. think bih
 5. When you finish a chunk of work, write `STATE.md` (goal, decisions, next steps) next to this file.
 
 ## Integrity
 
-`bundle.json` is the canonical record. Hash-chain root: `66d9b0eefaf7312b87f6b0892c5b7960aebe881d0f6ea487387caa274b74234d`.
+`bundle.json` is the canonical record. Hash-chain root: `cc9df95c1270ca3440b96b435303549ae07753fecbbcebcc557daaceb907c4cf`.
 If `baton` is installed, run `baton verify .` to check nothing was altered.
