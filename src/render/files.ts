@@ -13,6 +13,7 @@
 //   sinks/…         business-system payloads (optional)
 
 import type { BatonBundle } from '../core/schema.ts';
+import { artifactBytes } from '../core/util.ts';
 import type { FileMap } from '../core/zip.ts';
 import { renderAgentsMd, renderHandoff, renderPastePrompt, renderSkill } from './handoff.ts';
 import { renderHtml } from './html.ts';
@@ -35,7 +36,10 @@ export function renderBundleFiles(b: BatonBundle, opts: RenderOptions = {}): Fil
   };
   if (opts.html !== false) files['index.html'] = renderHtml(b);
   if (opts.skill !== false) files['SKILL.md'] = renderSkill(b);
-  for (const a of b.artifacts) if (a.content !== undefined) files[`files/${a.path}`] = a.content;
+  for (const a of b.artifacts) {
+    const bytes = a.encoding === 'base64' ? artifactBytes(a) : undefined;
+    if (a.content !== undefined) files[`files/${a.path}`] = bytes ?? a.content;
+  }
   Object.assign(files, opts.extraFiles ?? {});
   return files;
 }

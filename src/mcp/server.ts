@@ -13,24 +13,18 @@ import { convert } from '../pipeline.ts';
 import { renderTranscript } from '../render/markdown.ts';
 import { splitTurns } from '../render/turns.ts';
 import { buildSink, SINKS, type SinkName } from '../sinks/index.ts';
-
-const SUPPORTED = ['2025-06-18', '2025-03-26', '2024-11-05'];
-
-interface Tool {
-  name: string;
-  description: string;
-  inputSchema: Record<string, unknown>;
-  run: (args: Record<string, unknown>) => Promise<string>;
-}
+import { handleRpc, type McpSession, type Tool } from './protocol.ts';
+import { RelayStore } from '../relay/store.ts';
+import { RELAY_INSTRUCTIONS, relayTools, remoteRelayTools } from '../relay/tools.ts';
 
 const s = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 
-function loadBundle(path: string): { bundle: BatonBundle; files: Record<string, string> } {
+function loadBundle(path: string): { bundle: BatonBundle; files: Record<string, string | Uint8Array> } {
   const raw = readBundleFiles(path);
   if (!raw['bundle.json']) throw new Error(`${path}: no bundle.json`);
-  const files: Record<string, string> = {};
+  const files: Record<string, string | Uint8Array> = {};
   for (const [k, v] of Object.entries(raw)) if (k.startsWith('files/')) files[k.slice(6)] = v;
-  return { bundle: JSON.parse(raw['bundle.json']) as BatonBundle, files };
+  return { bundle: JSON.parse(String(raw['bundle.json'])) as BatonBundle, files };
 }
 
 async function importAndWrite(text: string, filename: string, url: string | undefined, args: Record<string, unknown>): Promise<string> {
@@ -50,7 +44,7 @@ async function importAndWrite(text: string, filename: string, url: string | unde
   return out.join('\n');
 }
 
-const TOOLS: Tool[] = [
+const FILE_TOOLS: Tool[] = [
   {
     name: 'baton_import',
     description:
@@ -144,45 +138,26 @@ const TOOLS: Tool[] = [
 
 type Json = Record<string, unknown>;
 
-export async function handleMessage(msg: Json): Promise<Json | undefined> {
-  const id = msg.id as string | number | undefined;
-  const method = msg.method as string | undefined;
-  const reply = (result: unknown): Json => ({ jsonrpc: '2.0', id, result });
-  const fail = (code: number, message: string): Json => ({ jsonrpc: '2.0', id, error: { code, message } });
-  if (id === undefined || id === null) return undefined; // notification
+/** Local tools (files, sessions, sinks) + relay tools (local ~/.baton/store, or a remote hub via BATON_RELAY_URL). */
+export function localTools(): Tool[] {
+  const relay = process.env.BATON_RELAY_URL
+    ? remoteRelayTools(process.env.BATON_RELAY_URL, process.env.BATON_RELAY_TOKEN)
+    : relayTools(new RelayStore(), { allowList: true, publicUrl: process.env.BATON_PUBLIC_URL });
+  return [...FILE_TOOLS, ...relay];
+}
 
-  switch (method) {
-    case 'initialize': {
-      const requested = (msg.params as Json | undefined)?.protocolVersion as string | undefined;
-      return reply({
-        protocolVersion: requested && SUPPORTED.includes(requested) ? requested : SUPPORTED[0],
-        capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: 'baton', version: VERSION },
-        instructions: 'Baton moves AI work between tools. Use baton_import with a ChatGPT share link or an export/session file, then read the returned HANDOFF.md and continue the work. Respect the loss audit: lost files do not exist.',
-      });
-    }
-    case 'ping':
-      return reply({});
-    case 'tools/list':
-      return reply({ tools: TOOLS.map(({ run: _r, ...t }) => t) });
-    case 'tools/call': {
-      const params = (msg.params ?? {}) as Json;
-      const tool = TOOLS.find((t) => t.name === params.name);
-      if (!tool) return fail(-32602, `Unknown tool: ${String(params.name)}`);
-      try {
-        const text = await tool.run((params.arguments ?? {}) as Record<string, unknown>);
-        return reply({ content: [{ type: 'text', text }] });
-      } catch (err) {
-        return reply({ content: [{ type: 'text', text: `Error: ${err instanceof Error ? err.message : String(err)}` }], isError: true });
-      }
-    }
-    case 'resources/list':
-      return reply({ resources: [] });
-    case 'prompts/list':
-      return reply({ prompts: [] });
-    default:
-      return fail(-32601, `Method not found: ${String(method)}`);
-  }
+const INFO = {
+  name: 'baton',
+  version: VERSION,
+  instructions: `${RELAY_INSTRUCTIONS}\nFor files on disk (ChatGPT share links, exports, Claude Code sessions) use baton_import / baton_session and read the returned HANDOFF.md. Respect the loss audit: lost files do not exist.`,
+};
+
+let cachedTools: Tool[] | undefined;
+const stdioSession: McpSession = { clientName: 'mcp-client' };
+
+export async function handleMessage(msg: Json, session: McpSession = stdioSession): Promise<Json | undefined> {
+  cachedTools ??= localTools();
+  return handleRpc(msg, cachedTools, INFO, session);
 }
 
 export async function startMcpServer(): Promise<void> {

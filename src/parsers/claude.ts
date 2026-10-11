@@ -94,11 +94,13 @@ function describeToolCall(name: string, input: unknown): string {
 }
 
 // Tools whose structured args drive file recovery (see recover/artifacts.ts).
-const FILE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
+const FILE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'artifacts', 'create_file', 'str_replace']);
 
 function toolInputText(name: string, input: unknown): string {
   if (isRecord(input)) {
-    if (name === 'Bash' && typeof input.command === 'string') return input.command;
+    if ((name === 'Bash' || name === 'bash_tool') && typeof input.command === 'string') return input.command;
+    if (name === 'artifacts') return `${asString(input.command)} ${asString(input.id)}${input.title ? ` "${asString(input.title)}"` : ''}  (${asString(input.content || input.new_str).length} chars → recovered file)`;
+    if (name === 'create_file') return `${asString(input.path)}  (${asString(input.file_text).length} chars → recovered file)`;
     // File bodies live in tool.args and are recovered as artifacts; keep the display compact.
     if (name === 'Write' && typeof input.content === 'string') return `${asString(input.file_path)}  (${input.content.length} chars → recovered file)`;
     if (name === 'Edit') return `${asString(input.file_path)}  (edit: ${asString(input.old_string).length} → ${asString(input.new_string).length} chars)`;
@@ -107,7 +109,7 @@ function toolInputText(name: string, input: unknown): string {
 }
 
 function toolLang(name: string): string | undefined {
-  if (name === 'Bash') return 'bash';
+  if (name === 'Bash' || name === 'bash_tool') return 'bash';
   return 'json';
 }
 

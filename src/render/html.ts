@@ -66,6 +66,7 @@ export function renderHtml(b: BatonBundle): string {
   const files = b.artifacts
     .map((a) => {
       const head = `<span class="s-${a.status}">${a.status}</span> · <code>${escapeHtml(a.path)}</code> ${a.bytes !== undefined ? `· ${fmtBytes(a.bytes)}` : ''}${a.note ? ` · <span class="meta">${escapeHtml(a.note)}</span>` : ''}`;
+      if (a.encoding === 'base64') return `<p>${head} · <span class="meta">binary${a.mimeType ? ` ${escapeHtml(a.mimeType)}` : ''}, saved under files/</span></p>`;
       return a.content !== undefined ? `<details><summary>${head}</summary><pre><code>${escapeHtml(a.content)}</code></pre></details>` : `<p>${head}</p>`;
     })
     .join('\n');

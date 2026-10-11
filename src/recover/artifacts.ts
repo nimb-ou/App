@@ -180,10 +180,31 @@ function pythonModifications(code: string, eventId: string, cwd: string): FileOp
 
 // ───────────────────────────── structured tools (Claude Code) ─────────────────────────────
 
+const ARTIFACT_EXT: Record<string, string> = {
+  'application/vnd.ant.code': '', 'text/markdown': '.md', 'text/html': '.html', 'image/svg+xml': '.svg',
+  'application/vnd.ant.react': '.jsx', 'application/vnd.ant.mermaid': '.mmd',
+};
+const LANG_EXT: Record<string, string> = { python: '.py', javascript: '.js', typescript: '.ts', tsx: '.tsx', jsx: '.jsx', html: '.html', css: '.css', json: '.json', bash: '.sh', shell: '.sh', sql: '.sql', rust: '.rs', go: '.go', java: '.java', markdown: '.md', yaml: '.yaml' };
+
+/** claude.ai "artifacts" tool: create / update / rewrite a named artifact. */
+function artifactOps(args: Record<string, unknown>, eventId: string): FileOp[] {
+  const id = asString(args.id) || 'artifact';
+  const type = asString(args.type);
+  const ext = ARTIFACT_EXT[type] || LANG_EXT[asString(args.language).toLowerCase()] || (type ? '' : '.txt');
+  const path = `/claude-artifacts/${id}${ext || '.txt'}`;
+  const cmd = asString(args.command);
+  if (cmd === 'update') return [{ kind: 'replace', path, eventId, old: asString(args.old_str), new: asString(args.new_str) }];
+  if (cmd === 'create' || cmd === 'rewrite') return [{ kind: 'write', path, eventId, content: asString(args.content) }];
+  return [];
+}
+
 export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string): FileOp[] {
+  if (name === 'artifacts') return artifactOps(args, eventId);
   const path = asString(args.file_path || args.notebook_path || args.path);
   if (!path) return [];
   if (name === 'Write') return [{ kind: 'write', path, eventId, content: asString(args.content) }];
+  if (name === 'create_file') return [{ kind: 'write', path, eventId, content: asString(args.file_text) }];
+  if (name === 'str_replace') return [{ kind: 'replace', path, eventId, old: asString(args.old_str), new: asString(args.new_str) }];
   if (name === 'Edit') return [{ kind: 'replace', path, eventId, old: asString(args.old_string), new: asString(args.new_string), all: args.replace_all === true }];
   if (name === 'MultiEdit' && Array.isArray(args.edits)) {
     return (args.edits as unknown[]).filter(isRecord).map((e) => ({ kind: 'replace' as const, path, eventId, old: asString(e.old_string), new: asString(e.new_string), all: e.replace_all === true }));
@@ -209,10 +230,14 @@ export interface RecoveryResult {
   replay?: FileMap;
 }
 
+// Vendor sandbox roots that map to the top of files/ (ChatGPT, claude.ai file tools and artifacts).
+const SANDBOX_ROOTS = ['/mnt/data/', '/mnt/user-data/outputs/', '/home/claude/', '/claude-artifacts/'];
+
 export function bundlePath(original: string, kind: SourceKind, cwd?: string): string {
   let p = original.replace(/^sandbox:/, '');
   if (p.startsWith('/')) p = normaliseDots(p);
-  if (p.startsWith('/mnt/data/')) p = p.slice('/mnt/data/'.length);
+  const sandboxRoot = SANDBOX_ROOTS.find((r) => p.startsWith(r));
+  if (sandboxRoot) p = p.slice(sandboxRoot.length);
   else if (cwd && p.startsWith(cwd.replace(/\/$/, '') + '/')) p = p.slice(cwd.replace(/\/$/, '').length + 1);
   else if (p.startsWith('/')) p = '_abs' + p;
   // Never allow escaping the bundle directory.
@@ -228,7 +253,7 @@ export function collectOps(events: BatonEvent[], kind: SourceKind, cwd?: string)
     if (e.kind === 'tool_call' && e.tool) {
       const { name, input, args } = e.tool;
       if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id));
-      else if (input && (name === 'container.exec' || name === 'python' || name === 'Bash' || e.tool.language === 'bash')) {
+      else if (input && (name === 'container.exec' || name === 'python' || name === 'Bash' || name === 'bash_tool' || e.tool.language === 'bash')) {
         ops.push(...extractShellOps(input, e.id, kind === 'claude-code' && cwd ? cwd : '/'));
       }
     }

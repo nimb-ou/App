@@ -12,6 +12,10 @@ import { buildSink, SINKS, type SinkName } from './sinks/index.ts';
 import { findSession, loadInput, readBundleFiles, writeFiles, writeZip } from './node/io.ts';
 import { postSink } from './node/post.ts';
 import { startMcpServer } from './mcp/server.ts';
+import { pickup, sendBundle } from './relay/client.ts';
+import { startRelay } from './relay/server.ts';
+import { RelayStore } from './relay/store.ts';
+import type { FileMap } from './core/zip.ts';
 
 const HELP = `baton ${VERSION}: hand off AI work between tools, not just chat text
 
@@ -21,7 +25,13 @@ USAGE
   baton inspect <source>              Show what would transfer (and what would not), write nothing
   baton verify <bundle>               Recompute the integrity hash chain of a bundle dir / zip
   baton sink <bundle> --to <system>   Build (and optionally --post) a Salesforce/Jira/Zendesk/Slack payload
-  baton mcp                           Run as an MCP server over stdio
+  baton mcp                           Run as an MCP server over stdio (file tools + relay tools)
+
+EMBED IN AIs (capture from within)
+  baton relay [--port 8787]           Run the relay hub: MCP for ChatGPT/Claude connectors, REST, viewer
+  baton send <bundle|source> [--relay URL] [--seal]   Upload a bundle; prints a pickup code (sealed = end-to-end encrypted)
+  baton pickup <code> [--relay URL] [-o dir]          Receive a handoff from any AI or teammate
+  baton hook                          Claude Code hook entry (PreCompact/SessionEnd): auto-bundle into .baton/sessions/
 
 SOURCES
   https://chatgpt.com/share/<id>      public ChatGPT share link (fetched once, no login)
@@ -55,7 +65,7 @@ interface Args {
 
 function parseArgs(argv: string[]): Args {
   const out: Args = { _: [], flags: {} };
-  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file']);
+  const valued = new Set(['o', 'out', 'pick', 'sink', 'to', 'jira-project', 'sf-parent', 'now', 'redact', 'redact-file', 'relay', 'port', 'token', 'store', 'public-url']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--') {
@@ -148,11 +158,11 @@ async function cmdInspect(source: string | undefined, a: Args): Promise<void> {
   }
 }
 
-function loadBundle(path: string): { bundle: BatonBundle; files: Record<string, string> } {
+function loadBundle(path: string): { bundle: BatonBundle; files: Record<string, string | Uint8Array> } {
   const raw = readBundleFiles(path);
   if (!raw['bundle.json']) throw new Error(`${path}: no bundle.json found`);
-  const bundle = JSON.parse(raw['bundle.json']) as BatonBundle;
-  const files: Record<string, string> = {};
+  const bundle = JSON.parse(String(raw['bundle.json'])) as BatonBundle;
+  const files: Record<string, string | Uint8Array> = {};
   for (const [k, v] of Object.entries(raw)) if (k.startsWith('files/')) files[k.slice(6)] = v;
   return { bundle, files };
 }
@@ -186,6 +196,56 @@ async function cmdSink(path: string | undefined, a: Args): Promise<void> {
   if (!r.ok) process.exitCode = 1;
 }
 
+const relayUrl = (a: Args) => str(a.flags.relay) ?? process.env.BATON_RELAY_URL;
+
+async function cmdSend(source: string | undefined, a: Args): Promise<void> {
+  if (!source) throw new Error('Missing <bundle dir | source>');
+  let bundle: BatonBundle;
+  let files: FileMap;
+  if (existsSync(join(source, 'bundle.json'))) {
+    const raw = readBundleFiles(source);
+    bundle = JSON.parse(String(raw['bundle.json'])) as BatonBundle;
+    files = raw;
+  } else {
+    const input = await loadInput(source);
+    const [r] = convert(input.text, input.filename, { url: input.url, pick: str(a.flags.pick) });
+    bundle = r.bundle;
+    files = r.files;
+  }
+  const res = await sendBundle(bundle, files, { relay: relayUrl(a), token: str(a.flags.token) ?? process.env.BATON_RELAY_TOKEN, sealed: a.flags.seal === true });
+  if (a.flags.json) return console.log(JSON.stringify(res, null, 2));
+  console.log(`✓ sent "${bundle.title}"${res.sealed ? ' (end-to-end encrypted)' : ''}`);
+  console.log(`  pickup   ${res.link}`);
+  console.log(`  in another AI: "baton pickup ${res.sealed ? res.link : res.code}"  ·  terminal: baton pickup ${res.sealed ? `"${res.link}"` : res.code}${relayUrl(a) ? '' : '  (local store)'}`);
+}
+
+async function cmdPickup(code: string | undefined, a: Args): Promise<void> {
+  if (!code) throw new Error('Missing <code>');
+  const r = await pickup(code, { relay: relayUrl(a) });
+  const out = str(a.flags.o) ?? str(a.flags.out) ?? join('handoffs', r.code);
+  writeFiles(out, r.files);
+  console.log(`✓ picked up "${r.title}" (${r.code})\n  → ${out}/HANDOFF.md  (start here)`);
+}
+
+/** Claude Code hook: reads the hook JSON on stdin and bundles the transcript before it is compacted or closed. */
+async function cmdHook(): Promise<void> {
+  const chunks: Buffer[] = [];
+  for await (const c of process.stdin) chunks.push(c as Buffer);
+  const h = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as { session_id?: string; transcript_path?: string; cwd?: string; hook_event_name?: string };
+  if (!h.transcript_path || !existsSync(h.transcript_path)) return;
+  const input = await loadInput(h.transcript_path);
+  const [r] = convert(input.text, input.filename, {});
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
+  const dir = join(h.cwd ?? process.cwd(), '.baton', 'sessions', `${stamp}-${(h.hook_event_name ?? 'hook').toLowerCase()}-${(h.session_id ?? r.bundle.id).slice(0, 8)}`);
+  writeFiles(dir, r.files);
+  let sent = '';
+  if (process.env.BATON_AUTO_SEND === '1') {
+    const res = await sendBundle(r.bundle, r.files, { relay: process.env.BATON_RELAY_URL, token: process.env.BATON_RELAY_TOKEN, from: 'claude-code-hook' });
+    sent = ` · pickup ${res.link}`;
+  }
+  console.error(`baton: saved ${h.hook_event_name ?? 'session'} snapshot → ${dir}${sent}`);
+}
+
 export async function main(argv: string[]): Promise<number> {
   const a = parseArgs(argv);
   const [cmd, arg] = a._;
@@ -210,6 +270,18 @@ export async function main(argv: string[]): Promise<number> {
       return process.exitCode === 1 ? 1 : 0;
     case 'mcp':
       await startMcpServer();
+      return 0;
+    case 'relay':
+      await startRelay({ port: Number(str(a.flags.port) ?? process.env.PORT ?? 8787), store: new RelayStore({ dir: str(a.flags.store) }), publicUrl: str(a.flags['public-url']), token: str(a.flags.token), log: (m) => console.error(m) });
+      return 0;
+    case 'send':
+      await cmdSend(arg, a);
+      return 0;
+    case 'pickup':
+      await cmdPickup(arg, a);
+      return 0;
+    case 'hook':
+      await cmdHook();
       return 0;
     case undefined:
     case 'help':

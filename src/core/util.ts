@@ -73,3 +73,22 @@ export function plural(n: number, word: string, pluralWord = word + 's'): string
 export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+export function base64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64.replace(/\s+/g, ''));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+export function bytesToBase64(bytes: Uint8Array): string {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/** Raw bytes of an artifact's content, honouring its encoding. */
+export function artifactBytes(a: { content?: string; encoding?: string }): Uint8Array | undefined {
+  if (a.content === undefined) return undefined;
+  return a.encoding === 'base64' ? base64ToBytes(a.content) : new TextEncoder().encode(a.content);
+}

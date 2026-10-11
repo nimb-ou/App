@@ -1,12 +1,12 @@
 // ParsedConversation → BatonBundle: filter private context, redact, recover files, audit losses, hash.
 
-import { recoverArtifacts } from '../recover/artifacts.ts';
+import { bundlePath, recoverArtifacts } from '../recover/artifacts.ts';
 import { chainEvents } from './integrity.ts';
 import { Redactor } from './redact.ts';
 import type { ArtifactStatus, BatonArtifact, BatonBundle, BatonEvent, BuildOptions, BundleStats, LossItem, ParsedConversation } from './schema.ts';
 import { SCHEMA_ID, VERSION } from './schema.ts';
 import { sha256Hex } from './sha256.ts';
-import { extractUrls, isRecord } from './util.ts';
+import { base64ToBytes, extractUrls, isRecord } from './util.ts';
 import type { FileMap } from './zip.ts';
 
 export interface BuildResult {
@@ -42,6 +42,27 @@ export function buildBundle(parsed: ParsedConversation, options: BuildOptions = 
 
   // Recover files from the (already redacted) tool calls.
   const { artifacts, replay } = recoverArtifacts(events, parsed.source.kind, parsed.source.cwd);
+  for (const cf of parsed.capturedFiles ?? []) {
+    const binary = cf.encoding === 'base64';
+    const content = binary ? cf.content : redactor.apply(cf.content);
+    const bytes = binary ? base64ToBytes(content) : new TextEncoder().encode(content);
+    const path = bundlePath(cf.path, parsed.source.kind, parsed.source.cwd);
+    const prior = artifacts.findIndex((a) => a.path === path);
+    const captured: BatonArtifact = {
+      path,
+      originalPath: cf.path,
+      status: 'recovered',
+      content,
+      encoding: binary ? 'base64' : undefined,
+      mimeType: cf.mimeType,
+      bytes: bytes.length,
+      sha256: sha256Hex(bytes),
+      recoveredFrom: cf.eventId ? [cf.eventId] : undefined,
+      note: cf.note ?? 'captured from the source (exact bytes)',
+    };
+    if (prior >= 0) artifacts[prior] = { ...captured, versions: artifacts[prior].versions, modifiedBy: undefined };
+    else artifacts.push(captured);
+  }
   for (const att of parsed.attachments ?? []) {
     const content = redactor.apply(att.content);
     artifacts.push({ path: att.path, originalPath: att.path, status: 'attached', content, bytes: new TextEncoder().encode(content).length, sha256: sha256Hex(content), note: att.note });

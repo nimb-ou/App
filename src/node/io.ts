@@ -132,15 +132,19 @@ export function writeZip(path: string, files: FileMap, prefix = ''): void {
 }
 
 /** Read a bundle back (directory, bundle.json, or .zip) for verify/sink. */
-export function readBundleFiles(path: string): Record<string, string> {
+/** files/ entries stay raw bytes (they may be binary); everything else is decoded as UTF-8. */
+export function readBundleFiles(path: string): Record<string, string | Uint8Array> {
   const dec = new TextDecoder();
   if (statSync(path).isDirectory()) {
-    const out: Record<string, string> = {};
+    const out: Record<string, string | Uint8Array> = {};
     const walk = (d: string) => {
       for (const f of readdirSync(d)) {
         const p = join(d, f);
         if (statSync(p).isDirectory()) walk(p);
-        else out[relative(path, p).split(sep).join('/')] = readFileSync(p, 'utf8');
+        else {
+          const rel = relative(path, p).split(sep).join('/');
+          out[rel] = rel.startsWith('files/') ? new Uint8Array(readFileSync(p)) : readFileSync(p, 'utf8');
+        }
       }
     };
     walk(path);
@@ -149,11 +153,15 @@ export function readBundleFiles(path: string): Record<string, string> {
   const buf = readFileSync(path);
   if (buf.readUInt32LE(0) === 0x04034b50) {
     const members = unzipSync(new Uint8Array(buf), (d) => new Uint8Array(inflateRawSync(d)));
-    const out: Record<string, string> = {};
+    const out: Record<string, string | Uint8Array> = {};
     const names = Object.keys(members);
     const bundleJson = names.find((n) => n.endsWith('bundle.json'));
     const prefix = bundleJson ? bundleJson.slice(0, -'bundle.json'.length) : '';
-    for (const n of names) if (n.startsWith(prefix)) out[n.slice(prefix.length)] = dec.decode(members[n]);
+    for (const n of names) {
+      if (!n.startsWith(prefix)) continue;
+      const rel = n.slice(prefix.length);
+      out[rel] = rel.startsWith('files/') ? members[n] : dec.decode(members[n]);
+    }
     return out;
   }
   return { 'bundle.json': buf.toString('utf8') };

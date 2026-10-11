@@ -13,6 +13,7 @@ import { buildSink } from '../src/sinks/index.ts';
 const ROOT = new URL('..', import.meta.url).pathname;
 const FIXTURE = join(ROOT, 'fixtures/chatgpt-share-cricket-stumping.html.gz');
 const tmp = mkdtempSync(join(tmpdir(), 'baton-test-'));
+process.env.BATON_STORE = join(tmp, 'store');
 after(() => rmSync(tmp, { recursive: true, force: true }));
 
 const html = gunzipSync(readFileSync(FIXTURE)).toString('utf8');
@@ -100,7 +101,7 @@ describe('MCP server', () => {
     assert.equal(init.result.protocolVersion, '2025-03-26');
     assert.equal(init.result.serverInfo.name, 'baton');
     const list = (await handleMessage({ jsonrpc: '2.0', id: 2, method: 'tools/list' })) as { result: { tools: { name: string; inputSchema: object }[] } };
-    assert.deepEqual(list.result.tools.map((t) => t.name), ['baton_import', 'baton_session', 'baton_inspect', 'baton_read_turn', 'baton_verify', 'baton_sink']);
+    assert.deepEqual(list.result.tools.map((t) => t.name), ['baton_import', 'baton_session', 'baton_inspect', 'baton_read_turn', 'baton_verify', 'baton_sink', 'baton_checkpoint', 'baton_pickup', 'baton_get_file', 'baton_list']);
     assert.equal(await handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' }), undefined);
   });
   it('imports via tools/call and reports errors as tool results', async () => {

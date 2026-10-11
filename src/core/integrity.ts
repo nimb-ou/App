@@ -5,7 +5,7 @@
 import type { BatonArtifact, BatonBundle, BatonEvent } from './schema.ts';
 import { SCHEMA_ID } from './schema.ts';
 import { sha256Hex } from './sha256.ts';
-import { stableStringify } from './util.ts';
+import { artifactBytes, stableStringify } from './util.ts';
 
 function eventPayload(e: BatonEvent): string {
   const { hash: _ignored, ...rest } = e;
@@ -37,7 +37,7 @@ export interface VerifyResult {
 }
 
 /** Recompute the chain from a bundle (and optionally the shipped file contents) and compare. */
-export function verifyBundle(bundle: BatonBundle, files?: Record<string, string>): VerifyResult {
+export function verifyBundle(bundle: BatonBundle, files?: Record<string, string | Uint8Array>): VerifyResult {
   let h = sha256Hex(SCHEMA_ID);
   let firstBad: string | undefined;
   for (const e of bundle.events) {
@@ -47,7 +47,8 @@ export function verifyBundle(bundle: BatonBundle, files?: Record<string, string>
   const badArtifacts: string[] = [];
   for (const a of [...bundle.artifacts].sort((x, y) => x.path.localeCompare(y.path))) {
     // Hash what is actually shipped: the file on disk if present, else the content embedded in bundle.json.
-    const shipped = files?.[a.path] ?? a.content;
+    const onDisk = files?.[a.path];
+    const shipped = onDisk !== undefined ? (typeof onDisk === 'string' ? new TextEncoder().encode(onDisk) : onDisk) : artifactBytes(a);
     const actual = shipped !== undefined ? sha256Hex(shipped) : a.sha256;
     if (a.sha256 && actual !== a.sha256) badArtifacts.push(a.path);
     h = sha256Hex(h + artifactPayload({ ...a, sha256: actual }));

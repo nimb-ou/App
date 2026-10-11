@@ -20,6 +20,7 @@ export type SourceKind =
   | 'claude-export'
   | 'claude-code'
   | 'openai-messages'
+  | 'baton-relay'
   | 'unknown';
 
 export interface ToolInfo {
@@ -57,8 +58,10 @@ export interface BatonArtifact {
   originalPath: string;
   status: ArtifactStatus;
   content?: string;
+  encoding?: 'utf8' | 'base64'; // base64 for binary files captured from the source (PDFs, images, archives)
+  mimeType?: string;
   bytes?: number;
-  sha256?: string;
+  sha256?: string; // over the decoded bytes
   versions?: number;
   recoveredFrom?: string[]; // event ids
   modifiedBy?: string[]; // event ids that touched it after the last full write
@@ -120,10 +123,21 @@ export interface ParsedConversation {
   events: Omit<BatonEvent, 'seq' | 'hash'>[];
   /** Files that came with the source (attachments with extracted text). */
   attachments?: { path: string; content: string; note?: string }[];
+  /** Files captured live from the source (extension, relay): exact bytes, override code-based recovery. */
+  capturedFiles?: CapturedFile[];
   /** URLs the source itself lists (e.g. ChatGPT safe_urls). */
   sourceLinks?: string[];
   /** Parser-level loss observations (things only the parser can know). */
   loss?: LossItem[];
+}
+
+export interface CapturedFile {
+  path: string; // original path as the source names it (e.g. /mnt/data/report.pdf)
+  content: string; // utf8 text or base64
+  encoding?: 'utf8' | 'base64';
+  mimeType?: string;
+  note?: string;
+  eventId?: string;
 }
 
 export interface BuildOptions {
