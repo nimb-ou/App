@@ -1,0 +1,10 @@
+{
+  "name": "baton-work-transfer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first transfer bundles for AI conversations, work state, and recovered artifacts.",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "bin": { "baton": "./bin/baton.mjs" },
+  "scripts": { "baton": "node ./bin/baton.mjs" }
+}

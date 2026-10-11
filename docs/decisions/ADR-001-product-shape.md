@@ -38,7 +38,6 @@ Build **one zero-dependency TypeScript core** and ship it through **five thin su
 
 ## Consequences
 
-- Node ≥ 22.18 runs the TypeScript source directly (type stripping), so there is no build step for the CLI and tests.
-  `esbuild` is a dev-only dependency used to bundle the browser app into one HTML file.
-- The core must avoid Node-only APIs (it uses its own SHA-256, CRC32 and ZIP writer) so it runs in browsers.
-- Only "erasable" TypeScript syntax is allowed: no `enum`, no parameter properties, no namespaces.
+- **Implementation update (2026-10-11):** use dependency-free JavaScript ESM for v1, with a Node ≥18 CLI and browser-importable core. This keeps the supported runtime aligned with the available Node 20 environment and lets the static page reuse the same parser without a build step.
+- The core avoids Node-only APIs; ZIP writing and CRC32 use small portable implementations. Node-only filesystem, hashing and network code stays in the CLI/MCP adapters.
+- The original TypeScript proposal remains a possible library packaging choice after the event format stabilizes; no source transform is required for v1.
