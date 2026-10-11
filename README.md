@@ -1,50 +1,64 @@
 # Baton
 
-**Hand off AI work, not just chat text.**
+**Carry AI work between assistants, from the inside.**
 
-Baton turns an AI conversation into a **handoff bundle** that another tool, agent, teammate or business system can pick up and continue.
-Sources are a ChatGPT share link, a ChatGPT or Claude data export, or a Claude Code session. Each bundle carries:
+Share links and exports only carry what a vendor chooses to publish. A ChatGPT share link silently drops every tool output and every
+generated file. Baton lives **inside** the assistants instead:
 
-- every prompt, verbatim
-- the assistant's replies and reasoning
-- every tool call and the code it ran
-- the **files the session created, rebuilt from that code**
-- a **loss audit** of everything the source failed to hand over
-- a SHA-256 hash chain so any later edit is detectable
+- a **browser extension** in ChatGPT, Claude and Gemini that captures the full conversation the page itself holds: tool outputs,
+  sandbox files as real bytes, uploads, and the live response stream
+- **MCP tools** any model can call (`baton_checkpoint`, `baton_pickup`), so the AI writes down what it knows (full files, outputs,
+  decisions, verbatim prompts) and a *different* AI picks it up by code
+- **agent hooks** that snapshot a Claude Code session before context compaction throws it away
 
-It runs locally with zero runtime dependencies and is free to use.
+Everything lands in one audited format. The handoff brief says what the work is, where it stopped, which files exist, and
+**what did not make it**. It can be moved tab-to-tab, by pickup code, through a shared local store, or into Salesforce, Jira, Zendesk or Slack.
+
+```
+ChatGPT ─┐  extension: capture in page ──── "Continue in Claude" ─────────▶ fills Claude's composer + attaches files
+Claude  ─┤  MCP: baton_checkpoint ─▶ relay (BTN-7F3K-9QXA-2M4P) ─▶ baton_pickup in Cursor / ChatGPT / Gemini CLI
+Agents  ─┘  hooks: PreCompact/SessionEnd ─▶ .baton/sessions/ (+ optional relay)
+```
+
+What in-page capture gets compared with a share link of the same ChatGPT chat (from [`tests-e2e`](tests-e2e/extension.e2e.mjs) and the real fixture):
+
+| | Share link | Baton, inside the page |
+|---|---|---|
+| Tool / code outputs | 0 (all redacted) | all |
+| Generated files (PDF, ZIP, app.py) | dead `sandbox:` links | exact bytes |
+| `functions.exec` code | blank | present |
+| Streamed output | not kept | raw stream kept |
+| Move to Claude | copy-paste by hand | one click: composer filled, files attached |
+
+**Setup for each AI: [`docs/EMBED.md`](docs/EMBED.md).** Architecture: [ADR-002](docs/decisions/ADR-002-capture-from-within.md).
+What each capture position can see: [research 07](docs/research/07-capture-surfaces.md).
+
+### Also works after the fact
+
+When you only have a link or an export, Baton still extracts the most possible and reports the rest:
 
 ```
 $ npx github:nimb-ou/App import https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388
 ✓ Cricket Stumping Simulation
-  source   ChatGPT (chatgpt-share) https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388
   content  8 prompts · 20 replies · 47 reasoning · 133 tool calls
   files    13 recovered · 3 stale · 16 lost
   loss     163 tool-outputs · 81 tool-inputs · 16 files-lost (see LOSS_AUDIT.md)
-  root     0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6
   → handoffs/cricket-stumping-simulation/HANDOFF.md  (start here)
 ```
 
-That is a real public share link. Its page *looks* complete and says "Download the complete ZIP", but the share
-silently drops all 163 tool outputs, 33 code cells and every generated file. Baton reports that, rebuilds **13 project files byte
-for byte** from the code that wrote them, and lists the 16 it cannot recover (including `app.py`) instead of pretending they exist.
-See [`examples/cricket-stumping/`](examples/cricket-stumping/) and its [`HANDOFF.md`](examples/cricket-stumping/HANDOFF.md).
-
-## Why
-
-AI work is stuck where it happened. Claude and Gemini both shipped "import memory" in March 2026, but that moves a **profile
-of you**, not **the work**: the plan, decisions, code and files. Exporter extensions produce documents for humans. None
-of them says what was lost, and none recovers files. The full analysis is in [`docs/research/01-market-landscape.md`](docs/research/01-market-landscape.md).
+It rebuilds **13 project files byte for byte** from the code that wrote them and lists the 16 it cannot recover instead of faking
+them. See [`examples/cricket-stumping/`](examples/cricket-stumping/).
 
 ## Use it the way you work
 
 | You are… | Use | How |
 |---|---|---|
-| In a terminal | **CLI** | `npx github:nimb-ou/App import <url-or-file>` (Node ≥ 18) |
-| In Claude Code | **Plugin** (skill + `/baton:import`, `/baton:handoff` + MCP) | `/plugin marketplace add nimb-ou/App` then `/plugin install baton@baton` |
-| In any Skills-aware agent (Codex, Cursor, …) | **Agent Skill** | copy [`skills/baton/`](skills/baton/) into the agent's skills folder. The CLI is bundled inside it. |
-| In an MCP client (Claude Desktop, Cursor, …) | **MCP server** | `{"command": "npx", "args": ["-y", "github:nimb-ou/App", "mcp"]}` |
-| In a browser | **Web app** | open [`web/dist/baton.html`](web/dist/baton.html) (one file, works offline) and drop a file. Nothing is uploaded. |
+| In ChatGPT / Claude / Gemini on the web | **Extension** | load `extension/dist` unpacked → **Baton** button in the page |
+| Any AI with connectors (ChatGPT dev mode, Claude, Cursor, Codex…) | **Relay MCP** | add `https://<your-relay>/mcp` → say "baton: hand this off" / "baton pickup BTN-…" |
+| In Claude Code | **Plugin** (skill + hooks + MCP + `/baton:import`, `/baton:handoff`) | `/plugin marketplace add nimb-ou/App` then `/plugin install baton@baton` |
+| Any local MCP client | **Local MCP** (shared `~/.baton/store`, no server) | `{"command": "npx", "args": ["-y", "github:nimb-ou/App", "mcp"]}` |
+| In a terminal | **CLI** | `npx github:nimb-ou/App import <url-or-file>` · `send` · `pickup` · `relay` |
+| In a browser, no install | **Web app** | [`web/dist/baton.html`](web/dist/baton.html): drop an export or saved page, parsed locally |
 | In a team / company | **Sinks** | `baton sink <bundle> --to salesforce\|jira\|zendesk\|slack [--post]` |
 
 ### Sources
@@ -80,7 +94,11 @@ baton session [latest|<id>]      bundle a Claude Code session from this project
 baton inspect <source>           dry run: what would transfer, what would not
 baton verify <bundle|zip>        recompute the hash chain (exit 2 if anything was edited)
 baton sink <bundle> --to <system> [--post] [--jira-project KEY] [--sf-parent RECORD_ID]
-baton mcp                        MCP server over stdio
+baton mcp                        MCP server over stdio (file tools + checkpoint/pickup)
+baton relay [--port 8787]        relay hub: MCP over HTTP for web AIs, REST, /h/<code> viewer
+baton send <bundle> [--relay URL] [--seal]   → pickup code / link (sealed = end-to-end encrypted)
+baton pickup <code|link> [-o dir]
+baton hook                       Claude Code PreCompact/SessionEnd hook entry
 ```
 
 Posting uses environment variables only: `SALESFORCE_INSTANCE_URL`/`SALESFORCE_ACCESS_TOKEN`,
@@ -105,16 +123,19 @@ src/parsers    ChatGPT (share + export), Claude export, Claude Code JSONL, gener
 src/recover    file recovery (heredocs, Write/Edit replay, modification tracking) + replay kit
 src/render     HANDOFF / PROMPT / TRANSCRIPT / LOSS_AUDIT / SKILL / AGENTS / index.html (safe Markdown)
 src/sinks      Salesforce composite, Jira ADF, Zendesk, Slack Block Kit
-src/mcp        JSON-RPC stdio server
+src/mcp        MCP protocol (shared) + stdio server
+src/relay      checkpoints, store, relay HTTP server, MCP relay tools, AES-GCM sealing, send/pickup client
+extension/     MV3 extension: site adapters (ChatGPT, Claude, Gemini, DOM), stream tap, composer injection, panel
 src/node       fetch, file and zip IO, session discovery, posting
 web/           client-side app (built to web/dist/baton.html)
 ```
 
 ```bash
 npm install            # dev only: typescript, esbuild, @types/node
-npm test               # 64 tests, incl. end-to-end on the real share fixture
+npm test               # 78 unit + integration tests (parsers, recovery, relay, adapters, CLI)
+npm run test:e2e       # loads the real extension in Chromium against a mock ChatGPT/Claude
 npm run typecheck
-npm run build          # dist/baton.mjs, skills/baton/scripts/baton.mjs, web/dist/*.html
+npm run build          # dist/baton.mjs, skills/baton/scripts/baton.mjs, web/dist/*.html, extension/dist
 npm run examples       # regenerate examples/ deterministically
 ```
 
@@ -137,7 +158,7 @@ This repo documents its own making. Every prompt, decision and result is kept:
 
 ## Roadmap
 
-Browser extension for logged-in chats (same core) · Gemini Takeout parser · Cursor/Codex logs · statically replaying
+Chrome Web Store listing · Firefox build · Gemini API-level adapter · mobile share-sheet capture · OAuth for the relay · Gemini Takeout parser · Cursor/Codex logs · statically replaying
 Python `str.replace` patches · OAuth-managed connectors and retention policies for the business tier · external anchoring of
 integrity roots · submitting the bundle format to the Data Transfer Initiative.
 

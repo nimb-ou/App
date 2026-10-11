@@ -17,6 +17,17 @@ jobs:
       - name: Built artifacts are up to date
         run: |
           npm run build
-          git diff --exit-code -- dist skills/baton/scripts web/dist
-      - name: Plugin CLI smoke test (bundled build, no TypeScript)
+          git diff --exit-code -- dist skills/baton/scripts web/dist extension/dist
+      - name: Bundled CLI smoke test (no TypeScript)
         run: node dist/baton.mjs inspect fixtures/chatgpt-share-cricket-stumping.html.gz
+  extension-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install -g playwright@1.56.1 && npx -y playwright@1.56.1 install --with-deps chromium
+      - run: npm run test:e2e

@@ -2,7 +2,7 @@
 // Spec: docs/SPEC.md. Keep this file free of runtime code other than constants.
 
 export const SCHEMA_ID = 'baton.bundle/v1';
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 export type Role = 'user' | 'assistant' | 'system' | 'tool';
 

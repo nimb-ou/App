@@ -1,10 +1,19 @@
 {
   "name": "baton",
-  "version": "0.1.0",
-  "description": "Hand off AI work between tools: import ChatGPT share links, ChatGPT/Claude exports and Claude Code sessions as audited, agent-ready bundles (prompts, reasoning, recovered files, loss audit); export sessions to other agents, Jira, Salesforce, Zendesk or Slack.",
-  "author": { "name": "nimb-ou" },
+  "version": "0.2.0",
+  "description": "Carry AI work between assistants from the inside: checkpoint/pickup tools for any AI (MCP), auto-snapshots before compaction (hooks), import of ChatGPT/Claude conversations as audited bundles, and sinks to Jira/Salesforce/Zendesk/Slack.",
+  "author": {
+    "name": "nimb-ou"
+  },
   "homepage": "https://github.com/nimb-ou/App",
   "repository": "https://github.com/nimb-ou/App",
   "license": "Apache-2.0",
-  "keywords": ["handoff", "chatgpt", "export", "portability", "mcp", "agent-skills"]
+  "keywords": [
+    "handoff",
+    "chatgpt",
+    "export",
+    "portability",
+    "mcp",
+    "agent-skills"
+  ]
 }

@@ -40,6 +40,16 @@ The CLI ships inside this skill. In the commands below, `BATON` means
 If fetching a share URL fails (login wall, rate limit, or a private link), ask the user to open the link, save the page as
 "Webpage, HTML only", and give you the file path.
 
+## Hand off between AIs (checkpoint / pickup)
+
+If the `baton_checkpoint` / `baton_pickup` MCP tools are available (plugin MCP server, or a relay connector), prefer them:
+- **Hand off:** call `baton_checkpoint` with `state`, `goal`, `decisions`, `next_steps`, the user's prompts verbatim,
+  **every file you created or changed with its full content**, and important tool outputs. Give the user the pickup code.
+- **Continue:** when the user gives a code (`BTN-XXXX-XXXX-XXXX`), call `baton_pickup`, read the brief, fetch more files
+  with `baton_get_file`, and confirm the latest instruction before acting.
+
+Without MCP, the CLI does the same: `BATON send <bundle-dir> [--relay URL] [--seal]` and `BATON pickup <code|link>`.
+
 ## Hand off this session
 
 ```bash

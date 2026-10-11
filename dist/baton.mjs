@@ -6,7 +6,7 @@ import { join as join4, resolve as resolve3 } from "node:path";
 
 // src/core/schema.ts
 var SCHEMA_ID = "baton.bundle/v1";
-var VERSION = "0.1.0";
+var VERSION = "0.2.0";
 
 // src/core/sha256.ts
 var K = new Uint32Array([
@@ -986,18 +986,20 @@ var ARTIFACT_EXT = {
   "application/vnd.ant.mermaid": ".mmd"
 };
 var LANG_EXT = { python: ".py", javascript: ".js", typescript: ".ts", tsx: ".tsx", jsx: ".jsx", html: ".html", css: ".css", json: ".json", bash: ".sh", shell: ".sh", sql: ".sql", rust: ".rs", go: ".go", java: ".java", markdown: ".md", yaml: ".yaml" };
-function artifactOps(args, eventId) {
+function artifactOps(args, eventId, paths) {
   const id = asString(args.id) || "artifact";
   const type = asString(args.type);
   const ext = ARTIFACT_EXT[type] || LANG_EXT[asString(args.language).toLowerCase()] || (type ? "" : ".txt");
-  const path = `/claude-artifacts/${id}${ext || ".txt"}`;
+  const known = paths.get(id);
+  const path = known && (args.command === "update" || !type) ? known : `/claude-artifacts/${id}${ext || ".txt"}`;
+  paths.set(id, path);
   const cmd = asString(args.command);
   if (cmd === "update") return [{ kind: "replace", path, eventId, old: asString(args.old_str), new: asString(args.new_str) }];
   if (cmd === "create" || cmd === "rewrite") return [{ kind: "write", path, eventId, content: asString(args.content) }];
   return [];
 }
-function extractToolArgOps(name, args, eventId) {
-  if (name === "artifacts") return artifactOps(args, eventId);
+function extractToolArgOps(name, args, eventId, artifactPaths = /* @__PURE__ */ new Map()) {
+  if (name === "artifacts") return artifactOps(args, eventId, artifactPaths);
   const path = asString(args.file_path || args.notebook_path || args.path);
   if (!path) return [];
   if (name === "Write") return [{ kind: "write", path, eventId, content: asString(args.content) }];
@@ -1031,10 +1033,11 @@ function bundlePath(original, kind, cwd) {
 var BINARY_EXT = /\.(pdf|docx?|xlsx?|pptx?|zip|png|jpe?g|gif|webp|svg|mp4|mov|wav|mp3|pkl|npy|npz|parquet|sqlite|db)$/i;
 function collectOps(events, kind, cwd) {
   const ops = [];
+  const artifactPaths = /* @__PURE__ */ new Map();
   for (const e of events) {
     if (e.kind === "tool_call" && e.tool) {
       const { name, input, args } = e.tool;
-      if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id));
+      if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id, artifactPaths));
       else if (input && (name === "container.exec" || name === "python" || name === "Bash" || name === "bash_tool" || e.tool.language === "bash")) {
         ops.push(...extractShellOps(input, e.id, kind === "claude-code" && cwd ? cwd : "/"));
       }
@@ -3062,13 +3065,13 @@ function parsePickup(input) {
   if (m) return { base: m[1], code: m[2].toUpperCase(), key: key || void 0 };
   return { code: left.toUpperCase(), key: key || void 0 };
 }
-
-// src/relay/client.ts
 function sealedPlaintext(bundle, files) {
   const prefixed = {};
   for (const [k, v] of Object.entries(files)) prefixed[`${bundle.id}/${k}`] = v;
   return new TextEncoder().encode(JSON.stringify({ title: bundle.title, handoff: String(files["HANDOFF.md"]), prompt: String(files["PROMPT.md"]), zip: bytesToBase64(zip(prefixed)) }));
 }
+
+// src/relay/client.ts
 async function sendBundle(bundle, files, opts) {
   let body = { bundle, from: opts.from ?? "cli" };
   let key;

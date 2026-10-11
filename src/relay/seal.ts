@@ -2,7 +2,9 @@
 // The key travels only in the pickup link's #fragment, which browsers never send to the server.
 
 import type { SealedPayload } from './checkpoint.ts';
+import type { BatonBundle } from '../core/schema.ts';
 import { base64ToBytes, bytesToBase64 } from '../core/util.ts';
+import { zip, type FileMap } from '../core/zip.ts';
 
 const subtle = () => globalThis.crypto.subtle;
 
@@ -35,3 +37,11 @@ export function parsePickup(input: string): { code: string; key?: string; base?:
   if (m) return { base: m[1], code: m[2].toUpperCase(), key: key || undefined };
   return { code: left.toUpperCase(), key: key || undefined };
 }
+
+/** What a sealed upload contains: enough to read, paste and download the bundle. */
+export function sealedPlaintext(bundle: BatonBundle, files: FileMap): Uint8Array {
+  const prefixed: FileMap = {};
+  for (const [k, v] of Object.entries(files)) prefixed[`${bundle.id}/${k}`] = v;
+  return new TextEncoder().encode(JSON.stringify({ title: bundle.title, handoff: String(files['HANDOFF.md']), prompt: String(files['PROMPT.md']), zip: bytesToBase64(zip(prefixed)) }));
+}
+

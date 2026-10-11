@@ -1,20 +1,50 @@
 {
   "name": "baton-handoff",
-  "version": "0.1.0",
-  "description": "Hand off AI work, not just chat text: turn ChatGPT / Claude / Claude Code conversations into audited, agent-ready bundles (Markdown, HTML, Agent Skill, MCP, CRM/ITSM sinks).",
+  "version": "0.2.0",
+  "description": "Carry AI work between assistants from the inside: capture prompts, tool outputs and files in ChatGPT/Claude/Gemini (extension), let models checkpoint and pick up work over MCP (relay), and hand off as audited bundles.",
   "type": "module",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "https://github.com/nimb-ou/App.git" },
-  "keywords": ["ai", "handoff", "chatgpt", "claude", "claude-code", "mcp", "agent-skills", "portability", "export"],
-  "bin": { "baton": "dist/baton.mjs" },
-  "files": ["dist/", "skills/", "README.md", "LICENSE", "docs/SPEC.md"],
-  "engines": { "node": ">=22.18" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nimb-ou/App.git"
+  },
+  "keywords": [
+    "ai",
+    "handoff",
+    "chatgpt",
+    "claude",
+    "claude-code",
+    "mcp",
+    "agent-skills",
+    "portability",
+    "export"
+  ],
+  "bin": {
+    "baton": "dist/baton.mjs"
+  },
+  "files": [
+    "dist/",
+    "skills/",
+    "hooks/",
+    "commands/",
+    ".claude-plugin/",
+    ".mcp.json",
+    "extension/dist/",
+    "README.md",
+    "LICENSE",
+    "docs/SPEC.md"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "baton": "node src/bin.ts",
     "test": "node --test --test-reporter=spec \"tests/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "build": "node scripts/build.mjs",
-    "examples": "node scripts/build-examples.ts"
+    "build": "node scripts/build.mjs && node scripts/build-extension.mjs",
+    "examples": "node scripts/build-examples.ts",
+    "build:extension:test": "node scripts/build-extension.mjs --test",
+    "test:e2e": "node scripts/build-extension.mjs --test && node tests-e2e/extension.e2e.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

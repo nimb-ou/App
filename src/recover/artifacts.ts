@@ -187,19 +187,22 @@ const ARTIFACT_EXT: Record<string, string> = {
 const LANG_EXT: Record<string, string> = { python: '.py', javascript: '.js', typescript: '.ts', tsx: '.tsx', jsx: '.jsx', html: '.html', css: '.css', json: '.json', bash: '.sh', shell: '.sh', sql: '.sql', rust: '.rs', go: '.go', java: '.java', markdown: '.md', yaml: '.yaml' };
 
 /** claude.ai "artifacts" tool: create / update / rewrite a named artifact. */
-function artifactOps(args: Record<string, unknown>, eventId: string): FileOp[] {
+function artifactOps(args: Record<string, unknown>, eventId: string, paths: Map<string, string>): FileOp[] {
   const id = asString(args.id) || 'artifact';
   const type = asString(args.type);
+  // Updates carry no type; reuse the path chosen when the artifact was created.
   const ext = ARTIFACT_EXT[type] || LANG_EXT[asString(args.language).toLowerCase()] || (type ? '' : '.txt');
-  const path = `/claude-artifacts/${id}${ext || '.txt'}`;
+  const known = paths.get(id);
+  const path = known && (args.command === 'update' || !type) ? known : `/claude-artifacts/${id}${ext || '.txt'}`;
+  paths.set(id, path);
   const cmd = asString(args.command);
   if (cmd === 'update') return [{ kind: 'replace', path, eventId, old: asString(args.old_str), new: asString(args.new_str) }];
   if (cmd === 'create' || cmd === 'rewrite') return [{ kind: 'write', path, eventId, content: asString(args.content) }];
   return [];
 }
 
-export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string): FileOp[] {
-  if (name === 'artifacts') return artifactOps(args, eventId);
+export function extractToolArgOps(name: string, args: Record<string, unknown>, eventId: string, artifactPaths: Map<string, string> = new Map()): FileOp[] {
+  if (name === 'artifacts') return artifactOps(args, eventId, artifactPaths);
   const path = asString(args.file_path || args.notebook_path || args.path);
   if (!path) return [];
   if (name === 'Write') return [{ kind: 'write', path, eventId, content: asString(args.content) }];
@@ -249,10 +252,11 @@ const BINARY_EXT = /\.(pdf|docx?|xlsx?|pptx?|zip|png|jpe?g|gif|webp|svg|mp4|mov|
 
 export function collectOps(events: BatonEvent[], kind: SourceKind, cwd?: string): FileOp[] {
   const ops: FileOp[] = [];
+  const artifactPaths = new Map<string, string>();
   for (const e of events) {
     if (e.kind === 'tool_call' && e.tool) {
       const { name, input, args } = e.tool;
-      if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id));
+      if (args && isRecord(args)) ops.push(...extractToolArgOps(name, args, e.id, artifactPaths));
       else if (input && (name === 'container.exec' || name === 'python' || name === 'Bash' || name === 'bash_tool' || e.tool.language === 'bash')) {
         ops.push(...extractShellOps(input, e.id, kind === 'claude-code' && cwd ? cwd : '/'));
       }

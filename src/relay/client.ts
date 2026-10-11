@@ -1,12 +1,14 @@
 // Send bundles to / pick up handoffs from a relay (remote URL) or the local store (~/.baton/store).
 
 import type { BatonBundle } from '../core/schema.ts';
-import { base64ToBytes, bytesToBase64 } from '../core/util.ts';
-import { unzipStored, zip, type FileMap } from '../core/zip.ts';
+import { base64ToBytes } from '../core/util.ts';
+import { unzipStored, type FileMap } from '../core/zip.ts';
 import { renderBundleFiles } from '../render/files.ts';
 import type { RelayRecord } from './checkpoint.ts';
 import { renderRecord } from './checkpoint.ts';
-import { parsePickup, seal, unseal } from './seal.ts';
+import { parsePickup, seal, sealedPlaintext, unseal } from './seal.ts';
+
+export { sealedPlaintext };
 import { RelayStore } from './store.ts';
 
 export interface SendResult {
@@ -14,12 +16,6 @@ export interface SendResult {
   link: string; // includes #key when sealed
   sealed: boolean;
   expiresAt?: string;
-}
-
-export function sealedPlaintext(bundle: BatonBundle, files: FileMap): Uint8Array {
-  const prefixed: FileMap = {};
-  for (const [k, v] of Object.entries(files)) prefixed[`${bundle.id}/${k}`] = v;
-  return new TextEncoder().encode(JSON.stringify({ title: bundle.title, handoff: String(files['HANDOFF.md']), prompt: String(files['PROMPT.md']), zip: bytesToBase64(zip(prefixed)) }));
 }
 
 export async function sendBundle(bundle: BatonBundle, files: FileMap, opts: { relay?: string; token?: string; sealed?: boolean; from?: string; store?: RelayStore }): Promise<SendResult> {

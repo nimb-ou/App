@@ -35,7 +35,7 @@ interface BatonBundle {
   id: string;                 // 16 hex chars, sha256(kind ␀ conversationId|url ␀ title ␀ firstEventText)[:16]
   title: string;
   source: {
-    kind: 'chatgpt-share' | 'chatgpt-export' | 'claude-export' | 'claude-code' | 'openai-messages' | 'unknown';
+    kind: 'chatgpt-share' | 'chatgpt-export' | 'claude-export' | 'claude-code' | 'openai-messages' | 'baton-relay' | 'unknown';
     tool: string;             // human name of the source product
     url?: string; conversationId?: string; createdAt?: string; updatedAt?: string;
     model?: string; cwd?: string; gitBranch?: string;
@@ -74,6 +74,9 @@ because artifact recovery replays them.
 | `lost` | created or linked by the conversation, but its content is not in the source | absent |
 | `attached` | content shipped with the source (for example, text extracted from an upload) | present |
 
+`encoding` is `utf8` (default) or `base64` for binary files captured as bytes (PDFs, images, archives). `mimeType` is optional.
+Files captured live from the source (in-page capture, model checkpoints) use status `recovered` with a `note` naming the capture.
+
 `sha256` is the hex digest of the UTF-8 content. `recoveredFrom` / `modifiedBy` list event ids. `note` explains the status.
 Paths are POSIX, relative and normalised. Absolute paths outside the source's working root are prefixed `_abs/`.
 Paths never contain `..`.
@@ -107,7 +110,14 @@ is out of scope for v1.
 3. Replay code is never executed by the producer.
 4. Network access is limited to the single URL the user supplied.
 
-## 5. Versioning
+## 5. Relay records (draft)
+
+A relay stores records `{code, title, createdAt, updatedAt, expiresAt, from[], bundle?, checkpoints[], sealed?}`.
+`checkpoints[]` are model-written states (`goal, state, decisions[], next_steps[], open_questions[], user_prompts[], files[], tool_outputs[]`).
+A record renders to a normal bundle with `source.kind = 'baton-relay'`. `sealed` is `{alg: 'AES-GCM-256', iv, data}` over
+`{title, handoff, prompt, zip}`. The key is never sent to the relay. Codes match `BTN-XXXX-XXXX-XXXX` (Crockford base32, 60 bits).
+
+## 6. Versioning
 
 Additive fields do not change the schema id. A breaking change bumps it to `baton.bundle/v2`. Consumers should
 ignore unknown fields and reject unknown major versions.

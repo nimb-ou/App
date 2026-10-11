@@ -9,6 +9,7 @@ prompt itself is the source of truth.
 | 001 | 2026-10-11 ~17:10 | `hi` | Greeting. Replied with repo and branch context. |
 | 002 | 2026-10-11 ~17:14 | see [002-build-this.md](002-build-this.md) | Build the ChatGPT-shared idea end to end as a product. |
 | 003 | 2026-10-11 ~17:20 | see [003-the-exact-problem.md](003-the-exact-problem.md) | **Reframe:** the product is the *transfer* problem itself, i.e. moving a chat, plan, prompts, reasoning, outputs and files between AI tools. |
+| 004 | 2026-10-11 ~17:53 | see [004-capture-from-within.md](004-capture-from-within.md) | **Reframe 2:** embed Baton *inside* every AI (extension, MCP relay, hooks) and capture what sharing never can. |
 
 Inputs from other systems are stored under [`../../fixtures/`](../../fixtures/), and the decoded
 transcript of the shared ChatGPT conversation is under [`../../examples/cricket-stumping/`](../../examples/cricket-stumping/).

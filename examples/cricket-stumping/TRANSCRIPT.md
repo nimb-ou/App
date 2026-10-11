@@ -1,6 +1,6 @@
 # Transcript: Cricket Stumping Simulation
 
-*ChatGPT (gpt-6) · public share link · <https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388> · 8 prompts · 379 events · exported by Baton 0.1.0*
+*ChatGPT (gpt-6) · public share link · <https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388> · 8 prompts · 379 events · exported by Baton 0.2.0*
 
 Reasoning, tool calls and tool outputs are folded into `<details>` blocks. Placeholders mark content the source did not include. See `LOSS_AUDIT.md`.
 

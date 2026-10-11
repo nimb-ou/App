@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Baton options</title>
+<style>
+:root{--bg:#f3f5f4;--fg:#14201b;--mu:#5b6b64;--ac:#2343c9;--line:#d7dfdb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--fg:#e4ebe7;--mu:#9aaba3;--ac:#8ea4ff;--line:#2a3632}}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;max-width:560px;margin:0 auto;padding:28px 16px}
+h1{font-size:26px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.02em}
+label{display:grid;gap:4px;margin:14px 0;font-weight:600}
+input[type=url],input[type=password]{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:transparent;color:inherit}
+.cb{display:flex;gap:8px;align-items:center;font-weight:400}
+small,.mu{color:var(--mu);font-weight:400}
+button{font:inherit;font-weight:700;padding:8px 14px;border-radius:6px;border:0;background:var(--ac);color:#fff;cursor:pointer}
+#st{margin-top:10px}
+</style></head>
+<body>
+<h1>Baton</h1>
+<p class="mu">Capture AI work inside ChatGPT, Claude and Gemini and continue it in another AI. Everything stays in your browser unless you send to a relay.</p>
+<label>Relay URL <small>Optional. Your Baton relay, e.g. https://baton.example.com. Needed only for pickup codes and sharing.</small><input type="url" id="relay" placeholder="https://"></label>
+<label>Relay token <small>Only if your relay requires one.</small><input type="password" id="token"></label>
+<label class="cb"><input type="checkbox" id="seal" checked> Encrypt before sending (the relay cannot read it)</label>
+<label class="cb"><input type="checkbox" id="redact" checked> Redact keys, tokens, emails and phone numbers</label>
+<button id="save">Save</button>
+<div id="st" class="mu" role="status"></div>
+<script src="options.js"></script>
+</body></html>
