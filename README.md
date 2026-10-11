@@ -24,7 +24,7 @@ Requires Node 18 or newer. No npm install or API key is needed.
 
 ```sh
 node bin/baton.mjs import ./conversation.html --zip
-node bin/baton.mjs import https://chatgpt.com/share/<share-id> --out ./handoff.zip --zip
+node bin/baton.mjs import "https://chatgpt.com/share/YOUR_SHARE_ID" --out ./handoff.zip --zip
 node bin/baton.mjs import ./conversations.json --out ./handoff-folder
 ```
 
