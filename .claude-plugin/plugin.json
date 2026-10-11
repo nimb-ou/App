@@ -1,6 +1,6 @@
 {
   "name": "baton",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Carry AI work between assistants from the inside: checkpoint/pickup tools for any AI (MCP), auto-snapshots before compaction (hooks), import of ChatGPT/Claude conversations as audited bundles, and sinks to Jira/Salesforce/Zendesk/Slack.",
   "author": {
     "name": "nimb-ou"
@@ -15,5 +15,14 @@
     "portability",
     "mcp",
     "agent-skills"
-  ]
+  ],
+  "mcpServers": {
+    "baton": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/dist/baton.mjs",
+        "mcp"
+      ]
+    }
+  }
 }

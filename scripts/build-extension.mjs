@@ -16,7 +16,7 @@ const manifest = {
   manifest_version: 3,
   name: 'Baton: carry AI work between assistants',
   short_name: 'Baton',
-  version: '0.2.0',
+  version: '0.3.0',
   description: 'Capture a conversation inside ChatGPT, Claude or Gemini (prompts, tool outputs, generated files) and continue it in another AI.',
   minimum_chrome_version: '111',
   permissions: ['storage', 'unlimitedStorage'],
@@ -35,4 +35,12 @@ const common = { bundle: true, format: 'iife', target: 'chrome111', minify: !tes
 await build({ ...common, entryPoints: { content: root + 'extension/src/content.ts', tap: root + 'extension/src/tap.ts', background: root + 'extension/src/background.ts', options: root + 'extension/src/options.ts' }, outdir: out });
 writeFileSync(out + 'manifest.json', JSON.stringify(manifest, null, 2) + '\n');
 copyFileSync(root + 'extension/static/options.html', out + 'options.html');
+if (!test) {
+  // Downloadable package: unzip, then chrome://extensions → Developer mode → Load unpacked.
+  const { zip } = await import(root + 'src/core/zip.ts');
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const files = {};
+  for (const f of readdirSync(out)) files[`baton-extension/${f}`] = new Uint8Array(readFileSync(out + f));
+  writeFileSync(root + 'extension/baton-extension.zip', zip(files, new Date('2026-01-01T00:00:00Z')));
+}
 console.log(`extension → ${out.replace(root, '')}`);

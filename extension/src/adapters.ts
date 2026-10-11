@@ -68,12 +68,15 @@ export const chatgpt: Adapter = {
   hosts: ['chatgpt.com', 'chat.openai.com'],
   composer: { input: ['#prompt-textarea', 'div[contenteditable="true"]', 'textarea'], file: ['input[type="file"]:not([accept^="image"])', 'input[type="file"]'] },
   conversationId: (u) => u.pathname.match(/\/c\/([0-9a-f-]{20,})/i)?.[1],
-  async capture({ url, net, maxFileBytes = 20 * MB, maxTotalBytes = 80 * MB }) {
+  async capture({ url, net, doc, maxFileBytes = 20 * MB, maxTotalBytes = 80 * MB }) {
     const id = this.conversationId(url);
     if (!id) throw new Error('Open a saved ChatGPT conversation (URL /c/<id>) to capture it.');
     const session = (await net.json('/api/auth/session')) as { accessToken?: string };
     if (!session?.accessToken) throw new Error('Not signed in to ChatGPT in this tab.');
-    const headers = { authorization: `Bearer ${session.accessToken}` };
+    const headers: Record<string, string> = { authorization: `Bearer ${session.accessToken}` };
+    // Team / Enterprise workspaces select the account with this header (value from the _account cookie).
+    const account = typeof doc?.cookie === 'string' ? doc.cookie.match(/(?:^|;\s*)_account=([^;]+)/)?.[1] : undefined;
+    if (account) headers['chatgpt-account-id'] = decodeURIComponent(account);
     const conv = (await net.json(`/backend-api/conversation/${id}`, { headers })) as Record<string, unknown>;
     const parsed = parseChatGPTConversation(conv, { kind: 'chatgpt-export', url: url.href });
     parsed.source = { ...parsed.source, kind: 'chatgpt-export', tool: 'ChatGPT (captured in page)', url: url.href };
@@ -148,8 +151,10 @@ export const claude: Adapter = {
 
 // ───────────────────────────── Gemini and other sites (DOM) ─────────────────────────────
 
-function textOf(el: Element): string {
-  const clone = el.cloneNode(true) as HTMLElement;
+function textOf(el: Element, prefer?: string): string {
+  const inner = prefer ? el.querySelector(prefer) : null;
+  const clone = (inner ?? el).cloneNode(true) as HTMLElement;
+  clone.querySelectorAll('button, svg, [aria-hidden="true"], .sr-only').forEach((n) => n.remove());
   clone.querySelectorAll('pre').forEach((pre) => {
     const code = pre.textContent ?? '';
     pre.replaceWith(Object.assign(el.ownerDocument.createElement('div'), { textContent: `\n\`\`\`\n${code.replace(/\n$/, '')}\n\`\`\`\n` }));
@@ -157,19 +162,31 @@ function textOf(el: Element): string {
   return (clone.innerText ?? clone.textContent ?? '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-export function domTurns(doc: Document, userSel: string, botSel: string): { role: 'user' | 'assistant'; text: string }[] {
-  const nodes = [...doc.querySelectorAll(`${userSel}, ${botSel}`)];
+export interface DomSpec {
+  user: string;
+  assistant: string;
+  userText?: string; // preferred inner element for the text
+  assistantText?: string;
+}
+
+export function domTurns(doc: Document, spec: DomSpec): { role: 'user' | 'assistant'; text: string }[] {
+  const all = [...doc.querySelectorAll(`${spec.user}, ${spec.assistant}`)];
+  // Keep outermost matches only (selectors can match nested wrappers of the same turn).
+  const nodes = all.filter((n) => !all.some((o) => o !== n && o.contains(n)));
   return nodes
-    .map((n) => ({ role: (n.matches(userSel) ? 'user' : 'assistant') as 'user' | 'assistant', text: textOf(n) }))
+    .map((n) => {
+      const role = (n.matches(spec.user) ? 'user' : 'assistant') as 'user' | 'assistant';
+      return { role, text: textOf(n, role === 'user' ? spec.userText : spec.assistantText) };
+    })
     .filter((t) => t.text);
 }
 
-function domCapture(label: string, userSel: string, botSel: string) {
+function domCapture(label: string, spec: DomSpec, why?: string) {
   return async ({ url, doc }: CaptureContext): Promise<CaptureResult> => {
-    const turns = domTurns(doc, userSel, botSel);
-    if (!turns.length) throw new Error(`No conversation found on this ${label} page.`);
-    const title = (doc.title || label).replace(/\s*[-|–]\s*(Gemini|Google).*$/i, '').trim() || `${label} conversation`;
-    const loss: LossItem[] = [{ category: 'dom-capture', count: turns.length, severity: 'warn', detail: `${label} was captured from the rendered page: visible text and code only. Tool outputs, files and hidden reasoning are not in the DOM.` }];
+    const turns = domTurns(doc, spec);
+    if (!turns.length) throw new Error(`No conversation found on this ${label} page${why ? ` (and the data API failed: ${why})` : ''}.`);
+    const title = (doc.title || label).replace(/\s*[-|–]\s*(Gemini|Google|ChatGPT|Claude).*$/i, '').trim() || `${label} conversation`;
+    const loss: LossItem[] = [{ category: 'dom-capture', count: turns.length, severity: 'warn', detail: `${label} was captured from the rendered page: visible text and code only. Tool outputs, files and hidden reasoning are not in the DOM.${why ? ` Fell back to the page because the data API failed: ${why}` : ''}` }];
     return {
       parsed: { title, source: { kind: 'unknown', tool: `${label} (captured in page)`, url: url.href }, events: turns.map((t, i) => ({ id: `d${i + 1}`, kind: 'message', role: t.role, text: t.text })), loss },
       captured: 0,
@@ -178,6 +195,8 @@ function domCapture(label: string, userSel: string, botSel: string) {
   };
 }
 
+const GEMINI_DOM: DomSpec = { user: 'user-query', assistant: 'model-response', userText: '.query-text', assistantText: 'message-content' };
+
 export const gemini: Adapter = {
   id: 'gemini',
   label: 'Gemini',
@@ -185,7 +204,7 @@ export const gemini: Adapter = {
   hosts: ['gemini.google.com'],
   composer: { input: ['rich-textarea .ql-editor', 'div[contenteditable="true"]', 'textarea'], file: ['input[type="file"]'] },
   conversationId: (u) => u.pathname.match(/\/app\/([0-9a-f]+)/i)?.[1],
-  capture: domCapture('Gemini', 'user-query', 'model-response'),
+  capture: domCapture('Gemini', GEMINI_DOM),
 };
 
 /** Fallback for any chat page that marks roles in the DOM (many ChatGPT-like UIs do). */
@@ -195,10 +214,31 @@ export const dom: Adapter = {
   hosts: [],
   composer: { input: ['div[contenteditable="true"]', 'textarea'] },
   conversationId: () => undefined,
-  capture: domCapture('this site', '[data-message-author-role="user"], [data-role="user"]', '[data-message-author-role="assistant"], [data-role="assistant"]'),
+  capture: domCapture('this site', { user: '[data-message-author-role="user"], [data-role="user"]', assistant: '[data-message-author-role="assistant"], [data-role="assistant"]' }),
 };
 
-export const ADAPTERS: Adapter[] = [chatgpt, claude, gemini];
+// Rendered-page selectors (fallbacks when a site's data API changes). Kept together so they are easy to update.
+const CHATGPT_DOM: DomSpec = { user: '[data-message-author-role="user"]', assistant: '[data-message-author-role="assistant"]' };
+const CLAUDE_DOM: DomSpec = { user: '[data-testid="user-message"]', assistant: '.font-claude-response, .font-claude-message' };
+
+/** API capture first; if the site's internal API fails (changed, blocked), capture the rendered page instead. */
+function withDomFallback(a: Adapter, label: string, spec: DomSpec): Adapter {
+  const api = a.capture.bind(a);
+  return {
+    ...a,
+    async capture(ctx) {
+      try {
+        return await api(ctx);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (/^Open a /.test(msg) || typeof ctx.doc?.querySelectorAll !== 'function') throw err;
+        return domCapture(label, spec, msg)(ctx);
+      }
+    },
+  };
+}
+
+export const ADAPTERS: Adapter[] = [withDomFallback(chatgpt, 'ChatGPT', CHATGPT_DOM), withDomFallback(claude, 'Claude', CLAUDE_DOM), gemini];
 
 export function adapterFor(url: URL, override?: string | null): Adapter {
   if (override) return ADAPTERS.find((a) => a.id === override) ?? dom;

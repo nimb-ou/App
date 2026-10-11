@@ -17,8 +17,26 @@ chrome.runtime.onMessage.addListener((msg: any, _sender: any, reply: (v: unknown
         return reply({ ok: true, base64: bytesToBase64(buf), type: res.headers.get('content-type') ?? 'application/octet-stream', size: buf.length });
       }
       if (msg.type === 'baton:open') {
-        await chrome.tabs.create({ url: msg.url, active: true });
+        const tab = await chrome.tabs.create({ url: msg.url, active: true });
+        // Remember which tab should receive the handoff: sites may rewrite the URL (and drop the #hash) on load.
+        if (msg.pending && tab?.id) await chrome.storage.local.set({ [`baton:tab:${tab.id}`]: msg.pending });
         return reply({ ok: true });
+      }
+      if (msg.type === 'baton:options') {
+        chrome.runtime.openOptionsPage();
+        return reply({ ok: true });
+      }
+      if (msg.type === 'baton:claim') {
+        const tabId = _sender?.tab?.id;
+        const key = `baton:tab:${tabId}`;
+        const id = tabId ? (await chrome.storage.local.get(key))[key] : undefined;
+        if (id) await chrome.storage.local.remove(key);
+        return reply({ ok: true, id });
+      }
+      if (msg.type === 'baton:get') {
+        const res = await fetch(msg.url, { headers: msg.headers ?? {} });
+        const text = await res.text();
+        return reply({ ok: res.ok, status: res.status, text });
       }
       if (msg.type === 'baton:relay') {
         const res = await fetch(msg.relay.replace(/\/$/, '') + '/api/handoffs', {

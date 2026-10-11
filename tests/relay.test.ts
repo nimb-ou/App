@@ -10,6 +10,8 @@ import { renderRecord } from '../src/relay/checkpoint.ts';
 import { parsePickup, seal, unseal } from '../src/relay/seal.ts';
 import { startRelay } from '../src/relay/server.ts';
 import { CODE_RE, newCode, normaliseCode, RelayStore } from '../src/relay/store.ts';
+import { AsyncRelayStore, MemoryKV } from '../src/relay/kvstore.ts';
+import { createRelayHandler } from '../src/relay/handler.ts';
 import { relayTools } from '../src/relay/tools.ts';
 
 const tmp = mkdtempSync(join(tmpdir(), 'baton-relay-'));
@@ -55,7 +57,7 @@ describe('model checkpoints (MCP tools over the store)', () => {
   });
   it('appends checkpoints from another AI and renders one bundle', async () => {
     await tools.baton_checkpoint.run({ handoff: code, state: 'Tests added', files: [{ path: '/mnt/data/pkg/app.py', content: 'print(2)\n' }] }, { clientName: 'claude-ai' });
-    const rec = store.get(code)!;
+    const rec = (await store.get(code))!;
     assert.deepEqual(rec.from, ['ChatGPT', 'claude-ai']);
     const { bundle, files } = renderRecord(rec);
     assert.equal(bundle.source.kind, 'baton-relay');
@@ -128,5 +130,24 @@ describe('relay HTTP server', () => {
     const res = await fetch(`${s.url}/api/handoffs`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"bundle":{}}' });
     assert.equal(res.status, 401);
     await s.close();
+  });
+});
+
+describe('portable fetch handler (Workers/Deno path) over an in-memory KV', () => {
+  it('serves MCP and REST without Node APIs', async () => {
+    const kv = new MemoryKV();
+    const handle = createRelayHandler({ store: new AsyncRelayStore(kv, { ttlDays: 1 }), publicUrl: 'https://relay.example' });
+    const post = (path: string, body: unknown, sid?: string) => handle(new Request(`https://relay.example${path}`, { method: 'POST', headers: { 'content-type': 'application/json', ...(sid ? { 'mcp-session-id': sid } : {}) }, body: JSON.stringify(body) }));
+    const init = await post('/mcp', { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', clientInfo: { name: 'claude-ai' } } });
+    const sid = init.headers.get('mcp-session-id')!;
+    const cp = await (await post('/mcp', { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'baton_checkpoint', arguments: { state: 'kv works', files: [{ path: 'a.txt', content: 'A' }] } } }, sid)).json() as { result: { content: { text: string }[] } };
+    assert.match(cp.result.content[0].text, /Viewer: https:\/\/relay\.example\/h\/BTN-/);
+    const code = cp.result.content[0].text.match(/BTN-[0-9A-Z-]{14}/)![0];
+    assert.ok([...kv.map.keys()].includes(`h:${code}`));
+    const view = await handle(new Request(`https://relay.example/h/${code}`));
+    assert.equal(view.status, 200);
+    assert.match(await view.text(), /kv works/);
+    assert.equal((await handle(new Request('https://relay.example/healthz'))).status, 200);
+    assert.equal((await handle(new Request('https://relay.example/h/BTN-0000-0000-0000'))).status, 404);
   });
 });

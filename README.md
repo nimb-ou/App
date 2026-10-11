@@ -33,6 +33,17 @@ What in-page capture gets compared with a share link of the same ChatGPT chat (f
 **Setup for each AI: [`docs/EMBED.md`](docs/EMBED.md).** Architecture: [ADR-002](docs/decisions/ADR-002-capture-from-within.md).
 What each capture position can see: [research 07](docs/research/07-capture-surfaces.md).
 
+## Try it on your own ChatGPT, Claude and Gemini
+
+1. **Extension (no server):** download [`extension/baton-extension.zip`](https://github.com/nimb-ou/App/raw/claude/laughing-davinci-c048d8/extension/baton-extension.zip),
+   unzip, open `chrome://extensions` → Developer mode → **Load unpacked**. A **BATON** button appears on chatgpt.com, claude.ai and gemini.google.com:
+   **Capture** → **Continue in Claude / ChatGPT / Gemini**.
+2. **Inside the models (pickup codes):** deploy the relay for free with
+   [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/nimb-ou/App),
+   then add its MCP URL as a connector in Claude and in ChatGPT developer mode ([`docs/DEPLOY.md`](docs/DEPLOY.md)).
+3. Follow the 20-minute script in **[`docs/TESTING.md`](docs/TESTING.md)**. If something breaks, the panel's **Copy debug report**
+   says exactly what (no conversation text included).
+
 ### Also works after the fact
 
 When you only have a link or an export, Baton still extracts the most possible and reports the rest:

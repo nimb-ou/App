@@ -36,6 +36,8 @@ It returns a pickup code. In any other AI, `baton_pickup <code>` returns the han
 
 ### Web assistants need a reachable relay
 
+**Easiest:** one-click Cloudflare deploy, free and persistent. See [`DEPLOY.md`](DEPLOY.md). Otherwise:
+
 ```bash
 npx github:nimb-ou/App relay --port 8787            # or: docker build -t baton-relay . && docker run -p 8787:8787 baton-relay
 # expose it over HTTPS (any reverse proxy, Render via render.yaml, Fly, Cloud Run…) and set BATON_PUBLIC_URL

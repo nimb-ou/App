@@ -1,0 +1,9 @@
+{
+  // Baton relay on Cloudflare Workers (free plan is enough). See docs/DEPLOY.md.
+  "name": "baton-relay",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-09-01",
+  "kv_namespaces": [{ "binding": "BATON_KV" }],
+  "vars": { "BATON_TTL_DAYS": "7" },
+  "observability": { "enabled": true }
+}

@@ -6,7 +6,7 @@ import { truncate } from '../core/util.ts';
 import type { Tool, ToolContext } from '../mcp/protocol.ts';
 import type { Checkpoint } from './checkpoint.ts';
 import { renderRecord } from './checkpoint.ts';
-import type { RelayStore } from './store.ts';
+import type { AsyncRelayStore } from './kvstore.ts';
 
 export const RELAY_INSTRUCTIONS = `Baton moves work between AIs. When the user says "baton", "hand this off", "send this to <another AI>", "save my progress", or before a long task risks losing context, call baton_checkpoint.
 Put in EVERYTHING the next AI needs and a share link would lose: the user's prompts verbatim, the FULL contents of files you created or edited (not summaries), outputs of code/tools you ran, decisions with reasons, and next steps.
@@ -37,7 +37,7 @@ function pickupHint(code: string, opts: RelayToolOptions): string {
     .join('\n');
 }
 
-export function relayTools(store: RelayStore, opts: RelayToolOptions = {}): Tool[] {
+export function relayTools(store: AsyncRelayStore, opts: RelayToolOptions = {}): Tool[] {
   const tools: Tool[] = [
     {
       name: 'baton_checkpoint',
@@ -82,7 +82,8 @@ export function relayTools(store: RelayStore, opts: RelayToolOptions = {}): Tool
           notes: typeof a.notes === 'string' ? a.notes : undefined,
         };
         if (!cp.state.trim()) throw new Error('`state` is required: describe where the work stands');
-        const rec = typeof a.handoff === 'string' && a.handoff ? store.addCheckpoint(a.handoff, cp) : store.addCheckpoint(store.create({ title: cp.title, from: cp.from }).code, cp);
+        const target = typeof a.handoff === 'string' && a.handoff ? a.handoff : (await store.create({ title: cp.title, from: cp.from })).code;
+        const rec = await store.addCheckpoint(target, cp);
         const { bundle } = renderRecord(rec);
         return [
           `Saved checkpoint ${rec.checkpoints.length} of "${rec.title}".`,
@@ -99,7 +100,7 @@ export function relayTools(store: RelayStore, opts: RelayToolOptions = {}): Tool
       inputSchema: { type: 'object', properties: { code: { type: 'string', description: 'Pickup code, e.g. BTN-7F3K-9QXA-2M4P' } }, required: ['code'] },
       annotations: { readOnlyHint: true, openWorldHint: false },
       run: async (a) => {
-        const rec = store.get(String(a.code));
+        const rec = await store.get(String(a.code));
         if (!rec) throw new Error(`No handoff found for ${String(a.code)}. It may have expired; ask the user for the current code.`);
         if (rec.sealed && !rec.bundle) return `Handoff ${rec.code} is end-to-end encrypted. Open it with its full link (including the #key part) in a browser, or run \`baton pickup "<code>#<key>"\`.`;
         const { bundle, files } = renderRecord(rec);
@@ -126,7 +127,7 @@ export function relayTools(store: RelayStore, opts: RelayToolOptions = {}): Tool
       inputSchema: { type: 'object', properties: { code: { type: 'string' }, path: { type: 'string' } }, required: ['code', 'path'] },
       annotations: { readOnlyHint: true, openWorldHint: false },
       run: async (a) => {
-        const rec = store.get(String(a.code));
+        const rec = await store.get(String(a.code));
         if (!rec) throw new Error(`No handoff found for ${String(a.code)}`);
         const { bundle } = renderRecord(rec);
         const want = String(a.path).replace(/^files\//, '');
@@ -145,7 +146,7 @@ export function relayTools(store: RelayStore, opts: RelayToolOptions = {}): Tool
       inputSchema: { type: 'object', properties: { limit: { type: 'integer', minimum: 1, maximum: 100 } } },
       annotations: { readOnlyHint: true, openWorldHint: false },
       run: async (a) => {
-        const list = store.list(Number(a.limit ?? 20));
+        const list = await store.list(Number(a.limit ?? 20));
         if (!list.length) return 'No handoffs yet.';
         return list.map((r) => `${r.code}  ${r.updatedAt.slice(0, 16).replace('T', ' ')}  ${r.title}  (from ${r.from.join(', ')}, ${r.checkpoints.length} checkpoint(s)${r.bundle ? ', captured bundle' : ''}${r.sealed ? ', encrypted' : ''})`).join('\n');
       },
@@ -169,6 +170,6 @@ export function remoteRelayTools(url: string, token?: string): Tool[] {
     if (msg.result?.isError) throw new Error(text.replace(/^Error: /, ''));
     return text;
   };
-  const local = relayTools(new Proxy({} as RelayStore, {}), {});
+  const local = relayTools({} as AsyncRelayStore, {});
   return local.map((t) => ({ ...t, run: (args, ctx) => call(t.name, args, ctx) }));
 }

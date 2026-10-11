@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Baton: carry AI work between assistants",
   "short_name": "Baton",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Capture a conversation inside ChatGPT, Claude or Gemini (prompts, tool outputs, generated files) and continue it in another AI.",
   "minimum_chrome_version": "111",
   "permissions": [

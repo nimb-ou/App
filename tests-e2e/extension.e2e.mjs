@@ -16,6 +16,7 @@ const root = new URL('..', import.meta.url).pathname;
 const extPath = join(root, 'extension/dist-test');
 
 const CONV = 'c0ffee00-1111-2222-3333-444455556666';
+const CONV2 = 'deadbeef-1111-2222-3333-444455556666';
 const PDF = Buffer.from('%PDF-1.4\n% Baton test pdf\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n');
 const now = 1791727918;
 const msg = (id, parent, role, content, extra = {}) => ({ id, parent, children: [], message: { id, author: { role, ...(extra.name ? { name: extra.name } : {}) }, create_time: now + Number(id.slice(1)), content, recipient: extra.recipient ?? 'all', metadata: extra.metadata ?? {} } });
@@ -51,9 +52,14 @@ const server = createServer((req, res) => {
   }
   if (u.pathname === '/files/report.pdf') return send(200, 'application/pdf', PDF);
   if (u.pathname === '/files/app.py') return send(200, 'text/x-python', "print('lab')\n");
+  if (u.pathname === `/c/${CONV2}`)
+    return send(200, 'text/html', page('chatgpt', `<main><div data-message-author-role="user"><div>Plan a launch</div></div><div data-message-author-role="assistant"><div><p>Step 1: pick a date.</p><pre><code>launch --date 2026-11-01</code></pre></div></div></main><div id="prompt-textarea" contenteditable="true"></div>`));
+  if (u.pathname === `/backend-api/conversation/${CONV2}`) return send(500, 'application/json', '{"detail":"internal"}');
+  if (u.pathname === '/gemini-app')
+    return send(200, 'text/html', page('gemini', `<user-query><div class="query-text">earlier question</div></user-query><model-response><message-content>earlier answer</message-content></model-response><rich-textarea><div class="ql-editor" contenteditable="true"></div></rich-textarea>`));
   if (u.pathname === '/claude-new')
     return send(200, 'text/html', page('claude', `<input type="file" data-testid="file-upload" multiple><div class="ProseMirror" contenteditable="true"></div><ul id="got"></ul>
-<script>document.querySelector('input').addEventListener('change',e=>{for(const f of e.target.files){const li=document.createElement('li');li.textContent=f.name+':'+f.size;document.getElementById('got').appendChild(li)}})</script>`));
+<script>history.replaceState(null,'','/claude-new/chat-rewritten');document.querySelector('input').addEventListener('change',e=>{for(const f of e.target.files){const li=document.createElement('li');li.textContent=f.name+':'+f.size;document.getElementById('got').appendChild(li)}})</script>`));
   send(404, 'text/plain', 'nope');
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
@@ -111,6 +117,48 @@ try {
   assert.match(got, /HANDOFF\.md:\d+/);
   assert.match(got, /app\.py:13/);
   assert.equal(await sw.evaluate(async () => Object.keys(await chrome.storage.local.get(null)).filter((k) => k.startsWith('baton:pending:')).length), 0, 'pending handoff consumed');
+  // DOM fallback: ChatGPT's data API fails, the rendered page is captured instead.
+  const p2 = await ctx.newPage();
+  await p2.goto(`http://127.0.0.1:${port}/c/${CONV2}`);
+  await p2.locator('baton-panel #fab').click();
+  await p2.locator('baton-panel #cap').click();
+  await p2.locator('baton-panel #stats').waitFor({ state: 'visible', timeout: 10000 });
+  assert.match(await p2.locator('baton-panel #stats').innerText(), /1\s+prompts/);
+  const [dl2] = await Promise.all([p2.waitForEvent('download'), p2.locator('baton-panel #save').click()]);
+  const files2 = unzipStored(new Uint8Array(readFileSync(await dl2.path())));
+  const b2 = JSON.parse(new TextDecoder().decode(files2[Object.keys(files2).find((k) => k.endsWith('bundle.json'))]));
+  assert.ok(b2.loss.some((l) => l.category === 'dom-capture' && /HTTP 500/.test(l.detail)), 'records why it fell back');
+  assert.match(b2.events[1].text, /launch --date 2026-11-01/);
+  console.log('dom fallback  : API 500 → captured', b2.events.length, 'turns from the page, reason recorded');
+
+  // Debug report contains no conversation text.
+  await p2.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: `http://127.0.0.1:${port}` });
+  await p2.locator('baton-panel #dbg').click();
+  const report = await p2.evaluate(() => navigator.clipboard.readText());
+  assert.match(report, /adapter chatgpt/);
+  assert.match(report, /backend-api\/conversation\/:id → 500/);
+  assert.ok(!report.includes('Plan a launch') && !report.includes('deadbeef'), 'no conversation text or ids');
+  console.log('debug report  :', report.split('\n')[0]);
+
+  // Pickup by code from a relay into Gemini (no file input there → files inlined into the message).
+  const { startRelay } = await import(join(root, 'src/relay/server.ts'));
+  const { RelayStore } = await import(join(root, 'src/relay/store.ts'));
+  const relay = await startRelay({ port: 0, host: '127.0.0.1', store: new RelayStore({ dir: join(userDir, 'relay') }), log: () => {} });
+  const cp = await fetch(`${relay.url}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'baton_checkpoint', arguments: { title: 'From Claude', state: 'Pricing drafted', files: [{ path: 'pricing.md', content: '# Pricing\nPro $12' }] } } }) }).then((r) => r.json());
+  const code = cp.result.content[0].text.match(/BTN-[0-9A-Z-]{14}/)[0];
+  const g = await ctx.newPage();
+  await g.goto(`http://127.0.0.1:${port}/gemini-app`);
+  await g.locator('baton-panel #fab').click();
+  await g.locator('baton-panel #code').fill(`${relay.url}/h/${code}`);
+  await g.locator('baton-panel #pick').click();
+  await g.waitForFunction(() => document.documentElement.dataset.batonReceived, null, { timeout: 15000 });
+  const gtext = await g.locator('.ql-editor').innerText();
+  assert.equal(await g.evaluate(() => document.documentElement.dataset.batonReceived), 'ok:paste');
+  assert.match(gtext, /Pricing drafted/);
+  assert.match(gtext, /--- pricing\.md ---\n# Pricing/);
+  console.log('gemini pickup :', 'code', code.slice(0, 8) + '…', '→ composer filled; attach via paste');
+  await relay.close();
+
   console.log('\nEXTENSION E2E: PASS');
 } catch (err) {
   failed = true;

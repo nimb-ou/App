@@ -28,7 +28,7 @@ export async function sendBundle(bundle: BatonBundle, files: FileMap, opts: { re
   }
   if (!opts.relay) {
     const store = opts.store ?? new RelayStore();
-    const rec = store.create({ title: bundle.title, from: String(body.from), bundle: body.bundle as BatonBundle | undefined, sealed: body.sealed as RelayRecord['sealed'] });
+    const rec = await store.create({ title: bundle.title, from: String(body.from), bundle: body.bundle as BatonBundle | undefined, sealed: body.sealed as RelayRecord['sealed'] });
     return { code: rec.code, link: key ? `${rec.code}#${key}` : rec.code, sealed: !!key, expiresAt: rec.expiresAt };
   }
   const res = await fetch(opts.relay.replace(/\/$/, '') + '/api/handoffs', {
@@ -53,7 +53,7 @@ export async function pickup(input: string, opts: { relay?: string; store?: Rela
     if (!res.ok) throw new Error(`Relay answered HTTP ${res.status}`);
     rec = (await res.json()) as RelayRecord;
   } else {
-    rec = (opts.store ?? new RelayStore()).get(p.code);
+    rec = await (opts.store ?? new RelayStore()).get(p.code);
     if (!rec) throw new Error(`No handoff ${p.code} in the local store. Pass --relay <url> if it was sent to a remote relay.`);
   }
   if (rec.sealed && !rec.bundle) {

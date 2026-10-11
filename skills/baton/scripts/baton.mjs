@@ -6,7 +6,7 @@ import { join as join4, resolve as resolve3 } from "node:path";
 
 // src/core/schema.ts
 var SCHEMA_ID = "baton.bundle/v1";
-var VERSION = "0.2.0";
+var VERSION = "0.3.0";
 
 // src/core/sha256.ts
 var K = new Uint32Array([
@@ -2563,6 +2563,8 @@ async function handleRpc(msg, tools, info, session) {
 import { existsSync as existsSync2, mkdirSync as mkdirSync2, readdirSync as readdirSync2, readFileSync as readFileSync2, renameSync, rmSync, writeFileSync as writeFileSync2 } from "node:fs";
 import { homedir as homedir2 } from "node:os";
 import { join as join2 } from "node:path";
+
+// src/relay/kvstore.ts
 var ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 var CODE_RE = /^BTN(?:-[0-9A-HJKMNP-TV-Z]{4}){3}$/;
 function newCode() {
@@ -2575,35 +2577,30 @@ function normaliseCode(input) {
   const c = input.trim().toUpperCase().replace(/[^0-9A-Z]/g, "").replace(/^BTN/, "").replace(/[IL]/g, "1").replace(/O/g, "0");
   return c.length === 12 ? `BTN-${c.slice(0, 4)}-${c.slice(4, 8)}-${c.slice(8, 12)}` : input.trim();
 }
-function defaultStoreDir() {
-  return process.env.BATON_STORE ?? join2(homedir2(), ".baton", "store");
-}
-var RelayStore = class {
-  dir;
+var AsyncRelayStore = class {
+  kv;
   ttlMs;
   maxBytes;
-  constructor(opts = {}) {
-    this.dir = opts.dir ?? defaultStoreDir();
-    this.ttlMs = (opts.ttlDays ?? Number(process.env.BATON_TTL_DAYS ?? 7)) * 864e5;
-    this.maxBytes = opts.maxBytes ?? Number(process.env.BATON_MAX_BYTES ?? 25 * 1024 * 1024);
-    mkdirSync2(this.dir, { recursive: true });
+  constructor(kv, limits = {}) {
+    this.kv = kv;
+    this.ttlMs = (limits.ttlDays ?? 7) * 864e5;
+    this.maxBytes = limits.maxBytes ?? 25 * 1024 * 1024;
   }
-  file(code) {
+  key(code) {
     if (!CODE_RE.test(code)) throw new Error(`Invalid pickup code: ${code}`);
-    return join2(this.dir, `${code}.json`);
+    return `h:${code}`;
   }
-  write(r) {
+  async write(r) {
     const json = JSON.stringify(r);
     if (json.length > this.maxBytes) throw new Error(`Handoff too large (${(json.length / 1048576).toFixed(1)} MB > ${(this.maxBytes / 1048576).toFixed(0)} MB limit)`);
-    const f = this.file(r.code);
-    writeFileSync2(f + ".tmp", json);
-    renameSync(f + ".tmp", f);
+    const ttl = Math.max(60, Math.round((Date.parse(r.expiresAt) - Date.now()) / 1e3));
+    await this.kv.put(this.key(r.code), json, { expirationTtl: ttl });
     return r;
   }
-  create(init) {
+  async create(init) {
     const now = /* @__PURE__ */ new Date();
     let code = newCode();
-    while (existsSync2(join2(this.dir, `${code}.json`))) code = newCode();
+    while (await this.kv.get(this.key(code))) code = newCode();
     return this.write({
       code,
       title: init.title ?? init.bundle?.title ?? "Untitled handoff",
@@ -2616,18 +2613,20 @@ var RelayStore = class {
       checkpoints: []
     });
   }
-  get(code) {
-    const f = this.file(normaliseCode(code));
-    if (!existsSync2(f)) return void 0;
-    const r = JSON.parse(readFileSync2(f, "utf8"));
+  async get(code) {
+    const c = normaliseCode(code);
+    if (!CODE_RE.test(c)) return void 0;
+    const raw = await this.kv.get(this.key(c));
+    if (!raw) return void 0;
+    const r = JSON.parse(raw);
     if (Date.parse(r.expiresAt) < Date.now()) {
-      rmSync(f, { force: true });
+      await this.kv.delete(this.key(c));
       return void 0;
     }
     return r;
   }
-  addCheckpoint(code, c) {
-    const r = this.get(code);
+  async addCheckpoint(code, c) {
+    const r = await this.get(code);
     if (!r) throw new Error(`No handoff ${code} (expired or never created)`);
     if (r.sealed) throw new Error("This handoff is end-to-end encrypted; checkpoints cannot be added on the server");
     r.checkpoints.push({ ...c, seq: r.checkpoints.length + 1, at: (/* @__PURE__ */ new Date()).toISOString() });
@@ -2636,28 +2635,65 @@ var RelayStore = class {
     r.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
     return this.write(r);
   }
-  list(limit = 20) {
-    return readdirSync2(this.dir).filter((f) => f.endsWith(".json")).map((f) => {
-      try {
-        return JSON.parse(readFileSync2(join2(this.dir, f), "utf8"));
-      } catch {
-        return void 0;
-      }
-    }).filter((r) => !!r && Date.parse(r.expiresAt) >= Date.now()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, limit);
+  async list(limit = 20) {
+    const out = [];
+    for (const k of await this.kv.list("h:")) {
+      const r = await this.get(k.slice(2));
+      if (r) out.push(r);
+    }
+    return out.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, limit);
   }
-  purgeExpired() {
+  async purgeExpired() {
     let n = 0;
-    for (const f of readdirSync2(this.dir).filter((x) => x.endsWith(".json"))) {
-      try {
-        const r = JSON.parse(readFileSync2(join2(this.dir, f), "utf8"));
-        if (Date.parse(r.expiresAt) < Date.now()) {
-          rmSync(join2(this.dir, f), { force: true });
-          n++;
-        }
-      } catch {
+    for (const k of await this.kv.list("h:")) {
+      const raw = await this.kv.get(k);
+      if (raw && Date.parse(JSON.parse(raw).expiresAt) < Date.now()) {
+        await this.kv.delete(k);
+        n++;
       }
     }
     return n;
+  }
+};
+
+// src/relay/store.ts
+function defaultStoreDir() {
+  return process.env.BATON_STORE ?? join2(homedir2(), ".baton", "store");
+}
+var FileKV = class {
+  dir;
+  constructor(dir) {
+    this.dir = dir;
+    mkdirSync2(dir, { recursive: true });
+  }
+  file(key) {
+    return join2(this.dir, `${key.replace(/^h:/, "").replace(/[^A-Z0-9-]/gi, "_")}.json`);
+  }
+  async get(key) {
+    const f = this.file(key);
+    return existsSync2(f) ? readFileSync2(f, "utf8") : null;
+  }
+  async put(key, value) {
+    const f = this.file(key);
+    writeFileSync2(f + ".tmp", value);
+    renameSync(f + ".tmp", f);
+  }
+  async delete(key) {
+    rmSync(this.file(key), { force: true });
+  }
+  async list(prefix) {
+    return readdirSync2(this.dir).filter((f) => f.endsWith(".json")).map((f) => `h:${f.slice(0, -5)}`).filter((k) => k.startsWith(prefix));
+  }
+};
+var RelayStore = class extends AsyncRelayStore {
+  dir;
+  constructor(opts = {}) {
+    const dir = opts.dir ?? defaultStoreDir();
+    super(new FileKV(dir), {
+      ttlDays: opts.ttlDays ?? Number(process.env.BATON_TTL_DAYS ?? 7),
+      maxBytes: opts.maxBytes ?? Number(process.env.BATON_MAX_BYTES ?? 25 * 1024 * 1024)
+    });
+    this.dir = dir;
   }
 };
 
@@ -2796,7 +2832,8 @@ function relayTools(store, opts = {}) {
           notes: typeof a.notes === "string" ? a.notes : void 0
         };
         if (!cp.state.trim()) throw new Error("`state` is required: describe where the work stands");
-        const rec = typeof a.handoff === "string" && a.handoff ? store.addCheckpoint(a.handoff, cp) : store.addCheckpoint(store.create({ title: cp.title, from: cp.from }).code, cp);
+        const target = typeof a.handoff === "string" && a.handoff ? a.handoff : (await store.create({ title: cp.title, from: cp.from })).code;
+        const rec = await store.addCheckpoint(target, cp);
         const { bundle } = renderRecord(rec);
         return [
           `Saved checkpoint ${rec.checkpoints.length} of "${rec.title}".`,
@@ -2812,7 +2849,7 @@ function relayTools(store, opts = {}) {
       inputSchema: { type: "object", properties: { code: { type: "string", description: "Pickup code, e.g. BTN-7F3K-9QXA-2M4P" } }, required: ["code"] },
       annotations: { readOnlyHint: true, openWorldHint: false },
       run: async (a) => {
-        const rec = store.get(String(a.code));
+        const rec = await store.get(String(a.code));
         if (!rec) throw new Error(`No handoff found for ${String(a.code)}. It may have expired; ask the user for the current code.`);
         if (rec.sealed && !rec.bundle) return `Handoff ${rec.code} is end-to-end encrypted. Open it with its full link (including the #key part) in a browser, or run \`baton pickup "<code>#<key>"\`.`;
         const { bundle, files } = renderRecord(rec);
@@ -2844,7 +2881,7 @@ ${inline2.join("\n\n")}` : "",
       inputSchema: { type: "object", properties: { code: { type: "string" }, path: { type: "string" } }, required: ["code", "path"] },
       annotations: { readOnlyHint: true, openWorldHint: false },
       run: async (a) => {
-        const rec = store.get(String(a.code));
+        const rec = await store.get(String(a.code));
         if (!rec) throw new Error(`No handoff found for ${String(a.code)}`);
         const { bundle } = renderRecord(rec);
         const want = String(a.path).replace(/^files\//, "");
@@ -2864,7 +2901,7 @@ ${art.content}` : art.content;
       inputSchema: { type: "object", properties: { limit: { type: "integer", minimum: 1, maximum: 100 } } },
       annotations: { readOnlyHint: true, openWorldHint: false },
       run: async (a) => {
-        const list = store.list(Number(a.limit ?? 20));
+        const list = await store.list(Number(a.limit ?? 20));
         if (!list.length) return "No handoffs yet.";
         return list.map((r) => `${r.code}  ${r.updatedAt.slice(0, 16).replace("T", " ")}  ${r.title}  (from ${r.from.join(", ")}, ${r.checkpoints.length} checkpoint(s)${r.bundle ? ", captured bundle" : ""}${r.sealed ? ", encrypted" : ""})`).join("\n");
       }
@@ -2886,7 +2923,7 @@ function remoteRelayTools(url, token) {
     if (msg.result?.isError) throw new Error(text2.replace(/^Error: /, ""));
     return text2;
   };
-  const local = relayTools(new Proxy({}, {}), {});
+  const local = relayTools({}, {});
   return local.map((t) => ({ ...t, run: (args, ctx) => call(t.name, args, ctx) }));
 }
 
@@ -3082,7 +3119,7 @@ async function sendBundle(bundle, files, opts) {
   }
   if (!opts.relay) {
     const store = opts.store ?? new RelayStore();
-    const rec = store.create({ title: bundle.title, from: String(body.from), bundle: body.bundle, sealed: body.sealed });
+    const rec = await store.create({ title: bundle.title, from: String(body.from), bundle: body.bundle, sealed: body.sealed });
     return { code: rec.code, link: key ? `${rec.code}#${key}` : rec.code, sealed: !!key, expiresAt: rec.expiresAt };
   }
   const res = await fetch(opts.relay.replace(/\/$/, "") + "/api/handoffs", {
@@ -3105,7 +3142,7 @@ async function pickup(input, opts = {}) {
     if (!res.ok) throw new Error(`Relay answered HTTP ${res.status}`);
     rec = await res.json();
   } else {
-    rec = (opts.store ?? new RelayStore()).get(p.code);
+    rec = await (opts.store ?? new RelayStore()).get(p.code);
     if (!rec) throw new Error(`No handoff ${p.code} in the local store. Pass --relay <url> if it was sent to a remote relay.`);
   }
   if (rec.sealed && !rec.bundle) {
@@ -3122,141 +3159,125 @@ async function pickup(input, opts = {}) {
 
 // src/relay/server.ts
 import { createServer } from "node:http";
-import { randomUUID } from "node:crypto";
-function createRelayServer(o = {}) {
-  const store = o.store ?? new RelayStore();
-  const publicUrl = o.publicUrl ?? process.env.BATON_PUBLIC_URL;
-  const token = o.token ?? process.env.BATON_RELAY_TOKEN;
-  const mcpSecret = o.mcpSecret ?? process.env.BATON_MCP_SECRET;
-  const mcpPath = mcpSecret ? `/mcp/${mcpSecret}` : "/mcp";
-  const tools = relayTools(store, { publicUrl });
+
+// src/relay/handler.ts
+var CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, authorization, mcp-session-id, mcp-protocol-version, last-event-id",
+  "access-control-expose-headers": "mcp-session-id"
+};
+function createRelayHandler(o) {
+  const { store } = o;
+  const mcpPath = o.mcpSecret ? `/mcp/${o.mcpSecret}` : "/mcp";
   const info = { name: "baton-relay", version: VERSION, instructions: RELAY_INSTRUCTIONS };
   const sessions = /* @__PURE__ */ new Map();
   const hits = /* @__PURE__ */ new Map();
   const limit = o.rateLimitPerMinute ?? 120;
   const log = o.log ?? (() => {
   });
-  const send = (res, status, body, type = "application/json", extra = {}) => {
-    res.writeHead(status, { "content-type": type, "access-control-allow-origin": "*", "access-control-allow-headers": "content-type, authorization, mcp-session-id, mcp-protocol-version", "access-control-expose-headers": "mcp-session-id", "x-content-type-options": "nosniff", ...extra });
-    res.end(body);
-  };
-  const json = (res, status, v, extra = {}) => send(res, status, JSON.stringify(v), "application/json", extra);
-  const readBody = (req) => new Promise((resolve4, reject) => {
-    const chunks = [];
-    let size = 0;
-    req.on("data", (c) => {
-      size += c.length;
-      if (size > store.maxBytes + 1024 * 1024) {
-        reject(new Error("Request too large"));
-        req.destroy();
-      } else chunks.push(c);
-    });
-    req.on("end", () => resolve4(Buffer.concat(chunks).toString("utf8")));
-    req.on("error", reject);
-  });
-  const authorized = (req) => !token || req.headers.authorization === `Bearer ${token}`;
-  const server = createServer(async (req, res) => {
-    const url = new URL(req.url ?? "/", "http://relay.local");
-    const ip = String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "").split(",")[0].trim();
+  const res = (status, body, type = "application/json", extra = {}) => new Response(body, { status, headers: { "content-type": type, "x-content-type-options": "nosniff", ...CORS, ...extra } });
+  const json = (status, v, extra = {}) => res(status, JSON.stringify(v), "application/json", extra);
+  const authorized = (req) => !o.token || req.headers.get("authorization") === `Bearer ${o.token}`;
+  return async (req) => {
+    const url = new URL(req.url);
+    const base = (o.publicUrl ?? url.origin).replace(/\/$/, "");
+    const tools = relayTools(store, { publicUrl: base });
+    const ip = (req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim();
     const now = Date.now();
     const h = hits.get(ip);
     if (!h || now - h.t > 6e4) hits.set(ip, { n: 1, t: now });
-    else if (++h.n > limit) return json(res, 429, { error: "Too many requests" });
+    else if (++h.n > limit) return json(429, { error: "Too many requests" });
     try {
-      if (req.method === "OPTIONS") return send(res, 204, "");
-      if (url.pathname === "/healthz") return json(res, 200, { ok: true, version: VERSION });
-      if (url.pathname === mcpPath) {
-        if (req.method === "GET") return json(res, 405, { error: "This server does not offer an SSE stream; POST JSON-RPC instead." }, { allow: "POST, DELETE" });
+      if (req.method === "OPTIONS") return res(204, null);
+      if (url.pathname === "/healthz") return json(200, { ok: true, version: VERSION });
+      if (url.pathname === mcpPath || url.pathname === mcpPath + "/") {
+        if (req.method === "GET") return json(405, { error: "No SSE stream here; POST JSON-RPC instead." }, { allow: "POST, DELETE" });
         if (req.method === "DELETE") {
-          sessions.delete(String(req.headers["mcp-session-id"] ?? ""));
-          return send(res, 200, "");
+          sessions.delete(req.headers.get("mcp-session-id") ?? "");
+          return res(200, null);
         }
-        if (req.method !== "POST") return json(res, 405, { error: "POST only" });
-        const body = JSON.parse(await readBody(req));
-        let sid = String(req.headers["mcp-session-id"] ?? "");
-        let session = sessions.get(sid);
+        if (req.method !== "POST") return json(405, { error: "POST only" });
+        const body = await req.json();
         const msgs = Array.isArray(body) ? body : [body];
+        let sid = req.headers.get("mcp-session-id") ?? "";
+        let session = sessions.get(sid);
         if (!session) {
-          session = { clientName: String(req.headers["x-baton-client"] ?? req.headers["user-agent"] ?? "mcp-client").slice(0, 60) };
+          session = { clientName: (req.headers.get("x-baton-client") ?? req.headers.get("user-agent") ?? "mcp-client").slice(0, 60) };
           if (msgs.some((m) => m.method === "initialize")) {
-            sid = randomUUID();
+            sid = crypto.randomUUID();
             sessions.set(sid, session);
+            if (sessions.size > 5e3) sessions.delete(sessions.keys().next().value);
           }
         }
         const out = (await Promise.all(msgs.map((m) => handleRpc(m, tools, info, session)))).filter(Boolean);
         const headers = sid && sessions.has(sid) ? { "mcp-session-id": sid } : {};
-        if (!out.length) return send(res, 202, "", "application/json", headers);
         log(`mcp ${msgs.map((m) => m.method === "tools/call" ? `tools/call:${m.params?.name}` : m.method).join(",")} from ${session.clientName}`);
-        return json(res, 200, Array.isArray(body) ? out : out[0], headers);
+        if (!out.length) return res(202, null, "application/json", headers);
+        return json(200, Array.isArray(body) ? out : out[0], headers);
       }
       if (url.pathname === "/api/handoffs" && req.method === "POST") {
-        if (!authorized(req)) return json(res, 401, { error: "Bearer token required" });
-        const b = JSON.parse(await readBody(req));
-        if (!b.bundle && !b.sealed) return json(res, 400, { error: "Send {bundle} or {sealed}" });
-        if (b.bundle && b.bundle.schema !== "baton.bundle/v1") return json(res, 400, { error: "Unsupported bundle schema" });
-        const rec = store.create({ title: b.title ?? b.bundle?.title, from: b.from ?? "api", bundle: b.bundle, sealed: b.sealed });
-        log(`upload ${rec.code} ${b.sealed ? "(sealed)" : ""}`);
-        return json(res, 201, { code: rec.code, expiresAt: rec.expiresAt, url: publicUrl ? `${publicUrl.replace(/\/$/, "")}/h/${rec.code}` : `/h/${rec.code}` });
+        if (!authorized(req)) return json(401, { error: "Bearer token required" });
+        const text2 = await req.text();
+        if (text2.length > store.maxBytes + 1048576) return json(413, { error: "Too large" });
+        const b = JSON.parse(text2);
+        if (!b.bundle && !b.sealed) return json(400, { error: "Send {bundle} or {sealed}" });
+        if (b.bundle && b.bundle.schema !== "baton.bundle/v1") return json(400, { error: "Unsupported bundle schema" });
+        const rec = await store.create({ title: b.title ?? b.bundle?.title, from: b.from ?? "api", bundle: b.bundle, sealed: b.sealed });
+        log(`upload ${rec.code}${b.sealed ? " (sealed)" : ""}`);
+        return json(201, { code: rec.code, expiresAt: rec.expiresAt, url: `${base}/h/${rec.code}` });
       }
       const api = url.pathname.match(/^\/api\/handoffs\/([^/]+)(\/checkpoints)?$/);
       if (api) {
         const code = normaliseCode(decodeURIComponent(api[1]));
-        if (!CODE_RE.test(code)) return json(res, 400, { error: "Invalid code" });
+        if (!CODE_RE.test(code)) return json(400, { error: "Invalid code" });
         if (api[2] && req.method === "POST") {
-          if (!authorized(req)) return json(res, 401, { error: "Bearer token required" });
-          const cp = JSON.parse(await readBody(req));
-          const tool = tools.find((t) => t.name === "baton_checkpoint");
-          const text2 = await tool.run({ ...cp, handoff: code }, { clientName: String(cp.from ?? "api") });
-          return json(res, 200, { ok: true, message: text2 });
+          if (!authorized(req)) return json(401, { error: "Bearer token required" });
+          const cp = await req.json();
+          const text2 = await tools.find((t) => t.name === "baton_checkpoint").run({ ...cp, handoff: code }, { clientName: String(cp.from ?? "api") });
+          return json(200, { ok: true, message: text2 });
         }
-        const rec = store.get(code);
-        if (!rec) return json(res, 404, { error: "Not found or expired" });
-        return json(res, 200, rec);
+        const rec = await store.get(code);
+        if (!rec) return json(404, { error: "Not found or expired" });
+        return json(200, rec);
       }
       const view = url.pathname.match(/^\/h\/([^/.]+)(\.zip)?$/);
       if (view && req.method === "GET") {
-        const rec = store.get(decodeURIComponent(view[1]));
-        if (!rec) return send(res, 404, page("Not found", "<p>This handoff does not exist or has expired.</p>"), "text/html; charset=utf-8");
+        const rec = await store.get(decodeURIComponent(view[1]));
+        if (!rec) return res(404, page("Not found", "<p>This handoff does not exist or has expired.</p>"), "text/html; charset=utf-8");
         if (rec.sealed && !rec.bundle) {
-          if (view[2]) return json(res, 400, { error: "Sealed handoffs are decrypted in the browser; open /h/<code>#<key>" });
-          return send(res, 200, sealedPage(rec.code, rec.title), "text/html; charset=utf-8", { "cache-control": "no-store", "referrer-policy": "no-referrer" });
+          if (view[2]) return json(400, { error: "Sealed handoffs are decrypted in the browser; open /h/<code>#<key>" });
+          return res(200, sealedPage(rec.code, rec.title), "text/html; charset=utf-8", { "cache-control": "no-store", "referrer-policy": "no-referrer" });
         }
         const { files } = renderRecord(rec);
         if (view[2]) {
           const prefixed = {};
           for (const [k, v] of Object.entries(files)) prefixed[`${rec.code}/${k}`] = v;
-          return send(res, 200, zip(prefixed), "application/zip", { "content-disposition": `attachment; filename="${rec.code}.baton.zip"` });
+          return res(200, zip(prefixed), "application/zip", { "content-disposition": `attachment; filename="${rec.code}.baton.zip"` });
         }
-        return send(res, 200, String(files["index.html"]), "text/html; charset=utf-8", { "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", "referrer-policy": "no-referrer" });
+        return res(200, String(files["index.html"]), "text/html; charset=utf-8", { "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", "referrer-policy": "no-referrer" });
       }
-      if (url.pathname === "/" && req.method === "GET") {
-        const base = publicUrl ?? `http://${req.headers.host}`;
-        return send(res, 200, page("Baton relay", landing(base, mcpPath)), "text/html; charset=utf-8");
-      }
-      return json(res, 404, { error: "Not found" });
+      if (url.pathname === "/" && req.method === "GET") return res(200, page("Baton relay", landing(base, mcpPath)), "text/html; charset=utf-8");
+      return json(404, { error: "Not found" });
     } catch (err) {
-      return json(res, 400, { error: err instanceof Error ? err.message : String(err) });
+      return json(400, { error: err instanceof Error ? err.message : String(err) });
     }
-  });
-  const timer = setInterval(() => store.purgeExpired(), 36e5);
-  timer.unref();
-  server.on("close", () => clearInterval(timer));
-  return { server, store, mcpPath };
+  };
 }
 function page(title, body) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title>
-<style>:root{--bg:#f3f5f4;--fg:#14201b;--mu:#5b6b64;--ac:#2343c9;--line:#d7dfdb}@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--fg:#e4ebe7;--mu:#9aaba3;--ac:#8ea4ff;--line:#2a3632}}
+<style>:root{--bg:#f3f5f4;--fg:#14201b;--mu:#5b6b64;--ac:#2343c9}@media (prefers-color-scheme:dark){:root{--bg:#0f1513;--fg:#e4ebe7;--mu:#9aaba3;--ac:#8ea4ff}}
 body{background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif;max-width:760px;margin:0 auto;padding:32px 16px}h1{font-size:34px;margin:0 0 8px}code,pre{font:13px ui-monospace,monospace}pre{background:color-mix(in srgb,var(--fg) 6%,transparent);padding:12px;border-radius:6px;overflow:auto;white-space:pre-wrap}a{color:var(--ac)}.mu{color:var(--mu)}button{font:inherit;padding:8px 14px;border-radius:6px;border:1px solid var(--fg);background:none;color:var(--fg);cursor:pointer}</style></head><body>${body}</body></html>`;
 }
 function landing(base, mcpPath) {
-  const mcp = base.replace(/\/$/, "") + mcpPath;
-  return `<h1>Baton relay</h1><p class="mu">Hands AI work from one assistant to another, with prompts, files, tool outputs and decisions, from inside the assistants.</p>
-<h2>Add it to an AI</h2>
-<p><b>MCP server URL:</b></p><pre>${escapeHtml(mcp)}</pre>
-<ul><li><b>ChatGPT</b>: Settings \u2192 Apps &amp; Connectors \u2192 Advanced \u2192 Developer mode \u2192 Create, paste the URL, authentication "No authentication".</li>
+  const mcp = base + mcpPath;
+  return `<h1>Baton relay</h1><p class="mu">Hands AI work from one assistant to another (prompts, files, tool outputs and decisions) from inside the assistants.</p>
+<h2>Add it to an AI</h2><p><b>MCP server URL:</b></p><pre>${escapeHtml(mcp)}</pre>
+<ul><li><b>ChatGPT</b>: Settings \u2192 Apps &amp; Connectors \u2192 Advanced settings \u2192 turn on Developer mode \u2192 Create. Paste the URL, choose "No authentication".</li>
 <li><b>Claude</b> (web/desktop): Settings \u2192 Connectors \u2192 Add custom connector \u2192 paste the URL.</li>
 <li><b>Claude Code</b>: <code>claude mcp add --transport http baton ${escapeHtml(mcp)}</code></li>
-<li><b>Cursor / Codex / Gemini CLI</b>: add an HTTP MCP server with this URL.</li></ul>
+<li><b>Cursor / Codex / Gemini CLI</b>: add an HTTP MCP server with this URL.</li>
+<li><b>Baton browser extension</b>: Options \u2192 Relay URL: <code>${escapeHtml(base)}</code></li></ul>
 <h2>Use it</h2><p>In any AI: <i>"baton: hand this off"</i> \u2192 you get a code like <code>BTN-7F3K-9QXA-2M4P</code>. In another AI: <i>"baton pickup BTN-7F3K-9QXA-2M4P"</i>. Or open <code>${escapeHtml(base)}/h/&lt;code&gt;</code>.</p>`;
 }
 function sealedPage(code, title) {
@@ -3273,6 +3294,43 @@ document.getElementById('cp').onclick=()=>navigator.clipboard.writeText(p.prompt
 document.getElementById('dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([b(p.zip)],{type:'application/zip'}));a.download='${code}.baton.zip';a.click()};
 }catch(e){out.innerHTML='<p>Could not decrypt this handoff (wrong key or damaged data).</p>'}})();</script>`
   );
+}
+
+// src/relay/server.ts
+async function toRequest(req, origin) {
+  const chunks = [];
+  if (req.method !== "GET" && req.method !== "HEAD") for await (const c of req) chunks.push(c);
+  const headers = new Headers();
+  for (const [k, v] of Object.entries(req.headers)) if (typeof v === "string") headers.set(k, v);
+  if (!headers.has("x-forwarded-for") && req.socket.remoteAddress) headers.set("x-forwarded-for", req.socket.remoteAddress);
+  return new Request(origin + (req.url ?? "/"), { method: req.method, headers, body: chunks.length ? Buffer.concat(chunks) : void 0 });
+}
+function createRelayServer(o = {}) {
+  const store = o.store ?? new RelayStore();
+  const handler = createRelayHandler({
+    store,
+    publicUrl: o.publicUrl ?? process.env.BATON_PUBLIC_URL,
+    token: o.token ?? process.env.BATON_RELAY_TOKEN,
+    mcpSecret: o.mcpSecret ?? process.env.BATON_MCP_SECRET,
+    rateLimitPerMinute: o.rateLimitPerMinute,
+    log: o.log
+  });
+  const mcpPath = o.mcpSecret ?? process.env.BATON_MCP_SECRET ? `/mcp/${o.mcpSecret ?? process.env.BATON_MCP_SECRET}` : "/mcp";
+  const server = createServer(async (req, res) => {
+    try {
+      const proto = String(req.headers["x-forwarded-proto"] ?? "http").split(",")[0];
+      const response = await handler(await toRequest(req, `${proto}://${req.headers.host ?? "localhost"}`));
+      res.writeHead(response.status, Object.fromEntries(response.headers.entries()));
+      res.end(Buffer.from(await response.arrayBuffer()));
+    } catch (err) {
+      res.writeHead(500, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
+    }
+  });
+  const timer = setInterval(() => void store.purgeExpired(), 36e5);
+  timer.unref();
+  server.on("close", () => clearInterval(timer));
+  return { server, store, mcpPath };
 }
 function startRelay(o = {}) {
   const { server, mcpPath } = createRelayServer(o);
