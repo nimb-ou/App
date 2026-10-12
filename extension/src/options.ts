@@ -4,7 +4,7 @@ const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
 chrome.storage.sync.get(['relay', 'token', 'seal', 'redact']).then((s: Record<string, unknown>) => {
   $('relay').value = String(s.relay ?? '');
   $('token').value = String(s.token ?? '');
-  $('seal').checked = s.seal !== false;
+  $('seal').checked = s.seal === true;
   $('redact').checked = s.redact !== false;
 });
 

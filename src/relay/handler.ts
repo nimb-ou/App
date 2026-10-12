@@ -17,12 +17,13 @@ import { renderRecord, type SealedPayload } from './checkpoint.ts';
 import { CODE_RE, normaliseCode, type AsyncRelayStore } from './kvstore.ts';
 import { RELAY_INSTRUCTIONS, relayTools } from './tools.ts';
 import { aiBrief, continueUrl } from './linkpage.ts';
-import { bookmarkletSource, captureToIngest, ingestToBundle, isCapture, pasteToBundle, receivePage, type IngestBody } from './ingest.ts';
-import { FAVICON_SVG, SITE_CSP } from '../site/brand.ts';
+import { BOOKMARKLET_VERSION, bookmarkletSource, captureToIngest, ingestToBundle, isCapture, pasteToBundle, receivePage, type IngestBody } from './ingest.ts';
+import { FAVICON_SVG, SITE_CSP, webManifest } from '../site/brand.ts';
 import { handoffPage } from '../site/handoff.ts';
 import { homePage } from '../site/home.ts';
+import { tryPage } from '../site/try.ts';
 import { messagePage, privacyPage } from '../site/pages.ts';
-import { ICON_PNG_B64, OG_PNG_B64 } from '../site/assets.gen.ts';
+import { ICON512_PNG_B64, ICON_PNG_B64, OG_PNG_B64 } from '../site/assets.gen.ts';
 import { base64ToBytes } from '../core/util.ts';
 import type { RelayRecord } from './checkpoint.ts';
 import { buildBundle } from '../core/build.ts';
@@ -68,7 +69,14 @@ async function isOwner(req: Request, rec: RelayRecord): Promise<boolean> {
   return !!(key && rec.owner && (await sha256Hex(key)) === rec.owner);
 }
 
-const SITE_HEADERS = { 'content-security-policy': SITE_CSP, 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY' };
+const SITE_HEADERS = {
+  'content-security-policy': SITE_CSP,
+  'referrer-policy': 'no-referrer',
+  'x-frame-options': 'DENY',
+  'strict-transport-security': 'max-age=31536000; includeSubDomains',
+  'permissions-policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  'cross-origin-opener-policy': 'same-origin-allow-popups',
+};
 const OG_PATH = '/og.png';
 
 const CORS = {
@@ -104,7 +112,7 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
     if (mode === '/full') return res(200, String(files['index.html']), 'text/html; charset=utf-8', { 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:", 'referrer-policy': 'no-referrer' });
     const to = url.searchParams.get('to');
     const banner = to === 'gemini' ? 'gemini' : url.searchParams.has('new') ? 'new' : undefined;
-    const html = handoffPage({ bundle, files, selfUrl, code: page.code, expiresAt: page.expiresAt, owner: page.owner, banner, ogImage: page.base + OG_PATH });
+    const html = handoffPage({ bundle, files, selfUrl, code: page.code, expiresAt: page.expiresAt, owner: page.owner, banner, update: url.searchParams.has('upd'), ogImage: page.base + OG_PATH });
     return res(200, html, 'text/html; charset=utf-8', { ...SITE_HEADERS, 'cache-control': 'no-store' });
   };
 
@@ -133,8 +141,11 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
       if (url.pathname === '/healthz') return json(200, { ok: true, version: VERSION });
       if (req.method === 'GET' && url.pathname === '/favicon.svg') return res(200, FAVICON_SVG, 'image/svg+xml', { 'cache-control': 'public, max-age=86400' });
       if (req.method === 'GET' && (url.pathname === '/favicon.ico' || url.pathname === '/icon.png' || url.pathname === '/apple-touch-icon.png')) return res(200, base64ToBytes(ICON_PNG_B64) as BodyInit, 'image/png', { 'cache-control': 'public, max-age=86400' });
+      if (req.method === 'GET' && url.pathname === '/icon-512.png') return res(200, base64ToBytes(ICON512_PNG_B64) as BodyInit, 'image/png', { 'cache-control': 'public, max-age=86400' });
+      if (req.method === 'GET' && url.pathname === '/manifest.webmanifest') return res(200, JSON.stringify(webManifest()), 'application/manifest+json', { 'cache-control': 'public, max-age=86400' });
       if (req.method === 'GET' && url.pathname === OG_PATH) return res(200, base64ToBytes(OG_PNG_B64) as BodyInit, 'image/png', { 'cache-control': 'public, max-age=86400' });
       if (req.method === 'GET' && url.pathname === '/privacy') return res(200, privacyPage(Math.round(store.ttlMs / 86400000)), 'text/html; charset=utf-8', SITE_HEADERS);
+      if (req.method === 'GET' && url.pathname === '/try') return res(200, tryPage(o.demo, bookmarkletSource(base)), 'text/html; charset=utf-8', { ...SITE_HEADERS, 'cache-control': 'no-store' });
       if (req.method === 'GET' && url.pathname === '/robots.txt') return res(200, 'User-agent: *\nDisallow: /h/\nDisallow: /api/\n', 'text/plain');
       const demo = url.pathname.match(/^\/demo(\.zip|\.md|\/full)?\/?$/);
       if (demo && req.method === 'GET') {
@@ -254,7 +265,7 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
         const { rec, cookie } = await createOwned(bundle, 'bookmarklet');
         log(`ingest ${rec.code} (${bundle.source.tool}) → ${to ?? 'link'}`);
         const link = `${base}/h/${rec.code}`;
-        return json(201, { code: rec.code, url: link, next: continueUrl(to, link, bundle.title, bundle.source.tool), title: bundle.title, stats: bundle.stats }, { 'set-cookie': cookie });
+        return json(201, { code: rec.code, url: link, next: continueUrl(to, link, bundle), title: bundle.title, stats: bundle.stats }, { 'set-cookie': cookie });
       }
       // Paste box on the home page: pasted chat text, or an export / share-page file.
       if (url.pathname === '/api/paste' && req.method === 'POST') {
@@ -265,7 +276,7 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
         const { rec, cookie } = await createOwned(bundle, 'paste');
         log(`paste ${rec.code} (${bundle.source.tool}) → ${body.to ?? 'link'}`);
         const link = `${base}/h/${rec.code}`;
-        return json(201, { code: rec.code, url: link, next: continueUrl(body.to, link, bundle.title, bundle.source.tool) }, { 'set-cookie': cookie });
+        return json(201, { code: rec.code, url: link, next: continueUrl(body.to, link, bundle) }, { 'set-cookie': cookie });
       }
       // Form POST from the bookmarklet (works under COOP: same-origin, e.g. claude.ai). Answers with a redirect.
       if (url.pathname === '/api/ingest-form' && req.method === 'POST') {
@@ -279,7 +290,8 @@ export function createRelayHandler(o: RelayHandlerOptions): (req: Request) => Pr
           const bundle = ingestToBundle(captureToIngest(d));
           const { rec, cookie } = await createOwned(bundle, 'bookmarklet');
           log(`ingest-form ${rec.code} (${bundle.source.tool}) → ${d.to ?? 'link'}`);
-          const location = continueUrl(d.to, `${base}/h/${rec.code}`, bundle.title, bundle.source.tool);
+          const stale = (d.v ?? 1) < BOOKMARKLET_VERSION; // an old bookmark: offer the new one on the link page
+          const location = continueUrl(d.to, `${base}/h/${rec.code}`, bundle) + (stale && !d.to ? '&upd=1' : '');
           return new Response(null, { status: 303, headers: { location, 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
         } catch (err) {
           return fail(400, err instanceof Error ? err.message : String(err));

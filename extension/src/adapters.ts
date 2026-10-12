@@ -4,7 +4,7 @@
 
 import type { CapturedFile, LossItem, ParsedConversation } from '../../src/core/schema.ts';
 import { base64ToBytes, isRecord } from '../../src/core/util.ts';
-import { parseChatGPTConversation } from '../../src/parsers/chatgpt.ts';
+import { parseChatGPTConversation, parseChatGPTShareHtml } from '../../src/parsers/chatgpt.ts';
 import { parseClaudeExport } from '../../src/parsers/claude.ts';
 import { extractSandboxReferences } from '../../src/recover/artifacts.ts';
 
@@ -69,8 +69,12 @@ export const chatgpt: Adapter = {
   composer: { input: ['#prompt-textarea', 'div[contenteditable="true"]', 'textarea'], file: ['input[type="file"]:not([accept^="image"])', 'input[type="file"]'] },
   conversationId: (u) => u.pathname.match(/\/c\/([0-9a-f-]{20,})/i)?.[1],
   async capture({ url, net, doc, maxFileBytes = 20 * MB, maxTotalBytes = 80 * MB }) {
+    // Shared chats (/share/<id>): the page already carries the whole conversation; files are rebuilt from the code.
+    if (/^\/share\//.test(url.pathname) && typeof doc?.documentElement?.outerHTML === 'string') {
+      return { parsed: parseChatGPTShareHtml(doc.documentElement.outerHTML, url.href), captured: 0, failed: [] };
+    }
     const id = this.conversationId(url);
-    if (!id) throw new Error('Open a saved ChatGPT conversation (URL /c/<id>) to capture it.');
+    if (!id) throw new Error('Open a saved ChatGPT conversation (URL /c/<id>) or a shared chat to capture it.');
     const session = (await net.json('/api/auth/session')) as { accessToken?: string };
     if (!session?.accessToken) throw new Error('Not signed in to ChatGPT in this tab.');
     const headers: Record<string, string> = { authorization: `Bearer ${session.accessToken}` };

@@ -1,6 +1,6 @@
 {
   "name": "baton-handoff",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Carry AI work between assistants from the inside: capture prompts, tool outputs and files in ChatGPT/Claude/Gemini (extension), let models checkpoint and pick up work over MCP (relay), and hand off as audited bundles.",
   "type": "module",
   "license": "Apache-2.0",

@@ -77,3 +77,4 @@ No web fonts: pages load from the relay only, with no third-party requests.
 | ![chooser on ChatGPT](screens/chooser-on-chatgpt.png) | ![chooser on Gemini](screens/chooser-on-gemini.png) |
 | ![handoff page](screens/handoff-demo.jpg) | ![Gemini step](screens/handoff-gemini-step.jpg) |
 | ![mobile home](screens/home-mobile.jpg) | ![mobile handoff](screens/handoff-mobile.jpg) |
+| ![install sheet](screens/install-sheet.jpg) | ![practice page](screens/try-practice-works.jpg) |

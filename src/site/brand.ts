@@ -122,7 +122,7 @@ export function shell(p: ShellInput): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${escapeHtml(p.title)}</title><meta name="description" content="${escapeHtml(desc)}">
 <meta name="theme-color" content="${BRAND.paper}" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0E0F10" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icon.png"><link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:title" content="${escapeHtml(p.title)}"><meta property="og:description" content="${escapeHtml(desc)}"><meta property="og:type" content="website">
 ${p.ogImage ? `<meta property="og:image" content="${escapeHtml(p.ogImage)}"><meta name="twitter:card" content="summary_large_image">` : ''}
 ${p.canonical ? `<link rel="canonical" href="${escapeHtml(p.canonical)}">` : ''}${p.robots ? `<meta name="robots" content="${p.robots}">` : ''}${p.head ?? ''}
@@ -146,3 +146,21 @@ export function footHtml(): string {
 
 /** Security headers for the site's own pages (inline style/script only, same-origin forms and fetches). */
 export const SITE_CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
+
+/** Installable web app (Add to Home Screen): opens straight to the paste box on phones. */
+export function webManifest() {
+  return {
+    name: 'Baton',
+    short_name: 'Baton',
+    description: BRAND.tagline,
+    start_url: '/#paste',
+    display: 'standalone',
+    background_color: BRAND.paper,
+    theme_color: BRAND.ink,
+    icons: [
+      { src: '/icon.png', sizes: '180x180', type: 'image/png' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
+    ],
+  };
+}

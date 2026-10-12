@@ -122,6 +122,26 @@ section{padding:76px 0 0}
 .final{margin-top:90px;padding:48px 32px;text-align:center;background:var(--ink);color:var(--paper);border-radius:28px}
 .final h2{margin-bottom:22px}.final .get{justify-content:center}
 .final .mu{color:color-mix(in srgb,var(--paper) 65%,transparent);margin-top:16px}
+
+dialog.sheet{border:0;padding:0;border-radius:24px;max-width:520px;width:calc(100vw - 32px);background:var(--card);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.45)}
+dialog.sheet::backdrop{background:rgba(18,19,20,.45);backdrop-filter:blur(3px)}
+.sheet .in{padding:26px}
+.sheet h2{font-size:28px;margin-bottom:6px}
+.sheet .x{all:unset;cursor:pointer;position:absolute;top:14px;right:16px;font-size:24px;color:var(--mu);width:36px;height:36px;text-align:center;line-height:36px;border-radius:50%}
+.sheet .x:hover{background:var(--sunk)}
+.browser{margin:18px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper)}
+.browser .tabs{height:26px;background:var(--sunk);display:flex;align-items:center;gap:6px;padding:0 10px}
+.browser .tabs i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.browser .bar{height:30px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--line);font-size:11.5px;color:var(--mu);position:relative}
+.browser .slot{width:70px;height:20px;border-radius:999px;border:1.5px dashed color-mix(in srgb,var(--signal) 60%,transparent)}
+.browser .page{height:120px;position:relative}
+.browser .pill{position:absolute;left:50%;top:62px;display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:var(--signal);color:var(--signal-ink);font:800 12.5px var(--f-display);animation:drag 3.2s cubic-bezier(.6,0,.3,1) infinite;box-shadow:0 8px 20px -6px color-mix(in srgb,var(--signal) 80%,transparent)}
+@keyframes drag{0%,15%{transform:translate(-50%,0)}55%,85%{transform:translate(-205px,-88px) scale(.92)}100%{transform:translate(-205px,-88px) scale(.92);opacity:0}}
+.browser .cursor{position:absolute;left:calc(50% + 18px);top:76px;font-size:18px;animation:cur 3.2s cubic-bezier(.6,0,.3,1) infinite}
+@keyframes cur{0%,15%{transform:none}55%,85%{transform:translate(-205px,-88px)}100%{transform:translate(-205px,-88px);opacity:0}}
+.sheet ol{margin:0 0 18px;padding-left:22px}.sheet li{margin:7px 0;color:var(--ink-2)}
+.sheet kbd{font:600 12.5px var(--f-mono);padding:2px 6px;border-radius:6px;border:1px solid var(--line);background:var(--paper)}
+.sheet .acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 `;
 
 export function homePage(h: HomeInput): string {
@@ -138,7 +158,7 @@ export function homePage(h: HomeInput): string {
 <h1 style="margin-top:16px">Move any AI chat to <em>any other AI.</em></h1>
 <p class="lede">ChatGPT to Claude, Claude to Gemini, anything to anything. Baton carries your prompts, the answers, the code and files, and tells the next AI exactly what's missing.</p>
 <div class="get">${bmButton}<a class="btn primary only-touch" href="#paste">Paste a chat</a><a class="btn ghost" href="/demo">See a live handoff</a></div>
-<div class="hint only-fine"><span class="arrow">↑</span><span>Drag <b>Baton</b> to your bookmarks bar. Can't see the bar? Press <kbd data-kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd></span></div>
+<div class="hint only-fine"><span class="arrow">↑</span><span>Drag <b>Baton</b> to your bookmarks bar, then <a href="/try">try it on a practice chat</a>. No bar? Press <kbd data-kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd></span></div>
 <div class="hint only-touch"><span>On a computer, Baton is one bookmark. On a phone, select all in your AI app, copy, and paste it here.</span></div>
 <div class="trust"><span>Nothing to install</span><span>Links expire in 7 days</span><span>Delete anytime</span><span>Open source</span></div>
 </div>
@@ -228,12 +248,19 @@ ${d ? `<p class="proof">Measured on a real ChatGPT chat (<a href="/demo">open it
 </div></section>
 
 <div class="wrap"><div class="final"><h2>Stop starting over.</h2><div class="get">${bmButton.replace('class="bm only-fine"', 'class="bm only-fine" style="box-shadow:none"')}<a class="btn primary only-touch" href="#paste">Paste a chat</a></div><p class="mu only-fine">Drag the button to your bookmarks bar, then click it on any chat.</p></div></div>
-</main>`;
+</main>
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-h"><div class="in"><button class="x" type="button" data-close aria-label="Close">×</button>
+<div class="eyebrow">Add Baton · 10 seconds</div><h2 id="sheet-h" style="margin-top:10px">Drag, don't click.</h2><p class="mu">Baton lives in your bookmarks bar, so it's one click away on any chat.</p>
+<div class="browser" aria-hidden="true"><div class="tabs"><i></i><i></i><i></i></div><div class="bar"><span class="slot"></span><span>Docs</span><span>Mail</span></div><div class="page"><span class="pill">${markSvg(16)}Baton</span><span class="cursor">✋</span></div></div>
+<ol><li>Show your bookmarks bar: <kbd data-kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd></li><li>Drag this button up into the bar: <a class="bm" href="${bm}" data-bm title="Drag me to your bookmarks bar" style="font-size:16px;padding:7px 15px 7px 7px;vertical-align:middle">${markSvg(24)}Baton</a></li><li>Open any chat and click it.</li></ol>
+<div class="acts"><a class="btn primary" href="/try">Try it on a practice chat</a><button class="btn ghost" type="button" data-close>Done</button></div></div></dialog>
+`;
 
   const script = `
 if(!matchMedia('(pointer:fine)').matches&&(navigator.maxTouchPoints>0||'ontouchstart' in window))document.documentElement.classList.add('touch');
 const mac=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent);$$('[data-kbd]').forEach(k=>k.textContent=mac?'⌘':'Ctrl');
-$$('[data-bm]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();toast('Drag this button to your bookmarks bar, then click it on a chat')}));
+const sheet=$('#sheet');$$('[data-bm]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();if(sheet.open)toast('Drag it up into your bookmarks bar');else sheet.showModal()}));
+$$('[data-close]').forEach(b=>b.onclick=()=>sheet.close());sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.close()});
 if(new URLSearchParams(location.search).has('deleted')){toast('Deleted. That link no longer works.');history.replaceState(null,'','/')}
 const pf=$('#pf'),pt=$('#pt'),perr=$('#perr'),pick=$('#pick'),pgo=$('#pgo');let fileName='';
 const send=async(text,name)=>{perr.textContent='';pgo.disabled=true;pgo.textContent='Packing…';
@@ -260,6 +287,7 @@ pf.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)readFile(f)}
     css: CSS,
     script,
     canonical: h.base + '/',
+    head: `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'Baton', applicationCategory: 'ProductivityApplication', operatingSystem: 'Any (web browser)', description: 'Move any AI chat to any other AI: ChatGPT, Claude, Gemini.', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, url: h.base + '/' }).replace(/</g, '\\u003c')}</script>`,
     ogImage: h.ogImage,
   });
 }

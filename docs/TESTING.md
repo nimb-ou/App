@@ -6,10 +6,12 @@ If anything fails, click **Copy debug report** in the Baton panel and send it ba
 ## Fastest test: the bookmark (1 minute, no install)
 
 1. Open <https://baton-relay.nimitjain-248.workers.dev>, show the bookmarks bar (Ctrl/⌘+Shift+B), and drag the orange **Baton** button onto it.
+   Then open <https://baton-relay.nimitjain-248.workers.dev/try> and click it there: the bar turns green when it works.
 2. Open a chat in ChatGPT (`chatgpt.com/c/…`), Claude (`claude.ai/chat/…`) or Gemini, and click the bookmark.
 3. A dark panel appears top right: **Continue this chat in…** Its status line should say what it found
    (for example "Full conversation, including tool outputs"). Click **Claude**.
-4. A new tab opens on Claude with the handoff prompt filled in. Send it and check that Claude restates the work.
+4. A new tab opens on Claude with the handoff already in the message box (goal, latest instruction, where it stopped, files).
+   Send it and check that Claude restates the work. Keys 1–4 pick a destination too.
 5. Try **Gemini** too: you get a page with **Copy & open Gemini**. Paste into Gemini.
 6. On your phone, open the same site, select all in the ChatGPT or Gemini app, copy, and paste into the box.
 

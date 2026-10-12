@@ -37,9 +37,10 @@ What each capture position can see: [research 07](docs/research/07-capture-surfa
 
 ![Baton](docs/brand/screens/home-hero.jpg)
 
-1. Drag the orange **Baton** button to your bookmarks bar (once).
-2. On any ChatGPT, Claude or Gemini chat, click it and pick **Claude**, **ChatGPT**, **Gemini** or **Just give me a link**.
-3. The AI you picked opens with the handoff ready. It reads where you left off and carries on.
+1. Drag the orange **Baton** button to your bookmarks bar (once), then [practise on a sample chat](https://baton-relay.nimitjain-248.workers.dev/try).
+2. On any ChatGPT, Claude or Gemini chat, click it and pick **Claude**, **ChatGPT**, **Gemini** or **Just give me a link** (or press 1–4).
+3. The AI you picked opens with the handoff already in its message box: the goal, the latest instruction, where it stopped,
+   the files and what didn't transfer. It works even if that AI can't open links.
 
 On a phone, use the paste box on the same page (select all in your AI app → copy → paste). Links are unguessable,
 expire in 7 days, and can be deleted from the browser that made them. See the [live demo](https://baton-relay.nimitjain-248.workers.dev/demo).
@@ -48,7 +49,7 @@ expire in 7 days, and can be deleted from the browser that made them. See the [l
 |---|---|
 | ![chooser](docs/brand/screens/chooser-on-chatgpt.png) | ![handoff](docs/brand/screens/handoff-mobile.jpg) |
 
-Brand and design system: [docs/brand/BRAND.md](docs/brand/BRAND.md). Build log: [journal 08](docs/journal/2026-10-11-08-baton-link.md), [journal 09](docs/journal/2026-10-11-09-product-and-brand.md).
+Brand and design system: [docs/brand/BRAND.md](docs/brand/BRAND.md). Chrome Web Store kit: [docs/store/](docs/store/CHROME_WEB_STORE.md). Build log: [journal 08](docs/journal/2026-10-11-08-baton-link.md), [journal 09](docs/journal/2026-10-11-09-product-and-brand.md), [journal 10](docs/journal/2026-10-12-10-top-tier-pass.md).
 
 ## Deeper capture: extension and connectors
 

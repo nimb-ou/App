@@ -49,6 +49,12 @@ export function ingestToBundle(b: IngestBody): BatonBundle {
 /** Text from the paste box: an export or share-page file if it is one, otherwise pasted chat text. */
 export function pasteToBundle(text: string, filename = ''): BatonBundle {
   if (!text.trim()) throw new Error('Paste a conversation first.');
+  if (/^\s*https?:\/\/\S+\s*$/.test(text)) {
+    const share = /chatgpt\.com\/share|chat\.openai\.com\/share|claude\.ai\/share|gemini\.google\.com\/share|g\.co\/gemini/i.test(text);
+    throw new Error(share
+      ? "That's a share link, not the chat itself. AI sites block servers from opening share links, so: open the link, select all, copy, and paste here (or click the Baton bookmark on that page)."
+      : "That's a link, not a conversation. Open it, select all, copy, and paste the text here.");
+  }
   if (detectFormat(text, filename).kind !== 'unknown') {
     const list = parseAny(text, filename);
     if (!list.length) throw new Error('That file has no conversations in it.');
@@ -59,7 +65,9 @@ export function pasteToBundle(text: string, filename = ''): BatonBundle {
 }
 
 function hostLabel(url?: string): string {
-  const h = url ? new URL(url).hostname : '';
+  const u = url ? new URL(url) : undefined;
+  const h = u?.hostname ?? '';
+  if (u?.pathname === '/try') return 'Baton practice page (a copy of a ChatGPT chat)';
   if (h.includes('gemini.google')) return 'Gemini (captured in your browser)';
   if (h.includes('perplexity')) return 'Perplexity (captured in your browser)';
   if (h.includes('copilot')) return 'Copilot (captured in your browser)';
@@ -87,7 +95,7 @@ export function captureToIngest(d: Capture): IngestBody {
   if (d.claude) return { source: 'claude-conversation', payload: d.claude, url: d.url };
   if (d.html && /(chatgpt\.com|chat\.openai\.com)\/share\//.test(d.url)) return { source: 'chatgpt-share-html', payload: d.html, url: d.url };
   if (d.messages?.length) {
-    const title = String(d.title ?? '').replace(/\s*[-|–—]\s*(Google )?(Gemini|ChatGPT|Claude|Perplexity|Copilot).*$/i, '').trim();
+    const title = String(d.title ?? '').replace(/\s*·\s*Baton$/, '').replace(/\s*[-|–—]\s*(Google )?(Gemini|ChatGPT|Claude|Perplexity|Copilot).*$/i, '').trim();
     return { source: 'messages', payload: { title: title || undefined, messages: d.messages }, url: d.url };
   }
   throw new Error('No conversation found on that page. Open a chat with at least one message and try again.');
@@ -131,14 +139,15 @@ mk.append(S('rect',{x:'8.6',y:'12.9',width:'17.4',height:'6.6',rx:'3.3',transfor
 const x=E('button','all:unset;cursor:pointer;width:28px;height:28px;border-radius:50%;text-align:center;line-height:28px;color:#9C988F;font-size:20px','×');x.setAttribute('aria-label','Close');
 hd.append(mk,E('div','flex:1;font-weight:800;font-size:16px;letter-spacing:-.01em','Continue this chat in'),x);
 const grid=E('div','display:grid;gap:8px'),st=E('div','margin-top:12px;color:#9C988F;font-size:12.5px','Reading this chat…');
-[['claude','Claude','#D97757'],['chatgpt','ChatGPT','#10A37F'],['gemini','Gemini','#4F7DF3'],['link','Just give me a link','']].forEach(([id,name,dot])=>{
+const here=/claude\.ai$/.test(H)?'claude':/chatgpt\.com|openai\.com/.test(H)?'chatgpt':/gemini\.google/.test(H)?'gemini':'',bs=[];
+[['claude','Claude','#D97757'],['chatgpt','ChatGPT','#10A37F'],['gemini','Gemini','#4F7DF3'],['link','Just give me a link','']].forEach(([id,name,dot],i)=>{if(id===here)name+=' (fresh chat)';
 const b=E('button','all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border-radius:12px;border:1px solid #2A2C2F;font-weight:650;font-size:15px;color:#F5F2EA;background:'+(dot?'#1E2022':'transparent'));
 if(dot)b.append(E('span','width:10px;height:10px;border-radius:50%;background:'+dot));
-b.append(E('span','flex:1',name),E('span','color:#9C988F','→'));
+b.append(E('span','flex:1',name),E('span','color:#6B675F;font:600 11px ui-monospace,Menlo,monospace;border:1px solid #2A2C2F;border-radius:5px;padding:1px 5px',String(i+1)));bs.push(b);
 b.onmouseenter=b.onfocus=()=>b.style.borderColor='#FF5A1F';b.onmouseleave=b.onblur=()=>b.style.borderColor='#2A2C2F';b.onclick=()=>go(id);grid.append(b)});
 card.append(hd,grid,st);root.append(card);document.documentElement.append(host);
 cap.then(()=>{st.textContent=d.error?'⚠ '+d.error:'✓ '+info+'. Nothing is sent until you choose.'});
-const esc=e=>{if(e.key==='Escape')close()};const close=()=>{host.remove();removeEventListener('keydown',esc,true);window.__batonOpen=null};
+const esc=e=>{if(e.key==='Escape')close();else if(/^[1-4]$/.test(e.key)&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')&&!(document.activeElement||{}).isContentEditable){e.preventDefault();e.stopPropagation();bs[+e.key-1].click()}};setTimeout(()=>bs[0].focus(),30);const close=()=>{host.remove();removeEventListener('keydown',esc,true);window.__batonOpen=null};
 addEventListener('keydown',esc,true);x.onclick=close;let busy=0;
 const go=async to=>{if(busy)return;busy=1;const N='baton'+Date.now(),w=window.open('about:blank',N);
 if(!w){st.textContent='Pop-up blocked. Allow pop-ups for this site, then click again.';busy=0;return}

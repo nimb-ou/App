@@ -178,7 +178,7 @@ describe('Baton Link share-URL parsing', () => {
 describe('Bookmarklet capture (form POST and JSON ingest)', () => {
   const base = 'https://relay.example';
   const make = () => createRelayHandler({ store: new AsyncRelayStore(new MemoryKV(), { ttlDays: 1 }), publicUrl: base });
-  const capture = { url: 'https://gemini.google.com/app/abc', title: 'Stumping sim - Google Gemini', messages: [{ role: 'user', content: 'Build a stumping simulator' }, { role: 'assistant', content: 'Here is the plan:\n\n1. Physics' }] };
+  const capture = { v: 2, url: 'https://gemini.google.com/app/abc', title: 'Stumping sim - Google Gemini', messages: [{ role: 'user', content: 'Build a stumping simulator' }, { role: 'assistant', content: 'Here is the plan:\n\n1. Physics' }] };
 
   it('the bookmarklet is valid JavaScript and only talks to this relay', async () => {
     const { bookmarkletSource } = await import('../src/relay/ingest.ts');
@@ -225,7 +225,7 @@ describe('Bookmarklet capture (form POST and JSON ingest)', () => {
 describe('Baton site: one-click destinations, paste, delete, pages', () => {
   const base = 'https://relay.example';
   const make = () => createRelayHandler({ store: new AsyncRelayStore(new MemoryKV(), { ttlDays: 7 }), publicUrl: base });
-  const capture = { url: 'https://gemini.google.com/app/abc', title: 'Trip plan - Google Gemini', messages: [{ role: 'user', content: 'Plan 3 days in Lisbon' }, { role: 'assistant', content: 'Day 1: Alfama' }] };
+  const capture = { v: 2, url: 'https://gemini.google.com/app/abc', title: 'Trip plan - Google Gemini', messages: [{ role: 'user', content: 'Plan 3 days in Lisbon' }, { role: 'assistant', content: 'Day 1: Alfama' }] };
   const form = (d: unknown) => new Request(`${base}/api/ingest-form`, { method: 'POST', body: new URLSearchParams({ d: JSON.stringify(d) }).toString() });
 
   it('choosing Claude or ChatGPT redirects straight into that AI with the prompt filled in', async () => {
@@ -237,6 +237,28 @@ describe('Baton site: one-click destinations, paste, delete, pages', () => {
     assert.match(decodeURIComponent(loc), /https:\/\/relay\.example\/h\/BTN-[0-9A-Z-]{14}/);
     assert.match((await handle(form({ ...capture, to: 'chatgpt' }))).headers.get('location')!, /^https:\/\/chatgpt\.com\/\?q=/);
     assert.match((await handle(form({ ...capture, to: 'gemini' }))).headers.get('location')!, /\/h\/BTN-[0-9A-Z-]+\?to=gemini$/);
+  });
+
+  it('an old bookmark (no version) lands on the link page with an update tip', async () => {
+    const handle = make();
+    const { v: _v, ...old } = capture;
+    const loc = (await handle(form(old))).headers.get('location')!;
+    assert.match(loc, /\?new=1&upd=1$/);
+    assert.match(await (await handle(new Request(loc))).text(), /older version/);
+  });
+
+  it('the pre-filled prompt carries the work itself, not just the link', async () => {
+    const handle = make();
+    const loc = decodeURIComponent((await handle(form({ ...capture, to: 'chatgpt' }))).headers.get('location')!);
+    assert.match(loc, /GOAL \(my first message\):\nPlan 3 days in Lisbon/);
+    assert.match(loc, /WHERE IT STOPPED \(last reply\):\nDay 1: Alfama/);
+    assert.ok(loc.length < 8000);
+  });
+
+  it('a pasted share link gets a clear explanation', async () => {
+    const r = await make()(new Request(`${base}/api/paste`, { method: 'POST', body: JSON.stringify({ text: 'https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388' }) }));
+    assert.equal(r.status, 400);
+    assert.match(((await r.json()) as { error: string }).error, /share link, not the chat itself/);
   });
 
   it('only the creating browser can delete a handoff', async () => {
@@ -283,6 +305,11 @@ describe('Baton site: one-click destinations, paste, delete, pages', () => {
     assert.match(html, /class="bm only-fine" href="javascript:/);
     assert.match(html, /id="pf"/);
     assert.match(await (await handle(new Request(`${base}/privacy`))).text(), /What happens to your chat/);
+    const tryHtml = await (await handle(new Request(`${base}/try`))).text();
+    assert.match(tryHtml, /data-message-author-role="user"/);
+    assert.match(tryHtml, /demo prompt/);
+    assert.equal(((await (await handle(new Request(`${base}/manifest.webmanifest`))).json()) as { start_url: string }).start_url, '/#paste');
+    assert.match(home.headers.get('strict-transport-security') ?? '', /max-age/);
     assert.match(await (await handle(new Request(`${base}/demo`))).text(), /demo prompt/);
     assert.match(await (await handle(new Request(`${base}/demo.md`))).text(), /# Baton handoff/);
     assert.equal((await handle(new Request(`${base}/favicon.svg`))).headers.get('content-type'), 'image/svg+xml');

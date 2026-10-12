@@ -8,7 +8,7 @@ import { escapeHtml, plural, truncate } from '../core/util.ts';
 import type { FileMap } from '../core/zip.ts';
 import { markdownToHtml } from '../render/mdlite.ts';
 import { fmtBytes } from '../render/turns.ts';
-import { aiBrief, continuePrompt } from '../relay/linkpage.ts';
+import { aiBrief, continuePrompt, copyText } from '../relay/linkpage.ts';
 import { DESTINATIONS, markSvg, shell } from './brand.ts';
 
 export interface HandoffPageInput {
@@ -19,6 +19,7 @@ export interface HandoffPageInput {
   expiresAt?: string; // absent for the permanent demo
   owner?: boolean; // this browser created it: offer delete
   banner?: 'new' | 'gemini' | 'deleted-failed';
+  update?: boolean; // came from an old version of the bookmark
   ogImage?: string;
 }
 
@@ -139,7 +140,8 @@ export function handoffPage(p: HandoffPageInput): string {
   const filesOk = a.recovered + a.attached;
   const lostFiles = a.lost + a.stale;
   const src = sourceKey(b.source.tool);
-  const prompt = continuePrompt(b.title, p.selfUrl, b.source.tool);
+  const prompt = continuePrompt(b, p.selfUrl);
+  const full = copyText(b, p.files, p.selfUrl);
   const q = encodeURIComponent(prompt);
   const brief = aiBrief(b, p.files);
   const losses = b.loss.filter((l) => l.severity !== 'info');
@@ -149,9 +151,9 @@ export function handoffPage(p: HandoffPageInput): string {
   const banner =
     p.banner === 'new'
       ? `<div class="banner" role="status"><div class="grow"><b>Your handoff link is ready.</b> <span class="mu">Send it anywhere, or pick an AI below.</span></div>
-<div class="linkbox"><input id="lnk" readonly value="${escapeHtml(p.selfUrl)}" aria-label="Handoff link"><button class="btn dark sm" type="button" data-copy-link>Copy</button></div></div>`
+<div class="linkbox"><input id="lnk" readonly value="${escapeHtml(p.selfUrl)}" aria-label="Handoff link"><button class="btn dark sm" type="button" data-copy-link>Copy</button></div>${p.update ? '<div class="mu" style="flex:1 1 100%">Your Baton bookmark is an older version. <a href="/">Drag the new one</a>: it sends chats straight into Claude, ChatGPT or Gemini.</div>' : ''}</div>`
       : p.banner === 'gemini'
-        ? `<div class="banner" role="status"><div class="grow"><b>One more tap for Gemini.</b> <span class="mu">Gemini can't be pre-filled, so Baton copies the prompt for you. Then paste it with Ctrl/⌘ V.</span></div>
+        ? `<div class="banner" role="status"><div class="grow"><b>One more tap for Gemini.</b> <span class="mu">Gemini can't be pre-filled, so Baton copies the whole handoff for you. Then paste it with Ctrl/⌘ V.</span></div>
 <button class="btn primary" type="button" data-dest="gemini"><span class="dot" style="background:#4F7DF3"></span>Copy &amp; open Gemini</button></div>`
         : '';
 
@@ -178,7 +180,7 @@ ${banner}
 <div class="chips"><span class="chip"><b>${s.userMessages}</b> ${s.userMessages === 1 ? 'prompt' : 'prompts'}</span><span class="chip"><b>${s.assistantMessages}</b> ${s.assistantMessages === 1 ? 'reply' : 'replies'}</span>${s.toolCalls ? `<span class="chip"><b>${s.toolCalls}</b> tool steps</span>` : ''}${filesOk ? `<span class="chip ok"><b>${filesOk}</b> ${filesOk === 1 ? 'file' : 'files'}</span>` : ''}${lostFiles ? `<span class="chip bad"><b>${lostFiles}</b> not recoverable</span>` : ''}</div>
 <section class="card go" aria-labelledby="go-h"><h2 id="go-h">Continue in</h2>
 <div class="go-grid">${DESTINATIONS.map((d) => `<a class="btn" data-dest="${d.id}" href="${escapeHtml(hrefFor[d.id])}" target="_blank" rel="noopener"><span class="dot" style="background:${d.dot}"></span>${d.name}</a>`).join('')}</div>
-<div class="go-more"><button class="btn ghost sm" type="button" data-copy-prompt>Copy prompt for any AI</button><button class="btn ghost sm" type="button" data-copy-link>Copy link</button><a class="btn ghost sm" href="${escapeHtml(p.selfUrl)}.zip">Download .zip</a></div></section>
+<div class="go-more"><button class="btn ghost sm" type="button" data-copy-prompt>Copy for any AI</button><button class="btn ghost sm" type="button" data-copy-link>Copy link</button><a class="btn ghost sm" href="${escapeHtml(p.selfUrl)}.zip">Download .zip</a></div></section>
 <p class="ai-note">For AI assistants: the complete brief is below and as plain text at <a href="${escapeHtml(md)}">${escapeHtml(md)}</a>.</p>
 <div class="tabs">
 <input class="sr" type="radio" name="tab" id="t-conv" checked><input class="sr" type="radio" name="tab" id="t-brief"><input class="sr" type="radio" name="tab" id="t-files"><input class="sr" type="radio" name="tab" id="t-miss">
@@ -195,11 +197,11 @@ ${p.owner ? `<form class="owner" method="post" action="/h/${escapeHtml(p.code)}/
 </main>`;
 
   const script = `
-const P=${JSON.stringify(prompt).replace(/</g, '\\u003c')},L=${JSON.stringify(p.selfUrl).replace(/</g, '\\u003c')};
+const P=${JSON.stringify(full).replace(/</g, '\\u003c')},L=${JSON.stringify(p.selfUrl).replace(/</g, '\\u003c')};
 let last='';try{last=localStorage.getItem('baton:dest')||''}catch{}
 $$('[data-dest]').forEach(el=>{if(el.dataset.dest===last&&el.closest('.go-grid'))el.classList.add('last');el.addEventListener('click',async ev=>{const d=el.dataset.dest;try{localStorage.setItem('baton:dest',d)}catch{}
- if(d==='gemini'){ev.preventDefault();await copy(P);toast('Prompt copied. Paste it in Gemini');window.open('https://gemini.google.com/app','_blank','noopener')}})});
-$$('[data-copy-prompt]').forEach(el=>el.onclick=async()=>toast(await copy(P)?'Prompt copied. Paste it into any AI':'Copy blocked. Open the Brief tab and copy from there'));
+ if(d==='gemini'){ev.preventDefault();await copy(P);toast('Handoff copied. Paste it into Gemini');window.open('https://gemini.google.com/app','_blank','noopener')}})});
+$$('[data-copy-prompt]').forEach(el=>el.onclick=async()=>toast(await copy(P)?'Handoff copied. Paste it into any AI':'Copy blocked. Open the Brief tab and copy from there'));
 $$('[data-copy-link]').forEach(el=>el.onclick=async()=>toast(await copy(L)?'Link copied':'Copy blocked'));
 $$('.more').forEach(el=>el.onclick=()=>{const m=el.closest('.msg');m.classList.toggle('clamp');el.textContent=m.classList.contains('clamp')?'Show more':'Show less'});
 const lnk=$('#lnk');if(lnk){lnk.onfocus=()=>lnk.select();copy(L).then(ok=>ok&&toast('Link copied'))}

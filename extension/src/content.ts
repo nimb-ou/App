@@ -11,6 +11,9 @@ import { ADAPTERS, adapterFor, domTurns, type Adapter, type Net } from './adapte
 import { attachFiles, fillComposer } from './inject.ts';
 
 declare const chrome: any;
+/** The public Baton server, set at build time (scripts/build-extension.mjs, BATON_RELAY_URL). Options can override it. */
+declare const __BATON_RELAY__: string;
+const DEFAULT_RELAY = typeof __BATON_RELAY__ === 'string' ? __BATON_RELAY__ : '';
 
 interface Settings {
   relay?: string;
@@ -57,7 +60,7 @@ window.addEventListener('message', (e) => {
 });
 
 // ───────── debug log (for "Copy debug report"; never includes conversation text) ─────────
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 const debugLog: string[] = [];
 function log(m: string): void {
   debugLog.push(`${new Date().toISOString().slice(11, 19)} ${m}`);
@@ -82,7 +85,7 @@ const net: Net = {
 
 async function settings(): Promise<Settings> {
   const s = (await chrome.storage.sync.get(['relay', 'token', 'seal', 'redact'])) as Partial<Settings>;
-  return { relay: s.relay || undefined, token: s.token || undefined, seal: s.seal !== false, redact: s.redact !== false };
+  return { relay: s.relay || DEFAULT_RELAY || undefined, token: s.token || undefined, seal: s.seal === true, redact: s.redact !== false };
 }
 
 // ───────── capture ─────────
@@ -278,7 +281,7 @@ async function insertHandoff(p: Pending): Promise<void> {
   const how = await attachFiles(doc, adapter.composer, files);
   const filled = await fillComposer(doc, adapter.composer, p.prompt + (how === 'input' ? '' : (p.inline ?? '')) /* a synthetic paste may be ignored by the site */);
   log(`insert: attach=${how} filled=${filled}`);
-  setStatus(filled ? `Handoff inserted${how !== 'none' ? ` with ${files.length} file(s)` : ''}. Review it, then press send.` : 'Could not find the message box. Use "Copy prompt" from the source tab instead.', filled ? 'ok' : 'err');
+  setStatus(filled ? `Handoff inserted${how !== 'none' ? ` with ${files.length} file(s)` : ''}. Review it, then press send.` : 'Could not find the message box. Use "Copy for any AI" from the source tab instead.', filled ? 'ok' : 'err');
   doc.documentElement.dataset.batonReceived = filled ? `ok:${how}` : 'fail';
 }
 
@@ -287,36 +290,42 @@ const host = doc.createElement('baton-panel');
 const root = host.attachShadow({ mode: 'open' });
 root.innerHTML = `<style>
 :host{all:initial}
-.fab{position:fixed;right:18px;bottom:88px;z-index:2147483646;font:700 13px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;background:#14201b;color:#fff;border:0;border-radius:6px;padding:10px 12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-.p{position:fixed;right:18px;bottom:134px;z-index:2147483647;width:340px;max-width:calc(100vw - 36px);max-height:70vh;overflow:auto;background:#fff;color:#14201b;border:1px solid #14201b;border-radius:8px;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-@media (prefers-color-scheme:dark){.p{background:#161e1b;color:#e4ebe7;border-color:#9aaba3}.fab{background:#e4ebe7;color:#0f1513}.st{color:#9aaba3}button.b{background:#161e1b;color:#e4ebe7;border-color:#9aaba3}}
-.h{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #d7dfdb;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
-.c{padding:10px 12px;display:grid;gap:8px}
-button.b{font:600 13px system-ui,sans-serif;padding:7px 10px;border-radius:5px;border:1px solid #14201b;background:#fff;color:#14201b;cursor:pointer}
-button.pri{background:#2343c9;border-color:#2343c9;color:#fff}
+*{box-sizing:border-box}
+.fab{position:fixed;right:18px;bottom:88px;z-index:2147483646;width:46px;height:46px;border-radius:14px;border:0;padding:0;background:#121314;cursor:pointer;display:grid;place-items:center;box-shadow:0 10px 26px -8px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08);transition:transform .12s}
+.fab:hover{transform:translateY(-2px)}.fab svg{width:30px;height:30px}
+.p{position:fixed;right:18px;bottom:144px;z-index:2147483647;width:340px;max-width:calc(100vw - 36px);max-height:70vh;overflow:auto;background:#121314;color:#F5F2EA;border-radius:20px;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;box-shadow:0 24px 60px -12px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
+.h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 6px;font-weight:800;font-size:16px;letter-spacing:-.01em}
+.h .ttl{display:flex;align-items:center;gap:10px}.h svg{width:24px;height:24px}
+.c{padding:8px 16px 16px;display:grid;gap:10px}
+button.b{font:650 13.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;padding:9px 12px;border-radius:12px;border:1px solid #2A2C2F;background:#1E2022;color:#F5F2EA;cursor:pointer}
+button.b:hover,button.b:focus-visible{border-color:#FF5A1F;outline:none}
+button.pri{background:#FF5A1F;border-color:#FF5A1F;color:#1C0A02;font-weight:800;padding:12px}
 button:disabled{opacity:.5;cursor:default}
 .row{display:flex;flex-wrap:wrap;gap:6px}
-.st{font-size:13px;color:#5b6b64;min-height:1.2em}.st.ok{color:#1f7a4d}.st.err{color:#b4271c}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:13px;font-variant-numeric:tabular-nums}
-.stats b{font-size:16px}
-.cmp{font-size:12px;color:#1f7a4d}
-.link{font:12px ui-monospace,monospace;word-break:break-all;background:rgba(127,127,127,.12);padding:6px;border-radius:4px}
-.x{background:none;border:0;font-size:18px;cursor:pointer;color:inherit}
+.lbl{font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#9C988F;margin-top:4px}
+.st{font-size:12.5px;color:#9C988F;min-height:1.2em}.st.ok{color:#5FC891}.st.err{color:#F2887E}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:13px;font-variant-numeric:tabular-nums;color:#D2CFC7}
+.stats b{font-size:16px;color:#F5F2EA}
+.cmp{font-size:12px;color:#5FC891}
+.link{font:12px ui-monospace,monospace;word-break:break-all;background:#1E2022;padding:8px;border-radius:10px}
+.x{background:none;border:0;font-size:20px;cursor:pointer;color:#9C988F;width:28px;height:28px;border-radius:50%}
+input{flex:1;min-width:0;font:13px ui-monospace,monospace;padding:9px 10px;border:1px solid #2A2C2F;border-radius:12px;background:#0E0F10;color:#F5F2EA}
+input:focus{outline:none;border-color:#FF5A1F}
 </style>
-<button class="fab" id="fab" title="Baton: carry this work to another AI">Baton</button>
+<button class="fab" id="fab" title="Baton: continue this chat in another AI" aria-label="Baton"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="8.6" y="12.9" width="17.4" height="6.6" rx="3.3" transform="rotate(-38 17.3 16.2)" fill="#FF5A1F"/><path d="M6.2 24.6l3.4-2.7M5.6 19.4l2.3-1.8" stroke="#FF5A1F" stroke-width="2.1" stroke-linecap="round" opacity=".55" fill="none"/></svg></button>
 <div class="p" id="panel" hidden>
-  <div class="h"><span>Baton · ${adapter.label}</span><button class="x" id="close" aria-label="Close">×</button></div>
+  <div class="h"><span class="ttl"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="8.6" y="12.9" width="17.4" height="6.6" rx="3.3" transform="rotate(-38 17.3 16.2)" fill="#FF5A1F"/><path d="M6.2 24.6l3.4-2.7M5.6 19.4l2.3-1.8" stroke="#FF5A1F" stroke-width="2.1" stroke-linecap="round" opacity=".55" fill="none"/></svg><span>Baton · ${adapter.label}</span></span><button class="x" id="close" aria-label="Close">×</button></div>
   <div class="c">
     <button class="b pri" id="cap">Capture this conversation</button>
     <div class="stats" id="stats" hidden></div>
     <div class="cmp" id="cmp" hidden></div>
     <div id="acts" hidden>
-      <div class="row"><button class="b" id="copy">Copy prompt</button><button class="b" id="save">Save .zip</button><button class="b" id="send">Send to relay</button></div>
-      <div style="margin-top:8px;font-size:12px;font-weight:700">Continue in</div>
+      <div class="row"><button class="b" id="copy">Copy for any AI</button><button class="b" id="send">Get a link</button><button class="b" id="save">Save .zip</button></div>
+      <div class="lbl">Continue in</div>
       <div class="row" id="targets"></div>
     </div>
-    <div style="margin-top:4px;font-size:12px;font-weight:700">Pick up a handoff here</div>
-    <div class="row"><input id="code" placeholder="BTN-… code or link" aria-label="Pickup code or link" style="flex:1;min-width:0;font:13px ui-monospace,monospace;padding:6px;border:1px solid #9aaba3;border-radius:5px;background:transparent;color:inherit"><button class="b" id="pick">Insert</button></div>
+    <div class="lbl">Pick up a handoff here</div>
+    <div class="row"><input id="code" placeholder="BTN-… code or link" aria-label="Pickup code or link"><button class="b" id="pick">Insert</button></div>
     <div class="link" id="link" hidden></div>
     <div class="st" id="st" role="status">${streams.length ? '' : 'Ready.'}</div>
     <div class="st" id="tap"></div>
@@ -357,7 +366,7 @@ function renderResult(b: BatonBundle, captured: number, failed: number) {
   ]
     .map(([k, v]) => `<div><b>${v}</b> ${k}</div>`)
     .join('');
-  if (adapter.id === 'chatgpt') {
+  if (adapter.id === 'chatgpt' && !/^\/share\//.test(location.pathname)) {
     $('cmp').hidden = false;
     $('cmp').textContent = `A share link of this chat would keep 0 tool outputs and 0 files. Captured here: ${outputs} outputs, ${captured} files.`;
   }
