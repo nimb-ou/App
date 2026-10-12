@@ -1,0 +1,10 @@
+{
+  "name": "baton",
+  "version": "0.1.0",
+  "description": "Hand off AI work between tools: import ChatGPT share links, ChatGPT/Claude exports and Claude Code sessions as audited, agent-ready bundles (prompts, reasoning, recovered files, loss audit); export sessions to other agents, Jira, Salesforce, Zendesk or Slack.",
+  "author": { "name": "nimb-ou" },
+  "homepage": "https://github.com/nimb-ou/App",
+  "repository": "https://github.com/nimb-ou/App",
+  "license": "Apache-2.0",
+  "keywords": ["handoff", "chatgpt", "export", "portability", "mcp", "agent-skills"]
+}

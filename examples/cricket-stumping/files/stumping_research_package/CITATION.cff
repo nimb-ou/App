@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this research prototype, cite the repository version you used."
+title: "Stumping Recovery Lab: A Deadline-Constrained Foot-Recovery Model"
+type: software
+version: 0.1.0
+date-released: 2026-10-11
+abstract: >-
+  An interactive hypothesis-generating model comparing slide/drag and
+  lift-and-plant foot-recovery strategies during cricket stumping recovery.
+  Outputs are conditional on synthetic assumptions and require empirical
+  validation; this software is not peer-reviewed or a validated predictor.
+license: MIT

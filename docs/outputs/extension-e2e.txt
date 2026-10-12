@@ -1,0 +1,10 @@
+extension → extension/dist-test/
+captured stats: 1 prompts · 1 tool outputs · 3 files · 0 files lost
+vs share link : A share link of this chat would keep 0 tool outputs and 0 files. Captured here: 1 outputs, 2 files.
+zip           : 14 entries; report.pdf exact; tool output present; live stream kept
+claude tab    : ok:input | composer starts: "I'm continuing a piece of work I started in ChatGPT (capture" | files: HANDOFF.md:3166, app.py:13
+dom fallback  : API 500 → captured 2 turns from the page, reason recorded
+debug report  : Baton extension 0.3.0 · adapter chatgpt · 127.0.0.1:42875/c/:id
+gemini pickup : code BTN-0HF6… → composer filled; attach via paste
+
+EXTENSION E2E: PASS

@@ -1,0 +1,188 @@
+<title>Baton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a shipping manifest. Intake on the left, the declared cargo (what was carried, rebuilt, lost) on the right. */
+:root {
+  --paper: #f3f5f4; --surface: #ffffff; --ink: #14201b; --muted: #5b6b64; --line: #d7dfdb;
+  --accent: #2343c9; --accent-ink: #ffffff; --accent-soft: #e6eafb;
+  --ok: #1f7a4d; --warn: #9a6400; --bad: #b4271c; --ok-soft: #e1f2e8; --warn-soft: #fbefd6; --bad-soft: #fbe3e0;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0f1513; --surface: #161e1b; --ink: #e4ebe7; --muted: #9aaba3; --line: #2a3632;
+  --accent: #8ea4ff; --accent-ink: #0d1430; --accent-soft: #1d2647;
+  --ok: #69c897; --warn: #e6b450; --bad: #f08b80; --ok-soft: #173326; --warn-soft: #362b12; --bad-soft: #3a1a17; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0f1513; --surface: #161e1b; --ink: #e4ebe7; --muted: #9aaba3; --line: #2a3632;
+  --accent: #8ea4ff; --accent-ink: #0d1430; --accent-soft: #1d2647;
+  --ok: #69c897; --warn: #e6b450; --bad: #f08b80; --ok-soft: #173326; --warn-soft: #362b12; --bad-soft: #3a1a17; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--paper); color: var(--ink); font: 16px/1.55 var(--body); margin: 0 }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 56px }
+header.top { display: grid; gap: 10px; padding-bottom: 22px; border-bottom: 2px solid var(--ink) }
+.brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap }
+.brand h1 { font: 800 clamp(40px, 7vw, 68px)/0.9 var(--display); font-stretch: 72%; letter-spacing: -0.01em; margin: 0; text-transform: uppercase }
+.brand .ver { font: 600 12px var(--mono); color: var(--muted) }
+.lede { font-size: 18px; max-width: 62ch; margin: 0; text-wrap: balance }
+.privacy { font: 600 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ok) }
+.grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 28px; margin-top: 26px; align-items: start }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+h2 { font: 700 13px/1 var(--display); font-stretch: 110%; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px }
+.intake { display: grid; gap: 16px; min-width: 0 }
+.drop { display: grid; gap: 6px; place-items: center; text-align: center; padding: 28px 16px; border: 2px dashed var(--line); border-radius: 6px; background: var(--surface); cursor: pointer; transition: border-color .15s, background .15s }
+.drop:hover, .drop.over, .drop:focus-within { border-color: var(--accent); background: var(--accent-soft) }
+.drop strong { font: 700 20px var(--display); font-stretch: 90% }
+.drop small { color: var(--muted) }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0 }
+.formats { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 14px }
+.formats li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; border-bottom: 1px dotted var(--line); padding-bottom: 6px }
+.formats code { font: 12px var(--mono); color: var(--accent) }
+details.paste summary, .opts legend { font-weight: 700; cursor: pointer }
+textarea { width: 100%; min-height: 140px; font: 12.5px/1.45 var(--mono); padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); resize: vertical }
+.opts { border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px 12px; display: grid; gap: 6px; margin: 0 }
+.opts label { display: flex; gap: 8px; align-items: flex-start; font-size: 15px }
+.opts input { margin-top: 4px; accent-color: var(--accent) }
+.linkhelp { font-size: 14.5px; background: var(--surface); border-left: 3px solid var(--accent); padding: 12px 14px; display: grid; gap: 8px }
+.linkhelp p { margin: 0 }
+.cli { display: flex; gap: 8px; align-items: center; min-width: 0 }
+.cli code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 12px var(--mono); background: var(--paper); padding: 6px 8px; border-radius: 4px }
+button { font: 700 14px var(--body); border-radius: 5px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--ink); background: var(--surface); color: var(--ink) }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+button.small { padding: 5px 10px; font-size: 13px }
+button:focus-visible, select:focus-visible, textarea:focus-visible, .drop:focus-within { outline: 3px solid var(--accent); outline-offset: 2px }
+select { font: 15px var(--body); padding: 7px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 100% }
+.status { margin: 0; font-size: 14.5px; min-height: 1.5em; color: var(--muted) }
+.status[data-kind="ok"] { color: var(--ok) } .status[data-kind="warn"] { color: var(--warn) } .status[data-kind="err"] { color: var(--bad); font-weight: 700 }
+.out { min-width: 0; display: grid; gap: 18px }
+.manifest { background: var(--surface); border: 1px solid var(--ink); border-radius: 6px; overflow: hidden }
+.mhead { padding: 16px 18px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 4px }
+.mhead .k { font: 600 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap }
+.mhead .k .ex { color: var(--warn) }
+.mhead h3 { font: 800 clamp(24px, 3.4vw, 34px)/1.05 var(--display); font-stretch: 80%; margin: 0; text-wrap: balance; overflow-wrap: anywhere }
+.mbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.mbody > div { padding: 14px 18px; border-top: 1px solid var(--line); min-width: 0 }
+.mbody > div + div { border-left: 1px solid var(--line) }
+dl.counts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 }
+dl.counts dt { font: 600 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+dl.counts dd { margin: 0; font: 800 28px/1.1 var(--display); font-variant-numeric: tabular-nums }
+.bar { display: flex; height: 12px; border-radius: 3px; overflow: hidden; background: var(--paper); margin: 6px 0 8px; gap: 2px }
+.seg.s-recovered, .dot.s-recovered { background: var(--ok) } .seg.s-attached, .dot.s-attached { background: var(--accent) }
+.seg.s-stale, .dot.s-stale { background: var(--warn) } .seg.s-lost, .dot.s-lost { background: var(--bad) }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; font-variant-numeric: tabular-nums }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px }
+.lossl { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 14px }
+.lossl li { display: flex; gap: 8px } .lossl b { color: var(--bad); font-variant-numeric: tabular-nums; min-width: 3ch }
+.lossl .none { color: var(--ok) }
+.root { padding: 9px 18px; border-top: 1px solid var(--line); font: 11.5px var(--mono); color: var(--muted); overflow-wrap: anywhere; background: var(--paper) }
+.actions { display: flex; flex-wrap: wrap; gap: 8px }
+.tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--ink); overflow-x: auto }
+.tabs button { border: 0; border-radius: 5px 5px 0 0; background: none; color: var(--muted); padding: 9px 14px; white-space: nowrap }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper) }
+#panel { background: var(--surface); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 6px 6px; padding: 4px 20px 18px; min-width: 0 }
+#panel textarea { min-height: 380px; margin-top: 8px }
+.hint { color: var(--muted); font-size: 14px; margin: 12px 0 0 }
+.md { max-width: 78ch; overflow-wrap: anywhere }
+.md h1 { font: 800 26px/1.15 var(--display); font-stretch: 85% } .md h2 { font: 800 19px var(--display); color: var(--ink); letter-spacing: 0; text-transform: none; margin: 26px 0 8px }
+.md h3 { font: 700 16px var(--display) }
+.md blockquote { margin: 8px 0; padding: 6px 14px; border-left: 3px solid var(--accent); background: var(--paper) }
+.md pre { background: var(--paper); padding: 10px; overflow-x: auto; border-radius: 4px; font: 12px/1.45 var(--mono) }
+.md code { font: .88em var(--mono) } .md p code, .md li code, .md td code { background: var(--paper); padding: 1px 4px; border-radius: 3px }
+.md .tbl { overflow-x: auto } .md table { border-collapse: collapse; font-size: 13.5px; width: 100% } .md th, .md td { border-bottom: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top }
+.md a { color: var(--accent) }
+.files { list-style: none; padding: 0; margin: 10px 0 0; display: grid }
+.files li { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; gap: 4px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: baseline }
+.files code { font: 12.5px var(--mono); overflow-wrap: anywhere } .files .sz { font: 12px var(--mono); color: var(--muted) }
+.files small { grid-column: 2 / 4; color: var(--muted) }
+.tag { font: 700 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; text-align: center }
+.tag.s-recovered { background: var(--ok-soft); color: var(--ok) } .tag.s-attached { background: var(--accent-soft); color: var(--accent) }
+.tag.s-stale { background: var(--warn-soft); color: var(--warn) } .tag.s-lost { background: var(--bad-soft); color: var(--bad) }
+footer { margin-top: 44px; padding-top: 18px; border-top: 2px solid var(--ink); display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; font-size: 14.5px }
+footer h4 { font: 700 13px var(--display); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 6px }
+footer p { margin: 0; color: var(--muted) } footer code { font: 12px var(--mono); color: var(--ink) }
+footer a { color: var(--accent) }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Baton</h1><span class="ver">v0.1 · baton.bundle/v1</span></div>
+    <p class="lede">Move a piece of AI work to another tool, teammate or system with its prompts, reasoning, code and files, plus a written account of anything the source failed to hand over.</p>
+    <span class="privacy">Runs in your browser · nothing is uploaded</span>
+  </header>
+
+  <div class="grid">
+    <section class="intake" aria-labelledby="h-intake">
+      <h2 id="h-intake">Source</h2>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept=".html,.htm,.json,.jsonl,.zip,.txt">
+        <strong>Drop a conversation file</strong>
+        <small>or click to choose one</small>
+      </label>
+      <ul class="formats">
+        <li><code>share.html</code><span>ChatGPT share page saved from the browser</span></li>
+        <li><code>export.zip</code><span>ChatGPT or Claude account data export</span></li>
+        <li><code>*.jsonl</code><span>Claude Code session log</span></li>
+        <li><code>messages.json</code><span>Any <code>[{role, content}]</code> chat log</span></li>
+      </ul>
+      <div class="linkhelp">
+        <p><b>Starting from a share link?</b> Browsers block one site from reading another's pages, so this page can't fetch it. Open the link, save it with Ctrl/Cmd+S as "Webpage, HTML only", and drop the file here. Or let the command line fetch it:</p>
+        <div class="cli"><code id="cliCmd">npx github:nimb-ou/App import https://chatgpt.com/share/…</code><button class="small" id="bCli" type="button">Copy</button></div>
+      </div>
+      <details class="paste">
+        <summary>Paste text instead</summary>
+        <textarea id="paste" aria-label="Pasted conversation" placeholder="Paste page source, conversations.json, or a .jsonl session"></textarea>
+        <button type="button" id="pasteGo">Convert pasted text</button>
+      </details>
+      <fieldset class="opts">
+        <legend>Options</legend>
+        <label><input type="checkbox" id="optRedact" checked> Redact keys, tokens, emails and phone numbers</label>
+        <label><input type="checkbox" id="optHidden"> Keep private context (system prompts, memory)</label>
+      </fieldset>
+      <div id="pickerRow" hidden><label for="pick"><b>Conversation in this export</b></label><select id="pick"></select></div>
+      <p class="status" id="status" role="status" aria-live="polite">Loading the example…</p>
+    </section>
+
+    <section class="out" id="out" aria-labelledby="h-out" hidden>
+      <h2 id="h-out">Handoff manifest</h2>
+      <article class="manifest">
+        <div class="mhead">
+          <div class="k"><span id="mSource"></span><span class="ex" id="mSample" hidden>Example</span></div>
+          <h3 id="mTitle"></h3>
+        </div>
+        <div class="mbody">
+          <div><dl class="counts" id="mCounts"></dl></div>
+          <div><h2>Files</h2><div class="bar" id="mBar"></div><div class="legend" id="mLegend"></div></div>
+          <div><h2>Did not transfer</h2><ul class="lossl" id="mLoss"></ul></div>
+        </div>
+        <div class="root">sha256 root <span id="mRoot"></span></div>
+      </article>
+      <div class="actions">
+        <button class="primary" id="bCopyPrompt" type="button">Copy paste-ready prompt</button>
+        <button id="bCopyHandoff" type="button">Copy HANDOFF.md</button>
+        <button id="bZip" type="button">Save bundle (.zip)</button>
+        <button id="bHandoff" type="button">Save HANDOFF.md</button>
+      </div>
+      <div>
+        <div class="tabs" role="tablist">
+          <button type="button" data-tab="handoff" role="tab">Handoff</button>
+          <button type="button" data-tab="prompt" role="tab">Paste prompt</button>
+          <button type="button" data-tab="files" role="tab">Files</button>
+          <button type="button" data-tab="loss" role="tab">Loss audit</button>
+        </div>
+        <div id="panel" role="tabpanel"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div><h4>Into a coding agent</h4><p>Unzip the bundle into your repo, or drop it in <code>.claude/skills/</code>. <code>SKILL.md</code> turns it into a "continue this work" skill for Claude Code, Codex and other Skill-aware agents.</p></div>
+    <div><h4>Into any chat</h4><p>Copy the paste-ready prompt. It carries your prompts verbatim, where the work stopped, the file list and what is missing.</p></div>
+    <div><h4>Into business systems</h4><p>The CLI files a handoff as a Salesforce Case, a Jira issue, a Zendesk ticket or a Slack message: <code>baton sink --to jira</code>.</p></div>
+    <div><h4>Open source</h4><p>Format, CLI, MCP server and this page live at <a href="https://github.com/nimb-ou/App" target="_blank" rel="noopener noreferrer">github.com/nimb-ou/App</a>.</p></div>
+  </footer>
+</div>
+<script>/*__APP__*/</script>

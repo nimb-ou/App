@@ -36,3 +36,18 @@ export of the user's own data. Each one breaks the trust the product depends on.
   This mirrors standards-body economics.
 - **Bring-your-own-agent summarisation:** heavy LLM work runs on the user's existing subscription inside Claude Code,
   Codex or Cursor via the Skill, so Baton never needs an inference budget for free users.
+
+## Update (prompt 004): the relay is the product
+
+With capture moved inside the assistants, the **relay hub** is the natural commercial unit. The open-source relay
+stays free to self-host. These parties pay:
+
+| Offer | Buyer | Price shape | Why they pay |
+|---|---|---|---|
+| **Hosted relay** (personal) | power users | free tier (7-day TTL, 25 MB) → $5/mo (90-day history, 1 GB, custom codes) | No server to run. Works in ChatGPT and Claude connectors immediately. |
+| **Team hub** | teams, agencies | $8/user/mo | Shared handoff inbox, "send to teammate", retention, SSO. A handoff becomes the unit of collaboration across *different* AIs. |
+| **Enterprise capture** | IT, compliance | per seat | Managed extension (Chrome Enterprise policy) captures sanctioned and shadow AI use with consent, redaction, retention and hash-chained records, routed to Salesforce, ServiceNow, Jira or an archive. Capture "from within" sees tool outputs and files that vendor exports omit. |
+| **Destination-pays** | AI vendors | per verified pickup | A pickup in their product is an acquired workflow, not just an imported memory |
+| **Relay API** | agent platforms | usage | `baton_checkpoint` / `baton_pickup` as a service for multi-agent systems (A2A is runtime messaging, while Baton is the persisted, auditable work state) |
+
+Free to the user stays the rule: capture, tab-to-tab transfer, local store, self-hosted relay and sealed sharing are all free.

@@ -1,0 +1,23 @@
+{
+  "sink": "zendesk",
+  "method": "POST",
+  "path": "/api/v2/tickets.json",
+  "body": {
+    "ticket": {
+      "subject": "AI handoff: Cricket Stumping Simulation",
+      "comment": {
+        "body": "AI conversation handed off from ChatGPT (gpt-6) · public share link via Baton.\n\nGoal: Model and plan full research paper level simulatable process or whatever to simulate in a cricket match if there is getting stumping. There is one way the batsman has to drag his leg to the line, or the driver can lift his leg, faceless resistance, move across air and bring back his time. There has to be a trade-off. There has to be an equation. There has to be a best time. There has to be a maximum height or the best option to do this. I want that equation derived mathematically and simulated.\n\nLatest instruction: It is connevted\n\n8 prompts · 133 tool calls · files: 13 recovered / 3 stale / 16 lost\n\nOpen threads:\n- But the connection available to me is still rejecting write requests with a `403 Resource not accessible by integration` error\\.\n- So being connected hasn't given this integration the required write scope.\n- I haven't uploaded the project or deployed the app yet, and I won't claim otherwise.\n- You shouldn't need to run Git commands yourself if I can get the right repository permissions.\n- The blocker is that GitHub is rejecting write operations from the current connection, even though the repository exists and your account has access.\n- I can't force an authorization popup to appear from this conversation, and I won't ask you to paste credentials here.\n\nBundle f982398d6c9529b9 · sha256 root 0e489b3a871206841699f7195e270a7198f60bca19e2defbb98ffb0ec416bac6\nSource: https://chatgpt.com/share/6acbc222-2500-83ee-b38c-dcfe2b46e388",
+        "public": false
+      },
+      "priority": "high",
+      "tags": [
+        "baton_handoff",
+        "source_chatgpt_share"
+      ]
+    }
+  },
+  "notes": [
+    "Creates a ticket with an internal note (public: false).",
+    "Env for --post: ZENDESK_SUBDOMAIN, ZENDESK_EMAIL, ZENDESK_API_TOKEN."
+  ]
+}

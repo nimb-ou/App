@@ -1,0 +1,3 @@
+# Cell 032 · source event 5bebc9a8-d8da-4d2e-926c-72e64582e606 · 2026-10-11T14:53:29.039Z
+# Building stumping research package
+python -m py_compile /mnt/data/stumping_research_package/simulate_stumping.py && cd /mnt/data/stumping_research_package && python simulate_stumping.py > results/run_output.txt && python make_paper.py >/tmp/paper_build.txt && cd /mnt/data && rm -f stumping_research_package.zip && zip -qr stumping_research_package.zip stumping_research_package && ls -lh stumping_research_package.zip stumping_research_package/stumping_recovery_research_paper.pdf stumping_research_package/stumping_recovery_research_paper.docx

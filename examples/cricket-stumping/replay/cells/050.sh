@@ -1,0 +1,3 @@
+# Cell 050 · source event 8ec6f54b-f667-42c9-843b-90efeea43cec · 2026-10-11T16:58:17.696Z
+# Creating root-ready repository archive
+cd /mnt/data/stumping_research_package && zip -qr /mnt/data/stumping_recovery_lab_repo_root.zip README.md app.py stumping_model.py simulate_stumping.py paper.md requirements.txt Dockerfile LICENSE CITATION.cff DATA_AND_VALIDATION.md VALIDATION_PROTOCOL.md data_collection_template.csv .gitignore .github tests results/stumping_model_baseline.json results/interactive_model_baseline.json 2>/dev/null || true; ls -lh /mnt/data/stumping_recovery_lab_repo_root.zip; unzip -l /mnt/data/stumping_recovery_lab_repo_root.zip | head -30

@@ -1,0 +1,3 @@
+# Cell 041 · source event b5745bf1-000e-4066-819c-93bee8105a63 · 2026-10-11T15:17:53.133Z
+# Packaging Updated Research Files and ZIP
+cd /mnt/data && rm -f stumping_research_package.zip && zip -qr stumping_research_package.zip stumping_research_package && pdfinfo /mnt/data/stumping_research_package/stumping_recovery_research_paper.pdf | grep -E 'Pages|File size' && ls -lh /mnt/data/stumping_research_package.zip /mnt/data/stumping_research_package/stumping_recovery_research_paper.pdf /mnt/data/stumping_research_package/stumping_recovery_research_paper.docx /mnt/data/stumping_research_package/simulate_stumping.py

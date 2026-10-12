@@ -9,6 +9,12 @@ prompt itself is the source of truth.
 | 001 | 2026-10-11 ~17:10 | `hi` | Greeting. Replied with repo and branch context. |
 | 002 | 2026-10-11 ~17:14 | see [002-build-this.md](002-build-this.md) | Build the ChatGPT-shared idea end to end as a product. |
 | 003 | 2026-10-11 ~17:20 | see [003-the-exact-problem.md](003-the-exact-problem.md) | **Reframe:** the product is the *transfer* problem itself, i.e. moving a chat, plan, prompts, reasoning, outputs and files between AI tools. |
+| 004 | 2026-10-11 ~17:53 | see [004-capture-from-within.md](004-capture-from-within.md) | **Reframe 2:** embed Baton *inside* every AI (extension, MCP relay, hooks) and capture what sharing never can. |
+| 005 | 2026-10-11 | `build it so that i can use it in real and test on my claude and chatgpt and gemini` | Harden the extension and relay for the real sites; write a test script for the owner. |
+| 006 | 2026-10-11 | `commit eberything. like demo now. run it` → `i do not want anything mock, all reeal` | Deploy for real (Cloudflare). Never present a scripted client as a real AI. Rule saved in `CLAUDE.md`. |
+| 007 | 2026-10-11 | see [007-make-it-easier.md](007-make-it-easier.md) | **Reframe 3:** remove setup. No extension, no connector: one bookmark and one link any AI can read. |
+| 008 | 2026-10-11 | see [008-make-it-a-product.md](008-make-it-a-product.md) | Make Baton a real product: brand identity, website, UX, and much easier to use. |
+| 009 | 2026-10-12 | see [009-silicon-valley-level.md](009-silicon-valley-level.md) | Finish every open item; rethink from the ground up for a top-tier product that stays easy to use. |
 
 Inputs from other systems are stored under [`../../fixtures/`](../../fixtures/), and the decoded
 transcript of the shared ChatGPT conversation is under [`../../examples/cricket-stumping/`](../../examples/cricket-stumping/).

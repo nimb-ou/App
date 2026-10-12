@@ -1,0 +1,14 @@
+# One-click deploy of the Baton relay on Render (free plan works; add a disk for persistence).
+services:
+  - type: web
+    name: baton-relay
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: BATON_PUBLIC_URL
+        sync: false
+      - key: BATON_MCP_SECRET
+        generateValue: true
+      - key: BATON_TTL_DAYS
+        value: "7"

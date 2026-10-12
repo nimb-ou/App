@@ -1,0 +1,56 @@
+{
+  "name": "baton-handoff",
+  "version": "0.4.0",
+  "description": "Carry AI work between assistants from the inside: capture prompts, tool outputs and files in ChatGPT/Claude/Gemini (extension), let models checkpoint and pick up work over MCP (relay), and hand off as audited bundles.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nimb-ou/App.git"
+  },
+  "keywords": [
+    "ai",
+    "handoff",
+    "chatgpt",
+    "claude",
+    "claude-code",
+    "mcp",
+    "agent-skills",
+    "portability",
+    "export"
+  ],
+  "bin": {
+    "baton": "dist/baton.mjs"
+  },
+  "files": [
+    "dist/",
+    "skills/",
+    "hooks/",
+    "commands/",
+    ".claude-plugin/",
+    "extension/dist/",
+    "README.md",
+    "LICENSE",
+    "docs/SPEC.md",
+    "worker/",
+    "wrangler.jsonc"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "baton": "node src/bin.ts",
+    "test": "node --test --test-reporter=spec \"tests/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs && node scripts/build-extension.mjs",
+    "examples": "node scripts/build-examples.ts",
+    "build:extension:test": "node scripts/build-extension.mjs --test",
+    "test:e2e": "node scripts/build-extension.mjs --test && node tests-e2e/extension.e2e.mjs",
+    "deploy:relay": "node scripts/deploy-relay.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}

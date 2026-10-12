@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Baton options</title>
+<style>
+:root{--paper:#F5F2EA;--card:#fff;--ink:#121314;--mu:#6B675F;--line:#DED8CB;--signal:#FF5A1F;--signal-ink:#1C0A02}
+@media (prefers-color-scheme:dark){:root{--paper:#0E0F10;--card:#17181A;--ink:#F3F0E8;--mu:#9C988F;--line:#2A2C2F;--signal:#FF6A33}}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;max-width:600px;margin:0 auto;padding:36px 20px}
+.brand{display:flex;align-items:center;gap:12px;font:800 28px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;letter-spacing:-.03em;margin-bottom:8px}
+.brand svg{width:40px;height:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin-top:22px}
+label{display:grid;gap:6px;margin:0 0 18px;font-weight:650}
+input[type=url],input[type=password]{font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:inherit}
+input:focus{outline:none;border-color:var(--signal)}
+.cb{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+.cb input{margin-top:4px;accent-color:var(--signal)}
+small,.mu{color:var(--mu);font-weight:400}
+button{font:inherit;font-weight:800;padding:12px 22px;border-radius:999px;border:0;background:var(--signal);color:var(--signal-ink);cursor:pointer}
+#st{margin-top:12px}
+a{color:inherit}
+</style></head>
+<body>
+<div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#121314"/><rect x="8.6" y="12.9" width="17.4" height="6.6" rx="3.3" transform="rotate(-38 17.3 16.2)" fill="#FF5A1F"/><path d="M6.2 24.6l3.4-2.7M5.6 19.4l2.3-1.8" stroke="#FF5A1F" stroke-width="2.1" stroke-linecap="round" opacity=".55" fill="none"/></svg>baton</div>
+<p class="mu">Continue any ChatGPT, Claude or Gemini chat in another AI. Captures stay in your browser until you choose <b>Get a link</b>.</p>
+<div class="card">
+<label>Baton server <small>Where "Get a link" stores handoffs. Leave empty to use the public Baton server. Run your own with one command (see the <a href="https://github.com/nimb-ou/App/blob/claude/laughing-davinci-c048d8/docs/DEPLOY.md">deploy guide</a>).</small><input type="url" id="relay" placeholder="https://baton-relay.nimitjain-248.workers.dev"></label>
+<label>Server token <small>Only if your own server requires one.</small><input type="password" id="token"></label>
+<label class="cb"><input type="checkbox" id="redact" checked><span>Redact keys, tokens, emails and phone numbers <small>(recommended)</small></span></label>
+<label class="cb"><input type="checkbox" id="seal"><span>End-to-end encrypt links <small>The server can't read them, and neither can the AI you send them to. You open the link yourself and paste.</small></span></label>
+<button id="save">Save</button>
+<div id="st" class="mu" role="status"></div>
+</div>
+<p class="mu" style="margin-top:22px"><a href="https://baton-relay.nimitjain-248.workers.dev/privacy">Privacy</a> · <a href="https://github.com/nimb-ou/App">Open source</a></p>
+<script src="options.js"></script>
+</body></html>

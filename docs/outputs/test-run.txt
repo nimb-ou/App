@@ -1,0 +1,143 @@
+
+> baton-handoff@0.3.0 test
+> node --test --test-reporter=spec "tests/*.test.ts"
+
+▶ sha256
+  ✔ matches FIPS test vectors (0.829711ms)
+  ✔ matches node:crypto on multi-block unicode input (0.754362ms)
+✔ sha256 (2.220199ms)
+▶ zip
+  ✔ crc32 known value (0.14933ms)
+  ✔ round-trips files with UTF-8 names (3.141467ms)
+  ✔ reads deflated members via the central directory (0.896014ms)
+✔ zip (4.374224ms)
+▶ turbo-stream
+  ✔ decodes indexed objects, shared strings and sentinels (0.369043ms)
+  ✔ extracts enqueue chunks from HTML (0.333129ms)
+✔ turbo-stream (0.945426ms)
+▶ redaction
+  ✔ redacts ANTHROPIC KEY (0.916155ms)
+  ✔ redacts OPENAI KEY (0.174565ms)
+  ✔ redacts GITHUB TOKEN (0.182233ms)
+  ✔ redacts AWS KEY (0.055625ms)
+  ✔ redacts EMAIL (0.171592ms)
+  ✔ redacts CARD (0.162518ms)
+  ✔ redacts PHONE (0.038941ms)
+  ✔ redacts BEARER (0.035175ms)
+  ✔ redacts PRIVATE KEY (0.101128ms)
+  ✔ leaves identifiers, decimals, dates and allowed emails alone (0.314503ms)
+  ✔ can be disabled (0.089031ms)
+✔ redaction (2.577376ms)
+▶ util
+  ✔ slugify (0.269039ms)
+  ✔ stableStringify sorts keys and drops undefined (0.134737ms)
+  ✔ fence avoids collisions (0.133748ms)
+✔ util (0.738246ms)
+▶ mdlite (viewer safety)
+  ✔ escapes raw HTML and scripts (0.622022ms)
+  ✔ does not create javascript: links (0.158906ms)
+  ✔ renders tables, lists, code and details (0.411757ms)
+✔ mdlite (viewer safety) (1.313811ms)
+▶ custom redaction terms
+  ✔ redacts literal terms case-insensitively and escapes regex characters (0.216014ms)
+✔ custom redaction terms (0.262836ms)
+▶ site detection
+  ✔ maps hosts to adapters (0.848353ms)
+✔ site detection (1.652134ms)
+▶ ChatGPT in-page capture
+  ✔ captures tool outputs, sandbox files and uploads; reports what failed (17.082645ms)
+  ✔ explains when not on a conversation or signed out (0.64752ms)
+✔ ChatGPT in-page capture (17.955367ms)
+▶ Claude in-page capture
+  ✔ captures tool use, artifacts and created files from the full conversation API (5.908519ms)
+✔ Claude in-page capture (6.036263ms)
+▶ ChatGPT share page (real fixture)
+  ✔ detects the format (1.34586ms)
+  ✔ extracts title, source and all 8 user prompts verbatim (0.462105ms)
+  ✔ keeps reasoning summaries and executed code (0.313967ms)
+  ✔ audits what the share dropped (0.146014ms)
+  ✔ recovers project files byte-for-byte and marks the rest honestly (0.40593ms)
+  ✔ emits a replay kit with one cell per container.exec call (0.149795ms)
+  ✔ excludes empty private context and converts GenUI markers (0.285082ms)
+  ✔ is deterministic and verifiable (121.154469ms)
+✔ ChatGPT share page (real fixture) (125.76785ms)
+▶ ChatGPT export (conversations.json)
+  ✔ follows the active branch, records the dropped branch and redacts (6.511968ms)
+✔ ChatGPT export (conversations.json) (6.813289ms)
+▶ Claude.ai export
+  ✔ parses blocks, thinking and attachments (1.041753ms)
+✔ Claude.ai export (1.140664ms)
+▶ Claude Code JSONL
+  ✔ parses, strips harness context and replays file edits (1.688743ms)
+✔ Claude Code JSONL (1.76835ms)
+▶ generic message logs
+  ✔ parses [{role, content}] with tool calls (0.68641ms)
+  ✔ rejects unknown input clearly (0.368804ms)
+✔ generic message logs (1.267436ms)
+▶ shell heredoc extraction
+  ✔ recovers quoted heredocs exactly, with trailing newline (1.911317ms)
+  ✔ flags unquoted heredocs that would expand (0.465911ms)
+  ✔ handles append, tee, <<- tab stripping and multiple heredocs (6.73326ms)
+  ✔ tracks cd per command segment (0.435063ms)
+  ✔ detects python in-place rewrites as touches (0.637497ms)
+  ✔ does not mistake .zip in filenames or inline > for commands (0.321311ms)
+  ✔ unwraps JSON cmd form (0.080642ms)
+✔ shell heredoc extraction (11.499758ms)
+▶ fold + statuses
+  ✔ recovered → stale after unreplayable modification; rewrite resets (1.393558ms)
+  ✔ sandbox links without content are lost; binaries point to replay (5.670501ms)
+  ✔ replays Claude Code Write + Edit + MultiEdit exactly (0.764758ms)
+  ✔ bundle paths can never escape the bundle (0.137545ms)
+  ✔ folds ops in order with replace on known content (0.136296ms)
+✔ fold + statuses (8.484721ms)
+▶ codes and sealing
+  ✔ generates and normalises capability codes (3.78142ms)
+  ✔ seals and unseals; rejects a wrong key (12.028362ms)
+  ✔ parses pickup links (1.60837ms)
+✔ codes and sealing (18.513805ms)
+▶ model checkpoints (MCP tools over the store)
+  ✔ creates a handoff with files, tool outputs and recalled prompts (17.688676ms)
+  ✔ appends checkpoints from another AI and renders one bundle (11.726257ms)
+  ✔ picks up and serves single files (6.256297ms)
+✔ model checkpoints (MCP tools over the store) (36.165824ms)
+▶ relay HTTP server
+  ✔ speaks MCP Streamable HTTP with sessions (61.668093ms)
+  ✔ round-trips captured and sealed bundles through the CLI client (36.160386ms)
+  ✔ enforces the bearer token for REST writes when configured (8.149845ms)
+✔ relay HTTP server (116.536594ms)
+▶ portable fetch handler (Workers/Deno path) over an in-memory KV
+  ✔ serves MCP and REST without Node APIs (3.506646ms)
+✔ portable fetch handler (Workers/Deno path) over an in-memory KV (3.59484ms)
+▶ bundle layout
+  ✔ contains every surface file (0.70422ms)
+  ✔ HANDOFF.md carries goal, prompts, state and loss (0.525269ms)
+  ✔ SKILL.md has valid Agent Skill front matter (0.255626ms)
+  ✔ PROMPT.md stays within its paste budget (0.134478ms)
+  ✔ index.html escapes conversation content (1.539914ms)
+✔ bundle layout (4.21619ms)
+▶ sinks
+  ✔ jira uses ADF and labels (0.361985ms)
+  ✔ salesforce composite links note and tasks to the case (3.049547ms)
+  ✔ salesforce can attach to an existing record (2.945123ms)
+  ✔ zendesk is an internal note; slack has blocks (0.647142ms)
+✔ sinks (7.430302ms)
+▶ node io safety
+  ✔ refuses to write outside the output directory (0.718322ms)
+  ✔ only fetches public ChatGPT share URLs (0.23075ms)
+✔ node io safety (1.089446ms)
+▶ MCP server
+  ✔ initializes and lists tools (0.956473ms)
+  ✔ imports via tools/call and reports errors as tool results (87.88189ms)
+✔ MCP server (88.991821ms)
+▶ CLI (end to end)
+  ✔ imports, zips, verifies, and detects tampering (1061.304754ms)
+  ✔ prints help and fails cleanly on bad input (426.143386ms)
+✔ CLI (end to end) (1487.702108ms)
+ℹ tests 79
+ℹ suites 26
+ℹ pass 79
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2362.083956

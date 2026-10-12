@@ -1,0 +1,11 @@
+{
+  "name": "baton",
+  "owner": { "name": "nimb-ou" },
+  "plugins": [
+    {
+      "name": "baton",
+      "source": "./",
+      "description": "Hand off AI work between tools, people and systems, with a loss audit and recovered files."
+    }
+  ]
+}
